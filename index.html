@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Конструктор ИИ-ботов</title>
+  <title>К54 • НейроКонструктор ИИ-ботов</title>
+  <link rel="icon" type="image/png" href="/static/logo.png">
   <style>
     :root {
-      /* Palette: Тёмные серые (из палитры пользователя) */
+      /* Palette: Тёмные серые (из палитры К54) */
       --c-darkest: #282425;  /* Базовый самый темный графит */
       --c-dark: #434244;     /* Темно-серый поверхности и шапки */
       --c-mid-dark: #59595b; /* Средне-темный серый границы и кнопки */
@@ -59,7 +60,7 @@
 
     /* Top Bar */
     .top-bar {
-      height: 48px;
+      height: 52px;
       background: var(--c-darkest);
       border-bottom: 1px solid var(--c-dark);
       display: flex;
@@ -73,7 +74,14 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+    }
+
+    .brand-logo-img {
+      height: 32px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
     }
 
     .brand-title {
@@ -81,16 +89,21 @@
       font-weight: 700;
       letter-spacing: -0.2px;
       color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .brand-sub {
-      font-size: 11px;
-      color: var(--c-light);
+      font-size: 10px;
+      color: #fb923c;
       background: var(--c-dark);
-      padding: 2px 7px;
+      padding: 2px 6px;
       border-radius: 4px;
       border: 1px solid var(--c-mid-dark);
       font-family: monospace;
+      font-weight: 600;
+      letter-spacing: 0.5px;
     }
 
     .nav-tabs {
@@ -322,7 +335,7 @@
       border: 1px solid var(--c-mid-dark);
       border-radius: 8px;
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65);
-      width: 255px;
+      width: 260px;
       padding: 6px;
       display: none;
       flex-direction: column;
@@ -411,9 +424,11 @@
       z-index: 20;
     }
 
+    /* Terminal / Endpoint Node (Central Window) */
     .node.assembler-node {
-      width: 325px;
+      width: 350px;
       border-color: var(--c-mid);
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55);
     }
 
     .node-header {
@@ -722,9 +737,9 @@
       position: relative;
       font-size: 12px;
       color: var(--c-light);
-      padding: 6px 0;
+      padding: 5px 0;
       user-select: none;
-      min-height: 26px;
+      min-height: 25px;
     }
 
     .port-row.port-row-in {
@@ -788,7 +803,7 @@
     .status-badge {
       font-size: 10px;
       font-family: monospace;
-      padding: 2px 6px;
+      padding: 1px 5px;
       border-radius: 3px;
       background: var(--c-darkest);
       border: 1px solid var(--c-mid-dark);
@@ -802,10 +817,157 @@
       background: rgba(16, 185, 129, 0.15);
     }
 
-    .btn-assemble-node {
+    /* Central Terminal Screen (Окно Бота) */
+    .terminal-screen {
+      background: #1d1b1c;
+      border: 1px solid var(--c-mid-dark);
+      border-radius: 6px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+      user-select: text;
+    }
+
+    .terminal-header-view {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--c-dark);
+    }
+
+    .terminal-avatar-box {
+      width: 36px;
+      height: 36px;
+      font-size: 20px;
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .terminal-bot-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .terminal-bot-status {
+      font-size: 10px;
+      color: #10b981;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 2px;
+    }
+
+    .terminal-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .terminal-chip {
+      font-size: 10px;
+      font-family: monospace;
+      background: var(--c-darkest);
+      border: 1px solid var(--c-dark);
+      color: var(--c-light);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    .terminal-chip.active {
+      color: #ffffff;
+      border-color: var(--c-mid-dark);
+      background: var(--c-dark);
+    }
+
+    /* Mini-test Console inside Terminal Node */
+    .terminal-test-box {
+      background: var(--c-darkest);
+      border: 1px solid var(--c-dark);
+      border-radius: 4px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .terminal-response-screen {
+      font-size: 11px;
+      line-height: 1.4;
+      color: #f1f5f9;
+      min-height: 42px;
+      max-height: 95px;
+      overflow-y: auto;
+      background: #141314;
+      border: 1px solid var(--c-dark);
+      border-radius: 3px;
+      padding: 6px 8px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .terminal-response-screen.empty {
+      color: var(--c-light-mid);
+      font-style: italic;
+      font-size: 11px;
+    }
+
+    .terminal-input-row {
+      display: flex;
+      gap: 4px;
+    }
+
+    .terminal-input {
+      flex: 1;
+      background: #141314;
+      border: 1px solid var(--c-mid-dark);
+      border-radius: 3px;
+      color: #ffffff;
+      font-size: 11px;
+      padding: 5px 8px;
+      outline: none;
+    }
+
+    .terminal-input:focus {
+      border-color: var(--c-light);
+    }
+
+    .btn-terminal-test {
       background: var(--c-mid-dark);
       color: #ffffff;
       border: 1px solid var(--c-light-mid);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-terminal-test:hover:not(:disabled) {
+      background: var(--c-mid);
+      border-color: var(--c-light);
+    }
+
+    .btn-terminal-test:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-assemble-node {
+      background: #ea580c;
+      color: #ffffff;
+      border: 1px solid #f97316;
       border-radius: 5px;
       padding: 9px;
       font-size: 12px;
@@ -817,11 +979,12 @@
       gap: 6px;
       margin-top: 4px;
       transition: all 0.15s ease;
+      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.35);
     }
 
     .btn-assemble-node:hover:not(:disabled) {
-      background: var(--c-mid);
-      border-color: var(--c-light);
+      background: #c2410c;
+      border-color: #fb923c;
     }
 
     .btn-assemble-node:disabled {
@@ -1263,8 +1426,13 @@
   <!-- Top Bar -->
   <header class="top-bar">
     <div class="brand">
-      <span class="brand-title">Конструктор ИИ-ботов</span>
-      <span class="brand-sub">Comfy Flow</span>
+      <img src="/static/logo.png" alt="К54" class="brand-logo-img">
+      <div>
+        <div class="brand-title">
+          <span>К54 • НейроКонструктор</span>
+          <span class="brand-sub">ИИ-Лаборатория</span>
+        </div>
+      </div>
     </div>
 
     <!-- Mode Tabs -->
@@ -1279,7 +1447,7 @@
 
     <div class="top-actions">
       <button class="btn-queue" id="btnQueue" onclick="queueBotAssembly()">
-        <span>Собрать бота</span>
+        <span>🚀 Запустить бота</span>
       </button>
     </div>
   </header>
@@ -1294,7 +1462,7 @@
       </button>
       <!-- Dropdown Menu -->
       <div class="node-menu" id="nodeMenu">
-        <div class="menu-header-label">Добавить ноду</div>
+        <div class="menu-header-label">Добавить модуль</div>
         <div class="menu-item" onclick="spawnNode('char')">
           <div class="menu-icon">🎭</div>
           <div>
@@ -1338,10 +1506,10 @@
           </div>
         </div>
         <div class="menu-item" onclick="spawnNode('assembler')">
-          <div class="menu-icon">⚡</div>
+          <div class="menu-icon">🖥️</div>
           <div>
-            <div class="menu-title">Сборщик Бота</div>
-            <div class="menu-desc">Ядро сборки и запуска</div>
+            <div class="menu-title">Терминал Бота</div>
+            <div class="menu-desc">Конечная нода с экспресс-тестом</div>
           </div>
         </div>
       </div>
@@ -1378,7 +1546,7 @@
     </div>
 
     <div class="canvas-hint">
-      <strong>Перетягивайте кружочки портов</strong> мышкой для соединения! Клик по проводу — отсоединить.
+      <strong>Перетягивайте кружочки портов</strong> мышкой для соединения в Терминал! Клик по проводу — отсоединить.
     </div>
   </div>
 
@@ -1386,7 +1554,7 @@
   <div class="view-panel" id="chatGalleryView">
     <div class="gallery-pane">
       <div class="gallery-head">
-        <span class="gallery-title">Галерея ботов</span>
+        <span class="gallery-title">Галерея ботов К54</span>
         <button class="btn-sm-action" onclick="fetchBotsList()">Обновить</button>
       </div>
       <div class="gallery-list" id="galleryList"></div>
@@ -1532,7 +1700,7 @@
       const nRules = createNodeElement('rules', 360, 50);
       const nParams = createNodeElement('params', 360, 360);
       const nKb = createNodeElement('kb', 360, 570);
-      const nAsm = createNodeElement('assembler', 730, 90);
+      const nAsm = createNodeElement('assembler', 720, 80);
 
       connectPorts(nChar, 'out', nAsm, 'in-char', 'char');
       connectPorts(nPrompt, 'out', nAsm, 'in-prompt', 'prompt');
@@ -1540,7 +1708,10 @@
       connectPorts(nParams, 'out', nAsm, 'in-params', 'params');
       connectPorts(nKb, 'out', nAsm, 'in-kb', 'kb');
 
-      setTimeout(updateAllWires, 30);
+      setTimeout(() => {
+        updateAllWires();
+        updateTerminalPreview(nAsm);
+      }, 50);
     }
 
     // 2. Add Node Menu
@@ -1576,7 +1747,7 @@
       const worldY = (viewCenterY - panY) / scale - 80 + jitterY;
 
       const nodeId = createNodeElement(type, Math.round(worldX), Math.round(worldY));
-      showToast('Нода добавлена', 'info');
+      showToast('Модуль добавлен', 'info');
       setTimeout(updateAllWires, 30);
       return nodeId;
     }
@@ -1606,7 +1777,7 @@
           <div class="node-body">
             <div>
               <div class="control-label"><span>Имя бота</span></div>
-              <input type="text" class="control-input node-val-name" value="Капитан Морган" maxlength="35">
+              <input type="text" class="control-input node-val-name" value="Капитан Морган" maxlength="35" oninput="onCharNodeInputChange('${id}')">
             </div>
             <div>
               <div class="control-label"><span>Аватар</span></div>
@@ -1627,7 +1798,7 @@
               <span class="port-name">Характер</span>
               <div class="port-circle out type-char" id="${id}_out" 
                    data-node="${id}" data-port="out" data-type="char" data-dir="out"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'char', 'out')" title="Зажмите и потяните к сборщику"></div>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'char', 'out')" title="Зажмите и потяните к Терминалу"></div>
             </div>
           </div>
         `;
@@ -1642,7 +1813,7 @@
           </div>
           <div class="node-body">
             <div>
-              <div class="control-label"><span>Шаблоны</span></div>
+              <div class="control-label"><span>Шаблоны роли</span></div>
               <div class="template-bar">
                 <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'pirate')">Пират</button>
                 <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'tutor')">Репетитор</button>
@@ -1658,7 +1829,7 @@
               <span class="port-name">Инструкция</span>
               <div class="port-circle out type-prompt" id="${id}_out" 
                    data-node="${id}" data-port="out" data-type="prompt" data-dir="out"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'prompt', 'out')" title="Зажмите и потяните к сборщику"></div>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'prompt', 'out')" title="Зажмите и потяните к Терминалу"></div>
             </div>
           </div>
         `;
@@ -1708,7 +1879,7 @@
               <span class="port-name" style="color:var(--wire-rules);">Стиль и Правила</span>
               <div class="port-circle out type-rules" id="${id}_out" 
                    data-node="${id}" data-port="out" data-type="rules" data-dir="out"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'rules', 'out')" title="Зажмите и потяните к сборщику"></div>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'rules', 'out')" title="Зажмите и потяните к Терминалу"></div>
             </div>
           </div>
         `;
@@ -1749,7 +1920,7 @@
               <span class="port-name" style="color:var(--wire-params);">Параметры</span>
               <div class="port-circle out type-params" id="${id}_out" 
                    data-node="${id}" data-port="out" data-type="params" data-dir="out"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'params', 'out')" title="Зажмите и потяните к сборщику"></div>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'params', 'out')" title="Зажмите и потяните к Терминалу"></div>
             </div>
           </div>
         `;
@@ -1779,7 +1950,7 @@
               <span class="port-name" style="color:var(--wire-quick);">Приветствие</span>
               <div class="port-circle out type-quick" id="${id}_out" 
                    data-node="${id}" data-port="out" data-type="quick" data-dir="out"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'quick', 'out')" title="Зажмите и потяните к сборщику"></div>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'quick', 'out')" title="Зажмите и потяните к Терминалу"></div>
             </div>
           </div>
         `;
@@ -1812,72 +1983,101 @@
               <span class="port-name">Знания (RAG)</span>
               <div class="port-circle out type-kb" id="${id}_out" 
                    data-node="${id}" data-port="out" data-type="kb" data-dir="out"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'kb', 'out')" title="Зажмите и потяните к сборщику"></div>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'kb', 'out')" title="Зажмите и потяните к Терминалу"></div>
             </div>
           </div>
         `;
       } else if (type === 'assembler') {
+        // THE ENDPOINT / TERMINAL NODE (Instead of geeky system settings, a live interactive window)
         inner = `
           <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
-            <span class="node-title">⚡ Сборщик Бота</span>
+            <span class="node-title">🖥️ Терминал Бота</span>
             <div class="node-header-actions">
-              <span class="node-type-label" style="color:#ffffff;">Qwen 2.5 3B</span>
+              <span class="node-type-label" style="color:#fb923c;">Endpoint</span>
               <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
             </div>
           </div>
           <div class="node-body">
-            <div class="port-row port-row-in">
-              <div class="port-circle in type-char" id="${id}_in-char" 
-                   data-node="${id}" data-port="in-char" data-type="char" data-dir="in"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'in-char', 'char', 'in')"></div>
-              <span class="port-name">Персонаж</span>
-              <span class="status-badge status-char">ОЖИДАНИЕ</span>
-            </div>
-            <div class="port-row port-row-in">
-              <div class="port-circle in type-prompt" id="${id}_in-prompt" 
-                   data-node="${id}" data-port="in-prompt" data-type="prompt" data-dir="in"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'in-prompt', 'prompt', 'in')"></div>
-              <span class="port-name">Промпт</span>
-              <span class="status-badge status-prompt">ОЖИДАНИЕ</span>
-            </div>
-            <div class="port-row port-row-in">
-              <div class="port-circle in type-rules" id="${id}_in-rules" 
-                   data-node="${id}" data-port="in-rules" data-type="rules" data-dir="in"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'in-rules', 'rules', 'in')"></div>
-              <span class="port-name" style="color:var(--wire-rules);">Стиль и Правила</span>
-              <span class="status-badge status-rules">ОПЦИЯ</span>
-            </div>
-            <div class="port-row port-row-in">
-              <div class="port-circle in type-params" id="${id}_in-params" 
-                   data-node="${id}" data-port="in-params" data-type="params" data-dir="in"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'in-params', 'params', 'in')"></div>
-              <span class="port-name" style="color:var(--wire-params);">Параметры</span>
-              <span class="status-badge status-params">ОПЦИЯ</span>
-            </div>
-            <div class="port-row port-row-in">
-              <div class="port-circle in type-quick" id="${id}_in-quick" 
-                   data-node="${id}" data-port="in-quick" data-type="quick" data-dir="in"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'in-quick', 'quick', 'in')"></div>
-              <span class="port-name" style="color:var(--wire-quick);">Приветствие</span>
-              <span class="status-badge status-quick">ОПЦИЯ</span>
-            </div>
-            <div class="port-row port-row-in">
-              <div class="port-circle in type-kb" id="${id}_in-kb" 
-                   data-node="${id}" data-port="in-kb" data-type="kb" data-dir="in"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'in-kb', 'kb', 'in')"></div>
-              <span class="port-name">База знаний</span>
-              <span class="status-badge status-kb">ОЖИДАНИЕ</span>
-            </div>
-            <div style="background:var(--c-darkest); border:1px solid var(--c-mid-dark); border-radius:4px; padding:8px; font-size:11px; color:var(--c-light); margin-top:2px;">
-              <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
-                <span>Движок:</span> <span style="color:#ffffff; font-family:monospace;">llama-server (8000)</span>
+            <!-- Input Ports (Where other nodes connect) -->
+            <div style="display:flex; flex-direction:column; gap:2px; margin-bottom:4px;">
+              <div class="port-row port-row-in">
+                <div class="port-circle in type-char" id="${id}_in-char" 
+                     data-node="${id}" data-port="in-char" data-type="char" data-dir="in"
+                     onmousedown="onSocketMouseDown(event, '${id}', 'in-char', 'char', 'in')"></div>
+                <span class="port-name" style="color:var(--wire-char);">Персонаж</span>
+                <span class="status-badge status-char">ОЖИДАНИЕ</span>
               </div>
-              <div style="display:flex; justify-content:space-between;">
-                <span>Ранжирование:</span> <span style="color:#ffffff; font-family:monospace;">BM25Okapi RAG</span>
+              <div class="port-row port-row-in">
+                <div class="port-circle in type-prompt" id="${id}_in-prompt" 
+                     data-node="${id}" data-port="in-prompt" data-type="prompt" data-dir="in"
+                     onmousedown="onSocketMouseDown(event, '${id}', 'in-prompt', 'prompt', 'in')"></div>
+                <span class="port-name" style="color:var(--wire-prompt);">Промпт</span>
+                <span class="status-badge status-prompt">ОЖИДАНИЕ</span>
+              </div>
+              <div class="port-row port-row-in">
+                <div class="port-circle in type-rules" id="${id}_in-rules" 
+                     data-node="${id}" data-port="in-rules" data-type="rules" data-dir="in"
+                     onmousedown="onSocketMouseDown(event, '${id}', 'in-rules', 'rules', 'in')"></div>
+                <span class="port-name" style="color:var(--wire-rules);">Стиль</span>
+                <span class="status-badge status-rules">ОПЦИЯ</span>
+              </div>
+              <div class="port-row port-row-in">
+                <div class="port-circle in type-params" id="${id}_in-params" 
+                     data-node="${id}" data-port="in-params" data-type="params" data-dir="in"
+                     onmousedown="onSocketMouseDown(event, '${id}', 'in-params', 'params', 'in')"></div>
+                <span class="port-name" style="color:var(--wire-params);">Параметры</span>
+                <span class="status-badge status-params">ОПЦИЯ</span>
+              </div>
+              <div class="port-row port-row-in">
+                <div class="port-circle in type-quick" id="${id}_in-quick" 
+                     data-node="${id}" data-port="in-quick" data-type="quick" data-dir="in"
+                     onmousedown="onSocketMouseDown(event, '${id}', 'in-quick', 'quick', 'in')"></div>
+                <span class="port-name" style="color:var(--wire-quick);">Приветствие</span>
+                <span class="status-badge status-quick">ОПЦИЯ</span>
+              </div>
+              <div class="port-row port-row-in">
+                <div class="port-circle in type-kb" id="${id}_in-kb" 
+                     data-node="${id}" data-port="in-kb" data-type="kb" data-dir="in"
+                     onmousedown="onSocketMouseDown(event, '${id}', 'in-kb', 'kb', 'in')"></div>
+                <span class="port-name" style="color:var(--wire-kb);">База знаний</span>
+                <span class="status-badge status-kb">ОЖИДАНИЕ</span>
               </div>
             </div>
+
+            <!-- Central Visual Bot Screen (Окно собранного бота) -->
+            <div class="terminal-screen" id="${id}_screen">
+              <div class="terminal-header-view">
+                <div class="terminal-avatar-box node-term-avatar">🤖</div>
+                <div style="flex:1; overflow:hidden;">
+                  <div class="terminal-bot-name node-term-name">Новый бот</div>
+                  <div class="terminal-bot-status"><span class="status-dot"></span> <span class="node-term-status-text">Готов к тесту</span></div>
+                </div>
+              </div>
+
+              <!-- Active Modules Summary Chips -->
+              <div class="terminal-chips node-term-chips">
+                <span class="terminal-chip chip-char">🎭 Имя</span>
+                <span class="terminal-chip chip-prompt">🧠 Роль</span>
+                <span class="terminal-chip chip-rules">⚙️ Стиль</span>
+                <span class="terminal-chip chip-params">🔥 Фантазия</span>
+                <span class="terminal-chip chip-kb">📚 Знания</span>
+              </div>
+
+              <!-- Live Test Window right on the Canvas -->
+              <div class="terminal-test-box">
+                <div class="terminal-response-screen empty node-term-response">
+                  Задайте тестовый вопрос боту...
+                </div>
+                <div class="terminal-input-row">
+                  <input type="text" class="terminal-input node-term-input" placeholder="Привет! Кто ты?" onkeydown="onTerminalInputKeyDown(event, '${id}')">
+                  <button type="button" class="btn-terminal-test node-term-btn-test" onclick="testDraftInTerminal('${id}')">⚡ Тест</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Big Final Launch Button -->
             <button class="btn-assemble-node" onclick="queueBotAssembly('${id}')">
-              Собрать и Запустить
+              🚀 Запустить бота в Галерею
             </button>
           </div>
         `;
@@ -1895,7 +2095,7 @@
       if (el) el.remove();
       delete nodes[nodeId];
       updateAllWires();
-      showToast('Нода удалена', 'info');
+      showToast('Модуль удален', 'info');
     }
 
     // 4. Node Form Controls
@@ -1907,6 +2107,11 @@
       el.querySelectorAll('.btn-emoji').forEach(b => {
         b.classList.toggle('active', b.textContent.trim() === emoji);
       });
+      updateAllTerminals();
+    }
+
+    function onCharNodeInputChange(nodeId) {
+      updateAllTerminals();
     }
 
     function loadNodeTemplate(nodeId, key) {
@@ -1916,6 +2121,7 @@
       if (!el) return;
       el.querySelector('.node-val-prompt').value = t.prompt;
       showToast(`Шаблон «${t.name}» загружен`, 'success');
+      updateAllTerminals();
     }
 
     function onTempSliderInput(e, nodeId) {
@@ -1932,6 +2138,7 @@
           badge.innerHTML = `<span>🔥 ${val.toFixed(1)} — Бурный фантазёр</span>`;
         }
       }
+      updateAllTerminals();
     }
 
     function setNodeTokens(nodeId, tokens, btn) {
@@ -1940,6 +2147,7 @@
       node.querySelector('.node-val-tokens').value = tokens;
       node.querySelectorAll('.btn-toggle').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      updateAllTerminals();
     }
 
     function onNodeFileSelected(e, nodeId) {
@@ -1955,6 +2163,7 @@
       const tag = el.querySelector('.file-tag');
       tag.style.display = 'inline-flex';
       tag.querySelector('.file-tag-name').textContent = file.name;
+      updateAllTerminals();
     }
 
     function clearNodeFile(e, nodeId) {
@@ -1963,6 +2172,7 @@
       el.querySelector('.node-val-file').value = '';
       el.querySelector('.file-prompt-text').style.display = 'block';
       el.querySelector('.file-tag').style.display = 'none';
+      updateAllTerminals();
     }
 
     // 5. Drag-and-Drop Wires
@@ -2008,7 +2218,7 @@
     function attemptConnection(s1, s2) {
       if (!s1 || !s2) return;
       if (s1.nodeId === s2.nodeId) {
-        showToast('Нельзя соединить порты одной ноды', 'error');
+        showToast('Нельзя соединить порты одного модуля', 'error');
         return;
       }
       if (s1.dir === s2.dir) {
@@ -2025,6 +2235,7 @@
 
       connectPorts(outSock.nodeId, outSock.portId, inSock.nodeId, inSock.portId, outSock.type);
       updateAllWires();
+      updateAllTerminals();
       showToast('Связь установлена', 'success');
     }
 
@@ -2036,6 +2247,7 @@
     function disconnectWire(index) {
       connections.splice(index, 1);
       updateAllWires();
+      updateAllTerminals();
       showToast('Связь удалена', 'info');
     }
 
@@ -2096,7 +2308,7 @@
         const badgeWidth = labelText.length * 7 + 16;
 
         glowHtml += `<path class="wire-glow" stroke="${colorVar}" d="${pathD}"></path>`;
-        mainHtml += `<path class="wire-main" stroke="${colorVar}" d="${pathD}" onclick="disconnectWire(${idx})" title="Кликните, чтобы удалить связь"></path>`;
+        mainHtml += `<path class="wire-main" stroke="${colorVar}" d="${pathD}" onclick="disconnectWire(${idx})" title="Кликните, чтобы отсоединить"></path>`;
         flowHtml += `<path class="wire-flow" d="${pathD}"></path>`;
 
         labelsHtml += `
@@ -2123,7 +2335,182 @@
       wiresLabelsGroup.innerHTML = labelsHtml;
     }
 
-    // 6. Viewport Pan, Zoom & Drag Listeners
+    // 6. Dynamic Terminal Preview (Updates the live visual window inside the Endpoint node)
+    function updateAllTerminals() {
+      Object.keys(nodes).forEach(id => {
+        if (nodes[id].type === 'assembler') {
+          updateTerminalPreview(id);
+        }
+      });
+    }
+
+    function updateTerminalPreview(termNodeId) {
+      const termEl = document.getElementById(termNodeId);
+      if (!termEl) return;
+
+      // 1. Character info
+      const charConn = connections.find(c => c.toNode === termNodeId && c.type === 'char');
+      let name = '';
+      let avatar = '🤖';
+      if (charConn) {
+        const charEl = document.getElementById(charConn.fromNode);
+        if (charEl) {
+          name = charEl.querySelector('.node-val-name').value.trim();
+          avatar = charEl.querySelector('.node-val-avatar').value.trim();
+        }
+      }
+
+      const avatarBox = termEl.querySelector('.node-term-avatar');
+      const nameBox = termEl.querySelector('.node-term-name');
+      const statusText = termEl.querySelector('.node-term-status-text');
+
+      if (avatarBox) avatarBox.textContent = avatar;
+      if (nameBox) nameBox.textContent = name || '(Персонаж не подключен)';
+
+      // 2. Chip badges
+      const hasPrompt = connections.some(c => c.toNode === termNodeId && c.type === 'prompt');
+      const hasRules = connections.some(c => c.toNode === termNodeId && c.type === 'rules');
+      const hasParams = connections.some(c => c.toNode === termNodeId && c.type === 'params');
+      const hasKb = connections.some(c => c.toNode === termNodeId && c.type === 'kb');
+
+      const chipChar = termEl.querySelector('.chip-char');
+      const chipPrompt = termEl.querySelector('.chip-prompt');
+      const chipRules = termEl.querySelector('.chip-rules');
+      const chipParams = termEl.querySelector('.chip-params');
+      const chipKb = termEl.querySelector('.chip-kb');
+
+      if (chipChar) chipChar.classList.toggle('active', !!charConn);
+      if (chipPrompt) chipPrompt.classList.toggle('active', hasPrompt);
+      if (chipRules) chipRules.classList.toggle('active', hasRules);
+      if (chipParams) chipParams.classList.toggle('active', hasParams);
+      if (chipKb) chipKb.classList.toggle('active', hasKb);
+
+      if (statusText) {
+        if (charConn && hasPrompt) {
+          statusText.textContent = 'Готов к запуску';
+          statusText.style.color = '#10b981';
+        } else {
+          statusText.textContent = 'Подключите Персонажа и Промпт';
+          statusText.style.color = '#fb923c';
+        }
+      }
+    }
+
+    // 7. Live Test directly inside the Terminal Node on the Canvas!
+    function onTerminalInputKeyDown(e, termNodeId) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        testDraftInTerminal(termNodeId);
+      }
+    }
+
+    async function testDraftInTerminal(termNodeId) {
+      const termEl = document.getElementById(termNodeId);
+      if (!termEl) return;
+
+      const input = termEl.querySelector('.node-term-input');
+      const screen = termEl.querySelector('.node-term-response');
+      const btnTest = termEl.querySelector('.node-term-btn-test');
+
+      const message = input.value.trim();
+      if (!message) {
+        showToast('Введите вопрос для проверки в терминал', 'info');
+        return;
+      }
+
+      // Collect current prompt from connected nodes
+      const promptConn = connections.find(c => c.toNode === termNodeId && c.type === 'prompt');
+      let prompt = '';
+      if (promptConn) {
+        const pEl = document.getElementById(promptConn.fromNode);
+        if (pEl) prompt = pEl.querySelector('.node-val-prompt').value.trim();
+      } else {
+        const anyPrompt = Object.keys(nodes).find(k => nodes[k].type === 'prompt');
+        if (anyPrompt) prompt = document.getElementById(anyPrompt).querySelector('.node-val-prompt').value.trim();
+      }
+
+      if (!prompt) {
+        prompt = 'Ты дружелюбный ИИ-помощник.';
+      }
+
+      // Append connected rules if any
+      const rulesConn = connections.find(c => c.toNode === termNodeId && c.type === 'rules');
+      if (rulesConn) {
+        const rulesEl = document.getElementById(rulesConn.fromNode);
+        if (rulesEl) {
+          const tone = rulesEl.querySelector('.node-val-tone').value;
+          const checks = Array.from(rulesEl.querySelectorAll('.node-rule-check:checked')).map(cb => cb.value);
+          let extraRules = `\n\nСтиль общения и правила:\n- Тон: ${tone}`;
+          if (checks.length > 0) extraRules += `\n- ` + checks.join(`\n- `);
+          prompt += extraRules;
+        }
+      }
+
+      // Read params if connected
+      let temperature = 0.7;
+      let maxTokens = 160;
+      const paramsConn = connections.find(c => c.toNode === termNodeId && c.type === 'params');
+      if (paramsConn) {
+        const pEl = document.getElementById(paramsConn.fromNode);
+        if (pEl) {
+          temperature = parseFloat(pEl.querySelector('.node-val-temp').value) || 0.7;
+          maxTokens = parseInt(pEl.querySelector('.node-val-tokens').value) || 160;
+        }
+      }
+
+      // Read kb if connected
+      const kbConns = connections.filter(c => c.toNode === termNodeId && c.type === 'kb');
+      let kbText = '';
+      kbConns.forEach(conn => {
+        const kbEl = document.getElementById(conn.fromNode);
+        if (kbEl) {
+          const txt = kbEl.querySelector('.node-val-kb').value.trim();
+          if (txt) kbText += txt + '\n';
+        }
+      });
+
+      screen.classList.remove('empty');
+      screen.textContent = 'Печатает ответ...';
+      btnTest.disabled = true;
+      input.disabled = true;
+
+      try {
+        const res = await fetch('/api/test-draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: message,
+            system_prompt: prompt,
+            temperature: temperature,
+            max_tokens: Math.min(maxTokens, 200),
+            kb_text: kbText.trim() || null
+          })
+        });
+
+        if (!res.ok) throw new Error('Ошибка генерации ответа');
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let result = '';
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          result += decoder.decode(value, { stream: true });
+          screen.textContent = result;
+          screen.scrollTop = screen.scrollHeight;
+        }
+
+      } catch (err) {
+        screen.textContent = `[Ошибка: ${err.message}]`;
+      } finally {
+        btnTest.disabled = false;
+        input.disabled = false;
+        input.focus();
+      }
+    }
+
+    // 8. Viewport Pan, Zoom & Drag Listeners
     function setupViewport() {
       viewport.addEventListener('wheel', (e) => {
         e.preventDefault();
@@ -2257,13 +2644,13 @@
       nodeStartY = parseFloat(draggedNode.style.top) || 0;
     }
 
-    // 7. Queue Bot Assembly (Compile from connected nodes)
+    // 9. Queue Bot Assembly (Compile from connected nodes)
     async function queueBotAssembly(targetAssemblerId) {
       let asmId = targetAssemblerId;
       if (!asmId) {
         const anyAsm = Object.keys(nodes).find(k => nodes[k].type === 'assembler');
         if (!anyAsm) {
-          showToast('Добавьте ноду «Сборщик Бота» через +', 'error');
+          showToast('Добавьте Терминал Бота через +', 'error');
           return;
         }
         asmId = anyAsm;
@@ -2296,7 +2683,7 @@
       }
 
       if (!name) {
-        showToast('Подключите или заполните имя в ноде «Персонаж»', 'error');
+        showToast('Подключите имя в модуле «Персонаж»', 'error');
         if (btnAssemble) btnAssemble.disabled = false;
         btnTop.disabled = false;
         return;
@@ -2318,7 +2705,7 @@
       }
 
       if (!prompt) {
-        showToast('Подключите или заполните промпт в ноде «Инструкция»', 'error');
+        showToast('Подключите промпт в модуле «Инструкция»', 'error');
         if (btnAssemble) btnAssemble.disabled = false;
         btnTop.disabled = false;
         return;
@@ -2408,7 +2795,7 @@
           }));
         }
 
-        showToast(`Бот «${newBot.name}» собран (Temp: ${temperature}, Токены: ${maxTokens})!`, 'success');
+        showToast(`Бот «${newBot.name}» запущен в Галерею!`, 'success');
 
         await fetchBotsList();
         selectBot(newBot.id, true);
@@ -2422,7 +2809,7 @@
       }
     }
 
-    // 8. Tab Switching
+    // 10. Tab Switching
     function switchTab(name) {
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
@@ -2437,7 +2824,7 @@
       }
     }
 
-    // 9. Gallery & Chat Logic
+    // 11. Gallery & Chat Logic
     async function fetchBotsList(silent = false) {
       try {
         const res = await fetch('/api/bots');

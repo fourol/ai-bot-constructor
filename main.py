@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import AsyncOpenAI
@@ -20,6 +21,8 @@ from docx import Document
 DB_PATH = os.getenv("DB_PATH", "bots.db")
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "http://127.0.0.1:8000/v1")
 STATIC_INDEX_PATH = os.path.join(os.path.dirname(__file__), "index.html")
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+os.makedirs(STATIC_DIR, exist_ok=True)
 
 # Клиент AsyncOpenAI для локального llama-server
 client = AsyncOpenAI(base_url=LLM_BASE_URL, api_key="none")
@@ -82,6 +85,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 def generate_short_id(length: int = 6) -> str:
@@ -397,5 +402,79 @@ async def chat_with_bot(payload: ChatRequest):
                         yield delta.content
         except Exception as e:
             yield f"\n[Ошибка соединения с локальной моделью: {str(e)}]"
+
+    return StreamingResponse(stream_generator(), media_type="text/plain")
+
+
+class TestDraftRequest(BaseModel):
+    message: str
+    system_prompt: str
+    temperature: Optional[float] = 0.7
+    max_tokens: Optional[int] = 160
+    kb_text: Optional[str] = None
+
+
+@app.post("/api/test-draft")
+async def test_draft(payload: TestDraftRequest):
+    user_message = payload.message.strip()
+    if not user_message:
+        raise HTTPException(status_code=400, detail="Сообщение не может быть пустым")
+
+    system_prompt = payload.system_prompt.strip() or "Ты дружелюбный ИИ-помощник."
+    bot_temp = float(payload.temperature if payload.temperature is not None else 0.7)
+    bot_max_tokens = int(payload.max_tokens if payload.max_tokens is not None else 160)
+
+    relevant_chunks = []
+    if payload.kb_text and payload.kb_text.strip():
+        chunks = chunk_text(payload.kb_text.strip())
+        if chunks:
+            tokenized_corpus = [tokenize(doc) for doc in chunks]
+            valid_items = [(doc, toks) for doc, toks in zip(chunks, tokenized_corpus) if toks]
+            if valid_items:
+                docs, tokenized_docs = zip(*valid_items)
+                bm25 = BM25Okapi(list(tokenized_docs))
+                query_tokens = tokenize(user_message)
+                if query_tokens:
+                    scores = bm25.get_scores(query_tokens)
+                    sorted_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)
+                    top_indices = [i for i in sorted_indices[:3] if scores[i] > 0]
+                    if top_indices:
+                        relevant_chunks = [docs[i] for i in top_indices]
+                    else:
+                        relevant_chunks = list(docs[:2])
+                else:
+                    relevant_chunks = list(docs[:2])
+
+    if relevant_chunks:
+        facts_text = "\n---\n".join(relevant_chunks)
+        final_system_message = (
+            f"{system_prompt}\n\n"
+            f"Отвечай опираясь на эти факты из базы знаний (если они относятся к вопросу):\n"
+            f"{facts_text}"
+        )
+    else:
+        final_system_message = system_prompt
+
+    messages = [
+        {"role": "system", "content": final_system_message},
+        {"role": "user", "content": user_message}
+    ]
+
+    async def stream_generator():
+        try:
+            response_stream = await client.chat.completions.create(
+                model="local",
+                messages=messages,
+                temperature=bot_temp,
+                max_tokens=bot_max_tokens,
+                stream=True,
+            )
+            async for chunk in response_stream:
+                if chunk.choices and len(chunk.choices) > 0:
+                    delta = chunk.choices[0].delta
+                    if delta and delta.content:
+                        yield delta.content
+        except Exception as e:
+            yield f"\n[Ошибка соединения: {str(e)}]"
 
     return StreamingResponse(stream_generator(), media_type="text/plain")
