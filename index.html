@@ -31,9 +31,10 @@
       /* Цвета проводов (яркие, чистые маркеры на темном графите) */
       --wire-char: #38bdf8;   /* Бирюзовый - Характер */
       --wire-prompt: #fbbf24; /* Янтарный - Промпт */
-      --wire-kb: #34d399;     /* Изумрудный - База знаний */
       --wire-rules: #c084fc;  /* Фиолетовый - Стиль и Правила */
+      --wire-params: #f43f5e; /* Красный - Креативность и Длина (Параметры) */
       --wire-quick: #fb923c;  /* Оранжевый - Приветствие и Кнопки */
+      --wire-kb: #34d399;     /* Изумрудный - База знаний */
 
       --danger: #ef4444;
       --success: #10b981;
@@ -321,7 +322,7 @@
       border: 1px solid var(--c-mid-dark);
       border-radius: 8px;
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65);
-      width: 250px;
+      width: 255px;
       padding: 6px;
       display: none;
       flex-direction: column;
@@ -411,7 +412,7 @@
     }
 
     .node.assembler-node {
-      width: 320px;
+      width: 325px;
       border-color: var(--c-mid);
     }
 
@@ -514,6 +515,82 @@
       resize: vertical;
       min-height: 75px;
       line-height: 1.4;
+    }
+
+    /* Range slider styling */
+    .control-range {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
+      outline: none;
+      cursor: pointer;
+      margin: 4px 0;
+    }
+
+    .control-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--wire-params);
+      border: 2px solid var(--c-darkest);
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(244, 63, 94, 0.7);
+      transition: transform 0.15s ease;
+    }
+
+    .control-range::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+
+    .temp-status-badge {
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
+      border-radius: 4px;
+      padding: 6px 8px;
+      font-size: 11px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    /* Toggle Button Group */
+    .toggle-btn-group {
+      display: flex;
+      gap: 5px;
+    }
+
+    .btn-toggle {
+      flex: 1;
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
+      color: var(--c-light);
+      padding: 6px 8px;
+      font-size: 11px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+
+    .btn-toggle:hover {
+      background: var(--c-dark);
+      color: #ffffff;
+    }
+
+    .btn-toggle.active {
+      background: var(--c-dark);
+      border-color: var(--wire-params);
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 0 6px rgba(244, 63, 94, 0.3);
     }
 
     /* Template buttons */
@@ -703,9 +780,10 @@
 
     .port-circle.type-char { background: var(--wire-char); }
     .port-circle.type-prompt { background: var(--wire-prompt); }
-    .port-circle.type-kb { background: var(--wire-kb); }
     .port-circle.type-rules { background: var(--wire-rules); }
+    .port-circle.type-params { background: var(--wire-params); }
     .port-circle.type-quick { background: var(--wire-quick); }
+    .port-circle.type-kb { background: var(--wire-kb); }
 
     .status-badge {
       font-size: 10px;
@@ -1238,6 +1316,13 @@
             <div class="menu-desc">Тон речи, юмор, фильтры и правила</div>
           </div>
         </div>
+        <div class="menu-item" onclick="spawnNode('params')">
+          <div class="menu-icon">🔥</div>
+          <div>
+            <div class="menu-title">Креативность и Длина</div>
+            <div class="menu-desc">Градус фантазии и размер ответа</div>
+          </div>
+        </div>
         <div class="menu-item" onclick="spawnNode('quick')">
           <div class="menu-icon">💬</div>
           <div>
@@ -1440,17 +1525,19 @@
       });
     });
 
-    // 1. Initial Default Workflow (Updated with modern starter nodes)
+    // 1. Initial Default Workflow
     function setupInitialDefaultWorkflow() {
-      const nChar = createNodeElement('char', 40, 60);
-      const nPrompt = createNodeElement('prompt', 40, 300);
-      const nRules = createNodeElement('rules', 360, 60);
-      const nKb = createNodeElement('kb', 360, 360);
-      const nAsm = createNodeElement('assembler', 720, 100);
+      const nChar = createNodeElement('char', 40, 50);
+      const nPrompt = createNodeElement('prompt', 40, 290);
+      const nRules = createNodeElement('rules', 360, 50);
+      const nParams = createNodeElement('params', 360, 360);
+      const nKb = createNodeElement('kb', 360, 570);
+      const nAsm = createNodeElement('assembler', 730, 90);
 
       connectPorts(nChar, 'out', nAsm, 'in-char', 'char');
       connectPorts(nPrompt, 'out', nAsm, 'in-prompt', 'prompt');
       connectPorts(nRules, 'out', nAsm, 'in-rules', 'rules');
+      connectPorts(nParams, 'out', nAsm, 'in-params', 'params');
       connectPorts(nKb, 'out', nAsm, 'in-kb', 'kb');
 
       setTimeout(updateAllWires, 30);
@@ -1625,6 +1712,47 @@
             </div>
           </div>
         `;
+      } else if (type === 'params') {
+        inner = `
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
+            <span class="node-title">🔥 Креативность и Длина</span>
+            <div class="node-header-actions">
+              <span class="node-type-label" style="color:var(--wire-params);">LLM Config</span>
+              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+            </div>
+          </div>
+          <div class="node-body">
+            <div>
+              <div class="control-label">
+                <span>Градус фантазии (Temp)</span>
+                <span class="temp-val-display" id="${id}_temp_display" style="font-family:monospace; color:var(--wire-params); font-weight:bold;">0.7</span>
+              </div>
+              <div class="temp-status-badge" id="${id}_temp_badge">
+                <span>⚖️ 0.7 — Золотая середина</span>
+              </div>
+              <input type="range" class="control-range node-val-temp" min="0.1" max="1.3" step="0.1" value="0.7" oninput="onTempSliderInput(event, '${id}')">
+              <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--c-light); margin-top:3px;">
+                <span>🧊 0.1 (Точный)</span>
+                <span>⚖️ 0.7 (Баланс)</span>
+                <span>🔥 1.3 (Фантазёр)</span>
+              </div>
+            </div>
+            <div>
+              <div class="control-label"><span>Длина ответа</span></div>
+              <div class="toggle-btn-group">
+                <button type="button" class="btn-toggle" onclick="setNodeTokens('${id}', 140, this)">⚡ 1–2 фразы</button>
+                <button type="button" class="btn-toggle active" onclick="setNodeTokens('${id}', 350, this)">📖 Развёрнуто</button>
+              </div>
+              <input type="hidden" class="node-val-tokens" value="350">
+            </div>
+            <div class="port-row port-row-out">
+              <span class="port-name" style="color:var(--wire-params);">Параметры</span>
+              <div class="port-circle out type-params" id="${id}_out" 
+                   data-node="${id}" data-port="out" data-type="params" data-dir="out"
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'params', 'out')" title="Зажмите и потяните к сборщику"></div>
+            </div>
+          </div>
+        `;
       } else if (type === 'quick') {
         inner = `
           <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
@@ -1720,6 +1848,13 @@
               <span class="status-badge status-rules">ОПЦИЯ</span>
             </div>
             <div class="port-row port-row-in">
+              <div class="port-circle in type-params" id="${id}_in-params" 
+                   data-node="${id}" data-port="in-params" data-type="params" data-dir="in"
+                   onmousedown="onSocketMouseDown(event, '${id}', 'in-params', 'params', 'in')"></div>
+              <span class="port-name" style="color:var(--wire-params);">Параметры</span>
+              <span class="status-badge status-params">ОПЦИЯ</span>
+            </div>
+            <div class="port-row port-row-in">
               <div class="port-circle in type-quick" id="${id}_in-quick" 
                    data-node="${id}" data-port="in-quick" data-type="quick" data-dir="in"
                    onmousedown="onSocketMouseDown(event, '${id}', 'in-quick', 'quick', 'in')"></div>
@@ -1783,6 +1918,30 @@
       showToast(`Шаблон «${t.name}» загружен`, 'success');
     }
 
+    function onTempSliderInput(e, nodeId) {
+      const val = parseFloat(e.target.value);
+      const display = document.getElementById(`${nodeId}_temp_display`);
+      const badge = document.getElementById(`${nodeId}_temp_badge`);
+      if (display) display.textContent = val.toFixed(1);
+      if (badge) {
+        if (val <= 0.3) {
+          badge.innerHTML = `<span>🧊 ${val.toFixed(1)} — Точный фактолог</span>`;
+        } else if (val <= 0.8) {
+          badge.innerHTML = `<span>⚖️ ${val.toFixed(1)} — Золотая середина</span>`;
+        } else {
+          badge.innerHTML = `<span>🔥 ${val.toFixed(1)} — Бурный фантазёр</span>`;
+        }
+      }
+    }
+
+    function setNodeTokens(nodeId, tokens, btn) {
+      const node = document.getElementById(nodeId);
+      if (!node) return;
+      node.querySelector('.node-val-tokens').value = tokens;
+      node.querySelectorAll('.btn-toggle').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
     function onNodeFileSelected(e, nodeId) {
       const file = e.target.files[0];
       if (!file) return;
@@ -1832,7 +1991,11 @@
 
       tempWire.style.display = 'block';
       tempWire.setAttribute('d', buildWirePath(dragStartScreenPos, dragStartScreenPos));
-      const wireCol = type === 'char' ? 'var(--wire-char)' : type === 'prompt' ? 'var(--wire-prompt)' : type === 'rules' ? 'var(--wire-rules)' : type === 'quick' ? 'var(--wire-quick)' : 'var(--wire-kb)';
+      const wireCol = type === 'char' ? 'var(--wire-char)' : 
+                      type === 'prompt' ? 'var(--wire-prompt)' : 
+                      type === 'rules' ? 'var(--wire-rules)' : 
+                      type === 'params' ? 'var(--wire-params)' : 
+                      type === 'quick' ? 'var(--wire-quick)' : 'var(--wire-kb)';
       tempWire.setAttribute('stroke', wireCol);
 
       document.querySelectorAll(`.port-circle[data-type="${type}"]`).forEach(s => {
@@ -1866,7 +2029,6 @@
     }
 
     function connectPorts(fromNode, fromPort, toNode, toPort, type) {
-      // Remove existing incoming connection to single input ports
       connections = connections.filter(c => !(c.toNode === toNode && c.toPort === toPort));
       connections.push({ fromNode, fromPort, toNode, toPort, type });
     }
@@ -1903,7 +2065,7 @@
       // Reset all assembler status badges
       document.querySelectorAll('.status-badge').forEach(b => {
         b.classList.remove('connected');
-        if (b.classList.contains('status-rules') || b.classList.contains('status-quick')) {
+        if (b.classList.contains('status-rules') || b.classList.contains('status-quick') || b.classList.contains('status-params')) {
           b.textContent = 'ОПЦИЯ';
         } else {
           b.textContent = 'ОЖИДАНИЕ';
@@ -1920,11 +2082,13 @@
         const colorVar = conn.type === 'char' ? 'var(--wire-char)' : 
                          conn.type === 'prompt' ? 'var(--wire-prompt)' : 
                          conn.type === 'rules' ? 'var(--wire-rules)' : 
+                         conn.type === 'params' ? 'var(--wire-params)' : 
                          conn.type === 'quick' ? 'var(--wire-quick)' : 'var(--wire-kb)';
         
         const labelText = conn.type === 'char' ? 'Характер' : 
                           conn.type === 'prompt' ? 'Промпт' : 
                           conn.type === 'rules' ? 'Правила' : 
+                          conn.type === 'params' ? 'Параметры' : 
                           conn.type === 'quick' ? 'Приветствие' : 'Знания';
 
         const midX = (p1.x + p2.x) / 2;
@@ -2012,6 +2176,7 @@
           const wireCol = dragPortSource.type === 'char' ? 'var(--wire-char)' : 
                           dragPortSource.type === 'prompt' ? 'var(--wire-prompt)' : 
                           dragPortSource.type === 'rules' ? 'var(--wire-rules)' : 
+                          dragPortSource.type === 'params' ? 'var(--wire-params)' : 
                           dragPortSource.type === 'quick' ? 'var(--wire-quick)' : 'var(--wire-kb)';
           tempWire.setAttribute('stroke', wireCol);
         }
@@ -2174,7 +2339,19 @@
         }
       }
 
-      // 4. Find connected Quick Greeting Node
+      // 4. Find connected Params Node (Temperature & Max Tokens)
+      let temperature = 0.7;
+      let maxTokens = 350;
+      const paramsConn = connections.find(c => c.toNode === asmId && c.type === 'params');
+      if (paramsConn) {
+        const paramsEl = document.getElementById(paramsConn.fromNode);
+        if (paramsEl) {
+          temperature = parseFloat(paramsEl.querySelector('.node-val-temp').value) || 0.7;
+          maxTokens = parseInt(paramsEl.querySelector('.node-val-tokens').value) || 350;
+        }
+      }
+
+      // 5. Find connected Quick Greeting Node
       let customGreeting = "";
       let customChips = [];
       const quickConn = connections.find(c => c.toNode === asmId && c.type === 'quick');
@@ -2190,7 +2367,7 @@
         }
       }
 
-      // 5. Find connected Knowledge Base nodes (aggregate all)
+      // 6. Find connected Knowledge Base nodes (aggregate all)
       const kbConns = connections.filter(c => c.toNode === asmId && c.type === 'kb');
       let aggregatedKbText = '';
       let fileToUpload = null;
@@ -2209,6 +2386,8 @@
       fd.append('name', name);
       fd.append('avatar', avatar);
       fd.append('system_prompt', prompt);
+      fd.append('temperature', temperature);
+      fd.append('max_tokens', maxTokens);
       if (aggregatedKbText.trim()) fd.append('kb_text', aggregatedKbText.trim());
       if (fileToUpload) fd.append('kb_file', fileToUpload);
 
@@ -2229,7 +2408,7 @@
           }));
         }
 
-        showToast(`Бот «${newBot.name}» успешно собран!`, 'success');
+        showToast(`Бот «${newBot.name}» собран (Temp: ${temperature}, Токены: ${maxTokens})!`, 'success');
 
         await fetchBotsList();
         selectBot(newBot.id, true);
@@ -2288,7 +2467,7 @@
           <div class="bot-avatar">${escapeHtml(b.avatar)}</div>
           <div class="bot-details">
             <div class="bot-card-title">${escapeHtml(b.name)}</div>
-            <div class="bot-card-meta">${b.chunks_count || 0} фактов • #${b.id}</div>
+            <div class="bot-card-meta">${b.chunks_count || 0} фактов • Temp ${b.temperature != null ? b.temperature : 0.7} • #${b.id}</div>
           </div>
         </div>
       `).join('');

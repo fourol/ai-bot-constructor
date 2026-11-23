@@ -43,6 +43,14 @@ def init_db():
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA table_info(bots)")
+        existing_cols = [c[1] for c in cursor.fetchall()]
+        if "temperature" not in existing_cols:
+            cursor.execute("ALTER TABLE bots ADD COLUMN temperature REAL DEFAULT 0.7")
+        if "max_tokens" not in existing_cols:
+            cursor.execute("ALTER TABLE bots ADD COLUMN max_tokens INTEGER DEFAULT 350")
+
         conn.execute("""
             CREATE TABLE IF NOT EXISTS knowledge_chunks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -182,7 +190,9 @@ async def create_bot(
     avatar: str = Form(...),
     system_prompt: str = Form(...),
     kb_text: Optional[str] = Form(None),
-    kb_file: Optional[UploadFile] = File(None)
+    kb_file: Optional[UploadFile] = File(None),
+    temperature: Optional[float] = Form(0.7),
+    max_tokens: Optional[int] = Form(350),
 ):
     name = name.strip()
     avatar = avatar.strip()
@@ -218,8 +228,8 @@ async def create_bot(
             bot_id = generate_short_id(6)
 
         cursor.execute(
-            "INSERT INTO bots (id, name, avatar, system_prompt) VALUES (?, ?, ?, ?)",
-            (bot_id, name, avatar, system_prompt)
+            "INSERT INTO bots (id, name, avatar, system_prompt, temperature, max_tokens) VALUES (?, ?, ?, ?, ?, ?)",
+            (bot_id, name, avatar, system_prompt, float(temperature if temperature is not None else 0.7), int(max_tokens if max_tokens is not None else 350))
         )
 
         for chunk in chunks:
@@ -238,6 +248,8 @@ async def create_bot(
         "name": name,
         "avatar": avatar,
         "system_prompt": system_prompt,
+        "temperature": float(temperature if temperature is not None else 0.7),
+        "max_tokens": int(max_tokens if max_tokens is not None else 350),
         "chunks_count": len(chunks),
         "created_at": created_at
     }
@@ -249,7 +261,7 @@ async def list_bots():
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT b.id, b.name, b.avatar, b.system_prompt, b.created_at,
+            SELECT b.id, b.name, b.avatar, b.system_prompt, b.temperature, b.max_tokens, b.created_at,
                    COUNT(k.id) as chunks_count
             FROM bots b
             LEFT JOIN knowledge_chunks k ON b.id = k.bot_id
@@ -264,6 +276,8 @@ async def list_bots():
             "name": row["name"],
             "avatar": row["avatar"],
             "system_prompt": row["system_prompt"],
+            "temperature": row["temperature"] if row["temperature"] is not None else 0.7,
+            "max_tokens": row["max_tokens"] if row["max_tokens"] is not None else 350,
             "created_at": row["created_at"],
             "chunks_count": row["chunks_count"]
         }
@@ -277,7 +291,7 @@ async def get_bot(bot_id: str):
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT b.id, b.name, b.avatar, b.system_prompt, b.created_at,
+            SELECT b.id, b.name, b.avatar, b.system_prompt, b.temperature, b.max_tokens, b.created_at,
                    COUNT(k.id) as chunks_count
             FROM bots b
             LEFT JOIN knowledge_chunks k ON b.id = k.bot_id
@@ -294,6 +308,8 @@ async def get_bot(bot_id: str):
         "name": row["name"],
         "avatar": row["avatar"],
         "system_prompt": row["system_prompt"],
+        "temperature": row["temperature"] if row["temperature"] is not None else 0.7,
+        "max_tokens": row["max_tokens"] if row["max_tokens"] is not None else 350,
         "created_at": row["created_at"],
         "chunks_count": row["chunks_count"]
     }
@@ -310,12 +326,14 @@ async def chat_with_bot(payload: ChatRequest):
 
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT name, avatar, system_prompt FROM bots WHERE id = ?", (bot_id,))
+        cursor.execute("SELECT name, avatar, system_prompt, temperature, max_tokens FROM bots WHERE id = ?", (bot_id,))
         bot = cursor.fetchone()
         if not bot:
             raise HTTPException(status_code=404, detail="Бот не найден")
 
         system_prompt = bot["system_prompt"]
+        bot_temp = float(bot["temperature"]) if bot["temperature"] is not None else 0.7
+        bot_max_tokens = int(bot["max_tokens"]) if bot["max_tokens"] is not None else 350
 
         cursor.execute("SELECT chunk_text FROM knowledge_chunks WHERE bot_id = ?", (bot_id,))
         chunk_rows = cursor.fetchall()
@@ -368,8 +386,8 @@ async def chat_with_bot(payload: ChatRequest):
             response_stream = await client.chat.completions.create(
                 model="local",
                 messages=messages,
-                temperature=0.7,
-                max_tokens=350,
+                temperature=bot_temp,
+                max_tokens=bot_max_tokens,
                 stream=True,
             )
             async for chunk in response_stream:
