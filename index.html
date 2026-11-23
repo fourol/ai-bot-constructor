@@ -361,20 +361,20 @@
       box-shadow: 0 0 12px rgba(146, 148, 151, 0.4);
     }
 
-    /* Dropdown Menu of Available Nodes */
+    /* Dropdown Menu of Available Nodes (Каталог модулей с вкладками и скроллом) */
     .node-menu {
       position: absolute;
       top: 48px;
       left: 0;
       background: var(--bg-node);
       border: 1px solid var(--c-mid-dark);
-      border-radius: 8px;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65);
-      width: 260px;
-      padding: 6px;
+      border-radius: 10px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06);
+      width: 295px;
+      padding: 8px;
       display: none;
       flex-direction: column;
-      gap: 3px;
+      gap: 6px;
       z-index: 70;
       animation: menuPop 0.15s ease-out;
     }
@@ -388,51 +388,180 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    .menu-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 4px 6px;
+      border-bottom: 1px solid var(--c-dark);
+    }
+
     .menu-header-label {
-      font-size: 10px;
+      font-size: 11px;
       color: var(--c-light);
       text-transform: uppercase;
       font-weight: 700;
-      padding: 6px 8px 3px;
       letter-spacing: 0.5px;
+    }
+
+    .menu-count-badge {
+      font-size: 10px;
+      font-family: monospace;
+      color: var(--c-light-mid);
+      background: var(--c-darkest);
+      padding: 1px 6px;
+      border-radius: 10px;
+      border: 1px solid var(--c-mid-dark);
+    }
+
+    /* Category Filter Tabs (Листание по категориям) */
+    .menu-categories {
+      display: flex;
+      gap: 4px;
+      padding: 2px 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .menu-categories::-webkit-scrollbar { display: none; }
+
+    .menu-cat-btn {
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
+      color: var(--c-light);
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .menu-cat-btn:hover {
+      background: var(--c-dark);
+      color: #ffffff;
+      border-color: var(--c-light-mid);
+    }
+
+    .menu-cat-btn.active {
+      background: var(--c-mid);
+      color: #ffffff;
+      border-color: var(--c-light);
+      font-weight: 600;
+    }
+
+    /* Search input inside menu */
+    .menu-search-input {
+      width: 100%;
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
+      border-radius: 6px;
+      padding: 6px 10px;
+      color: #ffffff;
+      font-size: 11px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .menu-search-input:focus {
+      border-color: var(--wire-char);
+    }
+
+    /* Scrollable items container (Листалка модулей) */
+    .node-menu-list {
+      max-height: 330px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding-right: 2px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--c-mid-dark) var(--c-darkest);
+    }
+
+    .node-menu-list::-webkit-scrollbar {
+      width: 5px;
+    }
+    .node-menu-list::-webkit-scrollbar-track {
+      background: var(--c-darkest);
+      border-radius: 4px;
+    }
+    .node-menu-list::-webkit-scrollbar-thumb {
+      background: var(--c-mid-dark);
+      border-radius: 4px;
+    }
+    .node-menu-list::-webkit-scrollbar-thumb:hover {
+      background: var(--c-light-mid);
     }
 
     .menu-item {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 8px 10px;
+      padding: 7px 8px;
       border-radius: 6px;
       cursor: pointer;
+      border: 1px solid transparent;
       transition: all 0.15s ease;
     }
 
     .menu-item:hover {
       background: var(--c-dark);
+      border-color: var(--c-mid-dark);
+      transform: translateX(2px);
     }
 
     .menu-icon {
       font-size: 16px;
-      width: 28px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
       background: var(--c-darkest);
       border: 1px solid var(--c-mid-dark);
-      border-radius: 4px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
 
+    .menu-item-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .menu-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
     .menu-title {
       font-size: 12px;
       font-weight: 600;
       color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .menu-badge {
+      font-size: 9px;
+      font-family: monospace;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
+      color: var(--c-light-mid);
+      text-transform: uppercase;
+      flex-shrink: 0;
     }
 
     .menu-desc {
       font-size: 10px;
       color: var(--c-light);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
     }
 
     /* Nodes */
@@ -1518,84 +1647,148 @@
       <button class="btn-add-node" id="btnAddNode" onclick="toggleNodeMenu(event)" title="Добавить новую ноду">
         +
       </button>
-      <!-- Dropdown Menu -->
-      <div class="node-menu" id="nodeMenu">
-        <div class="menu-header-label">Добавить модуль</div>
-        <div class="menu-item" onclick="spawnNode('char')">
-          <div class="menu-icon">🎭</div>
-          <div>
-            <div class="menu-title">Персонаж</div>
-            <div class="menu-desc">Имя и аватарка бота</div>
-          </div>
+      <!-- Dropdown Menu with Categories, Search and Smooth Scroll (Листалка модулей) -->
+      <div class="node-menu" id="nodeMenu" onclick="event.stopPropagation()">
+        <div class="menu-header-bar">
+          <span class="menu-header-label">Библиотека модулей</span>
+          <span class="menu-count-badge" id="menuCountBadge">11 модулей</span>
         </div>
-        <div class="menu-item" onclick="spawnNode('prompt')">
-          <div class="menu-icon">📝</div>
-          <div>
-            <div class="menu-title">Инструкция (Промпт)</div>
-            <div class="menu-desc">Роль и системный промпт</div>
-          </div>
+
+        <!-- Search Bar -->
+        <input type="text" class="menu-search-input" id="menuSearchInput" placeholder="🔍 Найти модуль..." oninput="onFilterMenuInput(this.value)">
+
+        <!-- Category Tabs (Листание по категориям) -->
+        <div class="menu-categories">
+          <button type="button" class="menu-cat-btn active" data-cat="all" onclick="filterMenuCategory('all', this)">Все</button>
+          <button type="button" class="menu-cat-btn" data-cat="core" onclick="filterMenuCategory('core', this)">🧠 Базовые</button>
+          <button type="button" class="menu-cat-btn" data-cat="tuning" onclick="filterMenuCategory('tuning', this)">🎛️ AI-Тюнинг</button>
+          <button type="button" class="menu-cat-btn" data-cat="chat" onclick="filterMenuCategory('chat', this)">💬 Диалог</button>
         </div>
-        <div class="menu-item" onclick="spawnNode('brain')">
-          <div class="menu-icon">🧠</div>
-          <div>
-            <div class="menu-title">Мозг Бота (Ядро)</div>
-            <div class="menu-desc">Хаб личности: имя, промпт и стиль</div>
+
+        <!-- Scrollable List of Modules -->
+        <div class="node-menu-list" id="nodeMenuList" onwheel="event.stopPropagation()">
+          <!-- Core Modules -->
+          <div class="menu-item" data-cat="core" data-tags="персонаж имя аватар аватарка char" onclick="spawnNode('char')">
+            <div class="menu-icon">🎭</div>
+            <div class="menu-item-info">
+              <div class="menu-item-row">
+                <span class="menu-title">Персонаж</span>
+                <span class="menu-badge" style="color:var(--wire-char); border-color:var(--wire-char);">Input</span>
+              </div>
+              <div class="menu-desc">Имя и аватарка бота</div>
+            </div>
           </div>
-        </div>
-        <div class="menu-item" onclick="spawnNode('rules')">
-          <div class="menu-icon">⚙️</div>
-          <div>
-            <div class="menu-title">Стиль и Правила</div>
-            <div class="menu-desc">Тон речи, юмор, фильтры и правила</div>
+
+          <div class="menu-item" data-cat="core" data-tags="инструкция промпт роль системный prompt" onclick="spawnNode('prompt')">
+            <div class="menu-icon">📝</div>
+            <div class="menu-item-info">
+              <div class="menu-item-row">
+                <span class="menu-title">Инструкция (Промпт)</span>
+                <span class="menu-badge" style="color:var(--wire-prompt); border-color:var(--wire-prompt);">Config</span>
+              </div>
+              <div class="menu-desc">Роль и системный промпт</div>
+            </div>
           </div>
-        </div>
-        <div class="menu-item" onclick="spawnNode('params')">
-          <div class="menu-icon">🔥</div>
-          <div>
-            <div class="menu-title">Креативность и Длина</div>
-            <div class="menu-desc">Градус фантазии и размер ответа</div>
+
+          <div class="menu-item" data-cat="core" data-tags="мозг ядро хаб концентратор personality brain" onclick="spawnNode('brain')">
+            <div class="menu-icon">🧠</div>
+            <div class="menu-item-info">
+              <div class="menu-item-row">
+                <span class="menu-title">Мозг Бота (Ядро)</span>
+                <span class="menu-badge" style="color:var(--wire-brain); border-color:var(--wire-brain);">Hub</span>
+              </div>
+              <div class="menu-desc">Хаб личности: имя, промпт и стиль</div>
+            </div>
           </div>
-        </div>
-        <div class="menu-item" onclick="spawnNode('format')">
-          <div class="menu-icon">📊</div>
-          <div>
-            <div class="menu-title">Формат Данных</div>
-            <div class="menu-desc">JSON, Таблицы, Чистый код, TL;DR</div>
+
+          <div class="menu-item" data-cat="core" data-tags="терминал запуск экран сборка assembler endpoint" onclick="spawnNode('assembler')">
+            <div class="menu-icon">🖥️</div>
+            <div class="menu-item-info">
+              <div class="menu-item-row">
+                <span class="menu-title">Терминал Бота</span>
+                <span class="menu-badge" style="color:#fb923c; border-color:#fb923c;">Endpoint</span>
+              </div>
+              <div class="menu-desc">Конечная нода с экспресс-тестом</div>
+            </div>
           </div>
-        </div>
-        <div class="menu-item" onclick="spawnNode('fewshot')">
-          <div class="menu-icon">🎯</div>
-          <div>
-            <div class="menu-title">Few-Shot (Примеры)</div>
-            <div class="menu-desc">Обучение на парах вопрос-ответ</div>
+
+          <!-- AI Tuning Modules (8th Grade) -->
+          <div class="menu-item" data-cat="tuning" data-tags="креативность фантазия длина температура токены params temperature" onclick="spawnNode('params')">
+            <div class="menu-icon">🔥</div>
+            <div class="menu-item-info">
+              <div class="menu-item-row">
+                <span class="menu-title">Креативность и Длина</span>
+                <span class="menu-badge" style="color:var(--wire-params); border-color:var(--wire-params);">LLM</span>
+              </div>
+              <div class="menu-desc">Градус фантазии и размер ответа</div>
+            </div>
           </div>
-        </div>
-        <div class="menu-item" onclick="spawnNode('guard')">
-          <div class="menu-icon">🌐</div>
-          <div>
-            <div class="menu-title">Рамки и Фильтры</div>
-            <div class="menu-desc">Языковой лок, LaTeX, Сократ, Факт-лок</div>
+
+          <div class="menu-item" data-cat="tuning" data-tags="формат данных json таблица код tldr format output" onclick="spawnNode('format')">
+            <div class="menu-icon">📊</div>
+            <div class="menu-item-info">
+              <div class="menu-item-row">
+                <span class="menu-title">Формат Данных</span>
+                <span class="menu-badge" style="color:var(--wire-format); border-color:var(--wire-format);">Output</span>
+              </div>
+              <div class="menu-desc">JSON, Таблицы, Чистый код, TL;DR</div>
+            </div>
           </div>
-        </div>
-        <div class="menu-item" onclick="spawnNode('quick')">
-          <div class="menu-icon">💬</div>
-          <div>
-            <div class="menu-title">Приветствие и Кнопки</div>
-            <div class="menu-desc">Стартовая фраза и быстрые вопросы</div>
+
+          <div class="menu-item" data-cat="tuning" data-tags="few-shot примеры обучение диалог fewshot" onclick="spawnNode('fewshot')">
+            <div class="menu-icon">🎯</div>
+            <div class="menu-item-info">
+              <div class="menu-item-row">
+                <span class="menu-title">Few-Shot (Примеры)</span>
+                <span class="menu-badge" style="color:var(--wire-fewshot); border-color:var(--wire-fewshot);">Learning</span>
+              </div>
+              <div class="menu-desc">Обучение на парах вопрос-ответ</div>
+            </div>
           </div>
-        </div>
-        <div class="menu-item" onclick="spawnNode('kb')">
-          <div class="menu-icon">📚</div>
-          <div>
-            <div class="menu-title">База знаний</div>
-            <div class="menu-desc">Факты или файл (.txt, .pdf, .docx)</div>
+
+          <div class="menu-item" data-cat="tuning" data-tags="рамки фильтры guardrails язык сократ латекс latex guard" onclick="spawnNode('guard')">
+            <div class="menu-icon">🌐</div>
+            <div class="menu-item-info">
+              <div class="menu-item-row">
+                <span class="menu-title">Рамки и Фильтры</span>
+                <span class="menu-badge" style="color:var(--wire-guard); border-color:var(--wire-guard);">Guardrails</span>
+              </div>
+              <div class="menu-desc">Языковой лок, LaTeX, Сократ, Факт-лок</div>
+            </div>
           </div>
-        </div>
-        <div class="menu-item" onclick="spawnNode('assembler')">
-          <div class="menu-icon">🖥️</div>
-          <div>
-            <div class="menu-title">Терминал Бота</div>
-            <div class="menu-desc">Конечная нода с экспресс-тестом</div>
+
+          <!-- Chat & Knowledge Modules -->
+          <div class="menu-item" data-cat="chat" data-tags="стиль правила тон юмор смайлики rules" onclick="spawnNode('rules')">
+            <div class="menu-icon">⚙️</div>
+            <div class="menu-item-info">
+              <div class="menu-item-row">
+                <span class="menu-title">Стиль и Правила</span>
+                <span class="menu-badge" style="color:var(--wire-rules); border-color:var(--wire-rules);">Style</span>
+              </div>
+              <div class="menu-desc">Тон речи, юмор, фильтры и правила</div>
+            </div>
+          </div>
+
+          <div class="menu-item" data-cat="chat" data-tags="приветствие фраза быстрые кнопки quick" onclick="spawnNode('quick')">
+            <div class="menu-icon">💬</div>
+            <div class="menu-item-info">
+              <div class="menu-item-row">
+                <span class="menu-title">Приветствие и Кнопки</span>
+                <span class="menu-badge" style="color:var(--wire-quick); border-color:var(--wire-quick);">Chat UI</span>
+              </div>
+              <div class="menu-desc">Стартовая фраза и быстрые вопросы</div>
+            </div>
+          </div>
+
+          <div class="menu-item" data-cat="chat" data-tags="база знаний файлы rag pdf txt docs kb" onclick="spawnNode('kb')">
+            <div class="menu-icon">📚</div>
+            <div class="menu-item-info">
+              <div class="menu-item-row">
+                <span class="menu-title">База знаний</span>
+                <span class="menu-badge" style="color:var(--wire-kb); border-color:var(--wire-kb);">RAG</span>
+              </div>
+              <div class="menu-desc">Факты или файл (.txt, .pdf, .docx)</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1796,7 +1989,9 @@
       }, 50);
     }
 
-    // 2. Add Node Menu
+    // 2. Add Node Menu & Category Paging / Filtering
+    let currentMenuCategory = 'all';
+
     function toggleNodeMenu(e) {
       e.stopPropagation();
       const menu = document.getElementById('nodeMenu');
@@ -1807,12 +2002,58 @@
       } else {
         menu.classList.add('active');
         btn.classList.add('active');
+        const searchInput = document.getElementById('menuSearchInput');
+        if (searchInput) {
+          searchInput.value = '';
+          setTimeout(() => searchInput.focus(), 50);
+        }
+        applyMenuFilters();
       }
     }
 
     function closeNodeMenu() {
       document.getElementById('nodeMenu').classList.remove('active');
       document.getElementById('btnAddNode').classList.remove('active');
+    }
+
+    function filterMenuCategory(cat, btn) {
+      currentMenuCategory = cat;
+      document.querySelectorAll('.menu-cat-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      applyMenuFilters();
+    }
+
+    function onFilterMenuInput(query) {
+      applyMenuFilters();
+    }
+
+    function applyMenuFilters() {
+      const searchInput = document.getElementById('menuSearchInput');
+      const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+      const items = document.querySelectorAll('#nodeMenuList .menu-item');
+      let visibleCount = 0;
+
+      items.forEach(item => {
+        const cat = item.dataset.cat || 'all';
+        const tags = (item.dataset.tags || '').toLowerCase();
+        const title = item.querySelector('.menu-title').textContent.toLowerCase();
+        const desc = item.querySelector('.menu-desc').textContent.toLowerCase();
+
+        const matchesCat = (currentMenuCategory === 'all' || cat === currentMenuCategory);
+        const matchesSearch = !query || tags.includes(query) || title.includes(query) || desc.includes(query);
+
+        if (matchesCat && matchesSearch) {
+          item.style.display = 'flex';
+          visibleCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      const countBadge = document.getElementById('menuCountBadge');
+      if (countBadge) {
+        countBadge.textContent = `${visibleCount} из 11`;
+      }
     }
 
     function spawnNode(type) {
