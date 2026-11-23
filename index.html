@@ -6,23 +6,37 @@
   <title>Конструктор ИИ-ботов</title>
   <style>
     :root {
-      --bg-base: #090e17;
-      --bg-panel: #0d1524;
-      --bg-node: #0f192b;
-      --bg-node-header: #142239;
-      --border-node: #1d3152;
-      --border-node-active: #38bdf8;
-      --border-subtle: #162642;
-      --text: #e2e8f0;
-      --text-muted: #7c8ea8;
-      --accent-cyan: #38bdf8;
-      --accent-blue: #2563eb;
-      --accent-green: #10b981;
-      --accent-amber: #f59e0b;
+      /* Palette: Тёмные серые (из палитры пользователя) */
+      --c-darkest: #282425;  /* Базовый самый темный графит */
+      --c-dark: #434244;     /* Темно-серый поверхности и шапки */
+      --c-mid-dark: #59595b; /* Средне-темный серый границы и кнопки */
+      --c-mid: #6d6e70;      /* Нейтральный серый */
+      --c-light-mid: #7f8184;/* Приглушенный серый */
+      --c-light: #929497;    /* Светло-серый текст и акценты */
+
+      --bg-deep: #1e1c1d;
+      --bg-base: #282425;
+      --bg-panel: #282425;
+      --bg-node: #333234;
+      --bg-node-header: #434244;
+      --border-node: #59595b;
+      --border-node-active: #929497;
+      --border-subtle: #434244;
+      --bg-input: #282425;
+
+      --text: #f5f5f6;
+      --text-muted: #929497;
+      --text-dim: #7f8184;
+
+      /* Цвета проводов (яркие, чистые маркеры на темном графите) */
+      --wire-char: #38bdf8;   /* Бирюзовый - Характер */
+      --wire-prompt: #fbbf24; /* Янтарный - Промпт */
+      --wire-kb: #34d399;     /* Изумрудный - База знаний */
+      --wire-rules: #c084fc;  /* Фиолетовый - Стиль и Правила */
+      --wire-quick: #fb923c;  /* Оранжевый - Приветствие и Кнопки */
+
       --danger: #ef4444;
-      --wire-char: #38bdf8;
-      --wire-prompt: #60a5fa;
-      --wire-kb: #34d399;
+      --success: #10b981;
     }
 
     * {
@@ -45,8 +59,8 @@
     /* Top Bar */
     .top-bar {
       height: 48px;
-      background: #0b1322;
-      border-bottom: 1px solid var(--border-subtle);
+      background: var(--c-darkest);
+      border-bottom: 1px solid var(--c-dark);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -65,22 +79,23 @@
       font-size: 14px;
       font-weight: 700;
       letter-spacing: -0.2px;
-      color: #f1f5f9;
+      color: #ffffff;
     }
 
     .brand-sub {
       font-size: 11px;
-      color: var(--text-muted);
-      background: #132035;
-      padding: 2px 6px;
+      color: var(--c-light);
+      background: var(--c-dark);
+      padding: 2px 7px;
       border-radius: 4px;
+      border: 1px solid var(--c-mid-dark);
       font-family: monospace;
     }
 
     .nav-tabs {
       display: flex;
-      background: #070b13;
-      border: 1px solid var(--border-subtle);
+      background: var(--bg-deep);
+      border: 1px solid var(--c-dark);
       border-radius: 6px;
       padding: 2px;
       gap: 2px;
@@ -89,7 +104,7 @@
     .nav-btn {
       background: transparent;
       border: none;
-      color: var(--text-muted);
+      color: var(--c-light-mid);
       padding: 5px 12px;
       font-size: 12px;
       font-weight: 600;
@@ -101,11 +116,12 @@
       transition: all 0.15s ease;
     }
 
-    .nav-btn:hover { color: #fff; }
+    .nav-btn:hover { color: #ffffff; }
 
     .nav-btn.active {
-      background: #172844;
-      color: #f8fafc;
+      background: var(--c-dark);
+      color: #ffffff;
+      border: 1px solid var(--c-mid-dark);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     }
 
@@ -116,9 +132,9 @@
     }
 
     .btn-queue {
-      background: #0284c7;
-      color: white;
-      border: 1px solid #38bdf8;
+      background: var(--c-mid-dark);
+      color: #ffffff;
+      border: 1px solid var(--c-light-mid);
       padding: 6px 14px;
       font-size: 12px;
       font-weight: 700;
@@ -131,7 +147,8 @@
     }
 
     .btn-queue:hover:not(:disabled) {
-      background: #0369a1;
+      background: var(--c-mid);
+      border-color: var(--c-light);
     }
 
     .btn-queue:disabled {
@@ -158,8 +175,8 @@
       position: relative;
       overflow: hidden;
       cursor: default;
-      background-color: var(--bg-base);
-      background-image: radial-gradient(#17253d 1.1px, transparent 1.1px);
+      background-color: var(--c-darkest);
+      background-image: radial-gradient(var(--c-dark) 1.2px, transparent 1.2px);
       background-size: 20px 20px;
     }
 
@@ -250,7 +267,7 @@
       font-weight: 700;
       font-family: monospace;
       letter-spacing: 0.5px;
-      fill: #e2e8f0;
+      fill: #f5f5f6;
       text-anchor: middle;
       dominant-baseline: central;
     }
@@ -269,31 +286,30 @@
     .btn-add-node {
       width: 40px;
       height: 40px;
-      background: #0e1728;
-      border: 1px solid var(--border-node);
+      background: var(--c-dark);
+      border: 1px solid var(--c-mid-dark);
       border-radius: 8px;
-      color: #38bdf8;
+      color: #ffffff;
       font-size: 22px;
       font-weight: 300;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
       transition: all 0.15s ease;
     }
 
     .btn-add-node:hover {
-      background: #142239;
-      border-color: #38bdf8;
-      color: #fff;
+      background: var(--c-mid-dark);
+      border-color: var(--c-light-mid);
       transform: scale(1.05);
     }
 
     .btn-add-node.active {
-      background: #192d4d;
-      border-color: #38bdf8;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+      background: var(--c-mid-dark);
+      border-color: var(--c-light);
+      box-shadow: 0 0 12px rgba(146, 148, 151, 0.4);
     }
 
     /* Dropdown Menu of Available Nodes */
@@ -301,11 +317,11 @@
       position: absolute;
       top: 48px;
       left: 0;
-      background: #0b1322;
-      border: 1px solid var(--border-node);
+      background: var(--bg-node);
+      border: 1px solid var(--c-mid-dark);
       border-radius: 8px;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
-      width: 240px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65);
+      width: 250px;
       padding: 6px;
       display: none;
       flex-direction: column;
@@ -325,7 +341,7 @@
 
     .menu-header-label {
       font-size: 10px;
-      color: var(--text-muted);
+      color: var(--c-light);
       text-transform: uppercase;
       font-weight: 700;
       padding: 6px 8px 3px;
@@ -343,15 +359,15 @@
     }
 
     .menu-item:hover {
-      background: #142239;
+      background: var(--c-dark);
     }
 
     .menu-icon {
       font-size: 16px;
-      width: 26px;
-      height: 26px;
-      background: #070d17;
-      border: 1px solid #1a2a44;
+      width: 28px;
+      height: 28px;
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
       border-radius: 4px;
       display: flex;
       align-items: center;
@@ -362,12 +378,12 @@
     .menu-title {
       font-size: 12px;
       font-weight: 600;
-      color: #f1f5f9;
+      color: #ffffff;
     }
 
     .menu-desc {
       font-size: 10px;
-      color: var(--text-muted);
+      color: var(--c-light);
     }
 
     /* Nodes */
@@ -384,7 +400,7 @@
     }
 
     .node:hover {
-      border-color: #274370;
+      border-color: var(--c-mid);
     }
 
     .node.selected,
@@ -396,7 +412,7 @@
 
     .node.assembler-node {
       width: 320px;
-      border-color: #223c66;
+      border-color: var(--c-mid);
     }
 
     .node-header {
@@ -404,7 +420,7 @@
       background: var(--bg-node-header);
       border-top-left-radius: 7px;
       border-top-right-radius: 7px;
-      border-bottom: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--c-mid-dark);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -418,7 +434,7 @@
     .node-title {
       font-size: 12px;
       font-weight: 700;
-      color: #f1f5f9;
+      color: #ffffff;
       letter-spacing: -0.1px;
       display: flex;
       align-items: center;
@@ -431,19 +447,30 @@
       gap: 6px;
     }
 
+    .node-type-label {
+      font-size: 10px;
+      font-family: monospace;
+      color: var(--c-light);
+      background: var(--c-darkest);
+      padding: 1px 5px;
+      border-radius: 3px;
+      border: 1px solid var(--c-mid-dark);
+    }
+
     .btn-close-node {
       background: none;
       border: none;
-      color: #64748b;
+      color: var(--c-light-mid);
       cursor: pointer;
       font-size: 12px;
       padding: 2px 4px;
       border-radius: 3px;
+      transition: all 0.15s ease;
     }
 
     .btn-close-node:hover {
-      color: #f87171;
-      background: rgba(239, 68, 68, 0.15);
+      color: #ffffff;
+      background: rgba(239, 68, 68, 0.25);
     }
 
     .node-body {
@@ -456,7 +483,7 @@
 
     .control-label {
       font-size: 11px;
-      color: var(--text-muted);
+      color: var(--c-light);
       margin-bottom: 4px;
       display: flex;
       justify-content: space-between;
@@ -464,12 +491,13 @@
     }
 
     .control-input,
-    .control-textarea {
+    .control-textarea,
+    .control-select {
       width: 100%;
-      background: #090e17;
-      border: 1px solid #1a2a44;
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
       border-radius: 4px;
-      color: #f1f5f9;
+      color: #ffffff;
       font-size: 12px;
       padding: 6px 8px;
       outline: none;
@@ -477,8 +505,9 @@
     }
 
     .control-input:focus,
-    .control-textarea:focus {
-      border-color: var(--accent-cyan);
+    .control-textarea:focus,
+    .control-select:focus {
+      border-color: var(--c-light);
     }
 
     .control-textarea {
@@ -496,9 +525,9 @@
     }
 
     .btn-template {
-      background: #0c1422;
-      border: 1px solid #1a2a44;
-      color: #94a3b8;
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
+      color: var(--c-light);
       padding: 3px 7px;
       font-size: 11px;
       border-radius: 4px;
@@ -507,8 +536,9 @@
     }
 
     .btn-template:hover {
-      border-color: var(--accent-cyan);
-      color: #fff;
+      border-color: var(--c-light-mid);
+      background: var(--c-dark);
+      color: #ffffff;
     }
 
     /* Avatar selector */
@@ -522,8 +552,8 @@
     .avatar-preview {
       width: 32px;
       height: 32px;
-      background: #090e17;
-      border: 1px solid var(--accent-cyan);
+      background: var(--c-darkest);
+      border: 1px solid var(--c-light-mid);
       border-radius: 4px;
       display: flex;
       align-items: center;
@@ -535,8 +565,8 @@
     .btn-emoji {
       width: 28px;
       height: 28px;
-      background: #090e17;
-      border: 1px solid #1a2a44;
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
       border-radius: 4px;
       cursor: pointer;
       display: flex;
@@ -546,24 +576,43 @@
       transition: all 0.15s ease;
     }
 
-    .btn-emoji:hover { background: #142239; }
+    .btn-emoji:hover { background: var(--c-dark); }
 
     .btn-emoji.active {
-      border-color: var(--accent-cyan);
-      background: #12233f;
+      border-color: var(--c-light);
+      background: var(--c-dark);
+    }
+
+    /* Rules Checkboxes */
+    .rule-checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: #ffffff;
+      cursor: pointer;
+      user-select: none;
+      padding: 3px 0;
+    }
+
+    .rule-checkbox-row input[type="checkbox"] {
+      accent-color: var(--wire-rules);
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
     }
 
     /* File drop */
     .file-input-wrapper {
-      border: 1px dashed #203557;
+      border: 1px dashed var(--c-mid);
       border-radius: 4px;
       padding: 8px;
-      background: #080d17;
+      background: var(--c-darkest);
       text-align: center;
       position: relative;
       cursor: pointer;
       font-size: 11px;
-      color: var(--text-muted);
+      color: var(--c-light);
     }
 
     .file-input-wrapper input[type="file"] {
@@ -580,9 +629,9 @@
       display: none;
       align-items: center;
       justify-content: space-between;
-      background: #081a17;
+      background: #233429;
       border: 1px solid #10b981;
-      color: #6ee7b7;
+      color: #a7f3d0;
       padding: 4px 6px;
       border-radius: 3px;
       font-size: 11px;
@@ -595,7 +644,7 @@
       align-items: center;
       position: relative;
       font-size: 12px;
-      color: var(--text-muted);
+      color: var(--c-light);
       padding: 6px 0;
       user-select: none;
       min-height: 26px;
@@ -619,14 +668,14 @@
       gap: 6px;
       font-weight: 600;
       font-size: 12px;
-      color: #cbd5e1;
+      color: #ffffff;
     }
 
     .port-circle {
       width: 14px;
       height: 14px;
       border-radius: 50%;
-      border: 2.5px solid #070b13;
+      border: 2.5px solid var(--c-darkest);
       position: absolute;
       cursor: crosshair;
       z-index: 30;
@@ -635,18 +684,18 @@
 
     .port-circle:hover {
       transform: scale(1.4);
-      box-shadow: 0 0 8px #fff;
+      box-shadow: 0 0 8px #ffffff;
     }
 
     .port-circle.highlight {
       transform: scale(1.45);
-      box-shadow: 0 0 10px #38bdf8;
+      box-shadow: 0 0 10px #ffffff;
       animation: pulseSocket 0.8s infinite alternate;
     }
 
     @keyframes pulseSocket {
-      from { box-shadow: 0 0 4px #38bdf8; }
-      to { box-shadow: 0 0 14px #38bdf8; }
+      from { box-shadow: 0 0 4px #ffffff; }
+      to { box-shadow: 0 0 14px #ffffff; }
     }
 
     .port-circle.out { right: -7px; }
@@ -655,28 +704,30 @@
     .port-circle.type-char { background: var(--wire-char); }
     .port-circle.type-prompt { background: var(--wire-prompt); }
     .port-circle.type-kb { background: var(--wire-kb); }
+    .port-circle.type-rules { background: var(--wire-rules); }
+    .port-circle.type-quick { background: var(--wire-quick); }
 
     .status-badge {
       font-size: 10px;
       font-family: monospace;
       padding: 2px 6px;
       border-radius: 3px;
-      background: #080e18;
-      border: 1px solid #162640;
-      color: #64748b;
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
+      color: var(--c-light-mid);
       letter-spacing: 0.5px;
     }
 
     .status-badge.connected {
       color: #34d399;
-      border-color: #065f46;
-      background: rgba(16, 185, 129, 0.12);
+      border-color: #059669;
+      background: rgba(16, 185, 129, 0.15);
     }
 
     .btn-assemble-node {
-      background: #0284c7;
-      color: #fff;
-      border: 1px solid #38bdf8;
+      background: var(--c-mid-dark);
+      color: #ffffff;
+      border: 1px solid var(--c-light-mid);
       border-radius: 5px;
       padding: 9px;
       font-size: 12px;
@@ -691,7 +742,8 @@
     }
 
     .btn-assemble-node:hover:not(:disabled) {
-      background: #0369a1;
+      background: var(--c-mid);
+      border-color: var(--c-light);
     }
 
     .btn-assemble-node:disabled {
@@ -704,8 +756,8 @@
       position: absolute;
       bottom: 14px;
       right: 14px;
-      background: #0c1422;
-      border: 1px solid var(--border-subtle);
+      background: var(--bg-node);
+      border: 1px solid var(--c-mid-dark);
       border-radius: 6px;
       display: flex;
       align-items: center;
@@ -718,7 +770,7 @@
     .btn-zoom {
       background: transparent;
       border: none;
-      color: var(--text-muted);
+      color: var(--c-light);
       width: 24px;
       height: 24px;
       border-radius: 4px;
@@ -728,16 +780,17 @@
       justify-content: center;
       font-size: 14px;
       font-weight: bold;
+      transition: all 0.15s ease;
     }
 
     .btn-zoom:hover {
-      background: #172744;
-      color: #fff;
+      background: var(--c-dark);
+      color: #ffffff;
     }
 
     .zoom-label {
       font-size: 11px;
-      color: var(--text-muted);
+      color: var(--c-light);
       min-width: 40px;
       text-align: center;
       font-family: monospace;
@@ -748,11 +801,11 @@
       bottom: 14px;
       left: 14px;
       font-size: 11px;
-      color: #556987;
+      color: var(--c-light);
       pointer-events: none;
       z-index: 50;
-      background: rgba(11, 19, 34, 0.85);
-      border: 1px solid #162642;
+      background: rgba(40, 36, 37, 0.92);
+      border: 1px solid var(--c-mid-dark);
       border-radius: 4px;
       padding: 4px 8px;
     }
@@ -767,8 +820,8 @@
     }
 
     .gallery-pane {
-      background: #0a101b;
-      border-right: 1px solid var(--border-subtle);
+      background: var(--c-darkest);
+      border-right: 1px solid var(--c-dark);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -776,7 +829,8 @@
 
     .gallery-head {
       padding: 12px 14px;
-      border-bottom: 1px solid var(--border-subtle);
+      background: var(--c-darkest);
+      border-bottom: 1px solid var(--c-dark);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -785,7 +839,7 @@
     .gallery-title {
       font-size: 12px;
       font-weight: 700;
-      color: var(--text-muted);
+      color: var(--c-light);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -800,8 +854,8 @@
     }
 
     .bot-card {
-      background: #0e1726;
-      border: 1px solid #1a2a44;
+      background: var(--bg-node);
+      border: 1px solid var(--c-dark);
       border-radius: 6px;
       padding: 8px 10px;
       cursor: pointer;
@@ -812,21 +866,21 @@
     }
 
     .bot-card:hover {
-      background: #132035;
-      border-color: #26436e;
+      background: var(--c-dark);
+      border-color: var(--c-mid-dark);
     }
 
     .bot-card.active {
-      background: #13243d;
-      border-color: var(--accent-cyan);
+      background: var(--c-dark);
+      border-color: var(--c-light-mid);
     }
 
     .bot-avatar {
       font-size: 20px;
       width: 32px;
       height: 32px;
-      background: #090e17;
-      border: 1px solid #1a2a44;
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
       border-radius: 4px;
       display: flex;
       align-items: center;
@@ -842,7 +896,7 @@
     .bot-card-title {
       font-size: 13px;
       font-weight: 600;
-      color: #f1f5f9;
+      color: #ffffff;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -850,7 +904,7 @@
 
     .bot-card-meta {
       font-size: 10px;
-      color: var(--text-muted);
+      color: var(--c-light);
       margin-top: 2px;
       font-family: monospace;
     }
@@ -860,13 +914,13 @@
       display: flex;
       flex-direction: column;
       height: 100%;
-      background: #080d17;
+      background: var(--bg-deep);
     }
 
     .chat-head {
       padding: 10px 16px;
-      background: #0a1120;
-      border-bottom: 1px solid var(--border-subtle);
+      background: var(--c-darkest);
+      border-bottom: 1px solid var(--c-dark);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -882,8 +936,8 @@
       font-size: 20px;
       width: 34px;
       height: 34px;
-      background: #0e1728;
-      border: 1px solid #1d3356;
+      background: var(--bg-node);
+      border: 1px solid var(--c-mid-dark);
       border-radius: 6px;
       display: flex;
       align-items: center;
@@ -893,7 +947,7 @@
     .chat-head-name {
       font-size: 14px;
       font-weight: 700;
-      color: #f8fafc;
+      color: #ffffff;
     }
 
     .chat-head-status {
@@ -917,18 +971,20 @@
     }
 
     .btn-sm-action {
-      background: #0e1728;
-      border: 1px solid #1c2e4f;
-      color: var(--text-muted);
+      background: var(--bg-node);
+      border: 1px solid var(--c-mid-dark);
+      color: var(--c-light);
       padding: 4px 10px;
       font-size: 11px;
       border-radius: 4px;
       cursor: pointer;
+      transition: all 0.15s ease;
     }
 
     .btn-sm-action:hover {
-      color: #fff;
-      border-color: var(--accent-cyan);
+      color: #ffffff;
+      background: var(--c-dark);
+      border-color: var(--c-light-mid);
     }
 
     .chat-stream-box {
@@ -959,8 +1015,8 @@
       width: 28px;
       height: 28px;
       font-size: 15px;
-      background: #0f1c30;
-      border: 1px solid #1c3154;
+      background: var(--bg-node);
+      border: 1px solid var(--c-mid-dark);
       border-radius: 4px;
       display: flex;
       align-items: center;
@@ -969,8 +1025,8 @@
     }
 
     .msg-row.user .msg-icon {
-      background: #0284c7;
-      border-color: #38bdf8;
+      background: var(--c-mid-dark);
+      border-color: var(--c-light-mid);
     }
 
     .msg-text {
@@ -983,14 +1039,15 @@
     }
 
     .msg-row.user .msg-text {
-      background: #0284c7;
-      color: #fff;
+      background: var(--c-mid-dark);
+      color: #ffffff;
+      border: 1px solid var(--c-mid);
     }
 
     .msg-row.bot .msg-text {
-      background: #0d1627;
-      border: 1px solid #182845;
-      color: #f1f5f9;
+      background: var(--bg-node);
+      border: 1px solid var(--c-dark);
+      color: #f5f5f6;
     }
 
     .typing-indicator {
@@ -998,8 +1055,8 @@
       align-self: flex-start;
       margin-left: 36px;
       gap: 4px;
-      background: #0d1627;
-      border: 1px solid #182845;
+      background: var(--bg-node);
+      border: 1px solid var(--c-dark);
       padding: 6px 10px;
       border-radius: 4px;
     }
@@ -1007,7 +1064,7 @@
     .typing-dot {
       width: 5px;
       height: 5px;
-      background: #38bdf8;
+      background: var(--c-light);
       border-radius: 50%;
       animation: pulseDot 1.2s infinite ease-in-out;
     }
@@ -1027,34 +1084,36 @@
     }
 
     .btn-chip {
-      background: #09101d;
-      border: 1px solid #182845;
-      color: var(--text-muted);
-      padding: 3px 8px;
+      background: var(--c-darkest);
+      border: 1px solid var(--c-mid-dark);
+      color: var(--c-light);
+      padding: 4px 10px;
       font-size: 11px;
       border-radius: 12px;
       cursor: pointer;
+      transition: all 0.15s ease;
     }
 
     .btn-chip:hover {
-      color: #fff;
-      border-color: var(--accent-cyan);
+      color: #ffffff;
+      background: var(--c-dark);
+      border-color: var(--c-light-mid);
     }
 
     .chat-input-bar {
       padding: 10px 16px;
-      background: #0a1120;
-      border-top: 1px solid var(--border-subtle);
+      background: var(--c-darkest);
+      border-top: 1px solid var(--c-dark);
       display: flex;
       gap: 8px;
     }
 
     .input-field {
       flex: 1;
-      background: #070c17;
-      border: 1px solid #192a47;
+      background: var(--bg-deep);
+      border: 1px solid var(--c-mid-dark);
       border-radius: 4px;
-      color: #f8fafc;
+      color: #ffffff;
       padding: 8px 10px;
       font-size: 13px;
       outline: none;
@@ -1063,25 +1122,26 @@
     }
 
     .input-field:focus {
-      border-color: var(--accent-cyan);
+      border-color: var(--c-light);
     }
 
     .btn-send {
       width: 38px;
       height: 38px;
-      background: #0284c7;
-      border: 1px solid #38bdf8;
+      background: var(--c-mid-dark);
+      border: 1px solid var(--c-light-mid);
       border-radius: 4px;
-      color: #fff;
+      color: #ffffff;
       font-size: 14px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: all 0.15s ease;
     }
 
     .btn-send:hover:not(:disabled) {
-      background: #0369a1;
+      background: var(--c-mid);
     }
 
     .btn-send:disabled {
@@ -1103,20 +1163,20 @@
 
     .toast {
       pointer-events: auto;
-      background: #0e1729;
-      border: 1px solid #1d3356;
-      border-left: 3px solid var(--accent-cyan);
-      color: #f1f5f9;
+      background: var(--bg-node);
+      border: 1px solid var(--c-mid-dark);
+      border-left: 3px solid var(--c-light);
+      color: #ffffff;
       padding: 8px 14px;
       border-radius: 4px;
       font-size: 12px;
       display: flex;
       align-items: center;
       gap: 6px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
     }
 
-    .toast.success { border-left-color: var(--accent-green); }
+    .toast.success { border-left-color: var(--success); }
     .toast.error { border-left-color: var(--danger); }
   </style>
 </head>
@@ -1135,7 +1195,7 @@
         Схема нод
       </button>
       <button class="nav-btn" id="tabBtnChat" onclick="switchTab('chat')">
-        Чат и Галерея <span id="botsBadge" style="background:#142542; color:#38bdf8; padding:1px 5px; border-radius:8px; font-size:10px;">0</span>
+        Чат и Галерея <span id="botsBadge" style="background:var(--c-dark); color:var(--c-light); padding:1px 5px; border-radius:8px; font-size:10px;">0</span>
       </button>
     </div>
 
@@ -1161,7 +1221,7 @@
           <div class="menu-icon">🎭</div>
           <div>
             <div class="menu-title">Персонаж</div>
-            <div class="menu-desc">Имя и эмодзи-аватарка</div>
+            <div class="menu-desc">Имя и аватарка бота</div>
           </div>
         </div>
         <div class="menu-item" onclick="spawnNode('prompt')">
@@ -1171,11 +1231,25 @@
             <div class="menu-desc">Роль и системный промпт</div>
           </div>
         </div>
+        <div class="menu-item" onclick="spawnNode('rules')">
+          <div class="menu-icon">⚙️</div>
+          <div>
+            <div class="menu-title">Стиль и Правила</div>
+            <div class="menu-desc">Тон речи, юмор, фильтры и правила</div>
+          </div>
+        </div>
+        <div class="menu-item" onclick="spawnNode('quick')">
+          <div class="menu-icon">💬</div>
+          <div>
+            <div class="menu-title">Приветствие и Кнопки</div>
+            <div class="menu-desc">Стартовая фраза и быстрые вопросы</div>
+          </div>
+        </div>
         <div class="menu-item" onclick="spawnNode('kb')">
           <div class="menu-icon">📚</div>
           <div>
             <div class="menu-title">База знаний</div>
-            <div class="menu-desc">Текст или файл (.txt, .pdf, .docx)</div>
+            <div class="menu-desc">Факты или файл (.txt, .pdf, .docx)</div>
           </div>
         </div>
         <div class="menu-item" onclick="spawnNode('assembler')">
@@ -1257,7 +1331,7 @@
         <div class="typing-dot"></div>
       </div>
 
-      <div class="quick-chips">
+      <div class="quick-chips" id="chatQuickChips">
         <button class="btn-chip" onclick="quickSend('Привет! Расскажи о себе и чем ты можешь помочь?')">Расскажи о себе</button>
         <button class="btn-chip" onclick="quickSend('Какие интересные факты ты знаешь?')">Что ты знаешь?</button>
         <button class="btn-chip" onclick="quickSend('Загадай мне интересную загадку!')">Загадай загадку</button>
@@ -1366,15 +1440,17 @@
       });
     });
 
-    // 1. Initial Default Workflow
+    // 1. Initial Default Workflow (Updated with modern starter nodes)
     function setupInitialDefaultWorkflow() {
-      const nChar = createNodeElement('char', 60, 80);
-      const nPrompt = createNodeElement('prompt', 60, 320);
-      const nKb = createNodeElement('kb', 400, 80);
-      const nAsm = createNodeElement('assembler', 740, 140);
+      const nChar = createNodeElement('char', 40, 60);
+      const nPrompt = createNodeElement('prompt', 40, 300);
+      const nRules = createNodeElement('rules', 360, 60);
+      const nKb = createNodeElement('kb', 360, 360);
+      const nAsm = createNodeElement('assembler', 720, 100);
 
       connectPorts(nChar, 'out', nAsm, 'in-char', 'char');
       connectPorts(nPrompt, 'out', nAsm, 'in-prompt', 'prompt');
+      connectPorts(nRules, 'out', nAsm, 'in-rules', 'rules');
       connectPorts(nKb, 'out', nAsm, 'in-kb', 'kb');
 
       setTimeout(updateAllWires, 30);
@@ -1442,7 +1518,7 @@
           </div>
           <div class="node-body">
             <div>
-              <div class="control-label"><span>Имя</span></div>
+              <div class="control-label"><span>Имя бота</span></div>
               <input type="text" class="control-input node-val-name" value="Капитан Морган" maxlength="35">
             </div>
             <div>
@@ -1499,6 +1575,86 @@
             </div>
           </div>
         `;
+      } else if (type === 'rules') {
+        inner = `
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
+            <span class="node-title">⚙️ Стиль и Правила</span>
+            <div class="node-header-actions">
+              <span class="node-type-label" style="color:var(--wire-rules);">Style</span>
+              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+            </div>
+          </div>
+          <div class="node-body">
+            <div>
+              <div class="control-label"><span>Тон общения</span></div>
+              <select class="control-select node-val-tone">
+                <option value="Весельчак и шутник 🤪">Весельчак и шутник 🤪</option>
+                <option value="Терпеливый учитель 🦉">Терпеливый учитель 🦉</option>
+                <option value="Геймер и стример 🎮">Геймер и стример 🎮</option>
+                <option value="Бывалый морской пират 🏴‍☠️">Бывалый морской пират 🏴‍☠️</option>
+                <option value="Мудрый сказочник 🧙‍♂️">Мудрый сказочник 🧙‍♂️</option>
+                <option value="Точный робот-киборг 🤖">Точный робот-киборг 🤖</option>
+              </select>
+            </div>
+            <div>
+              <div class="control-label"><span>Правила для бота</span></div>
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <label class="rule-checkbox-row">
+                  <input type="checkbox" class="node-rule-check" value="Используй много эмодзи в каждом ответе" checked>
+                  <span>Добавлять много эмодзи ✨</span>
+                </label>
+                <label class="rule-checkbox-row">
+                  <input type="checkbox" class="node-rule-check" value="Отвечай кратко, максимум 2 предложения" checked>
+                  <span>Отвечать кратко (1-2 фразы)</span>
+                </label>
+                <label class="rule-checkbox-row">
+                  <input type="checkbox" class="node-rule-check" value="Общайся с добрым юмором и шутками">
+                  <span>Шутить и поднимать настроение</span>
+                </label>
+                <label class="rule-checkbox-row">
+                  <input type="checkbox" class="node-rule-check" value="Если факта нет в твоей базе знаний, честно признайся в этом" checked>
+                  <span>Честно говорить «Не знаю», если нет в базе</span>
+                </label>
+              </div>
+            </div>
+            <div class="port-row port-row-out">
+              <span class="port-name" style="color:var(--wire-rules);">Стиль и Правила</span>
+              <div class="port-circle out type-rules" id="${id}_out" 
+                   data-node="${id}" data-port="out" data-type="rules" data-dir="out"
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'rules', 'out')" title="Зажмите и потяните к сборщику"></div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'quick') {
+        inner = `
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
+            <span class="node-title">💬 Приветствие и Кнопки</span>
+            <div class="node-header-actions">
+              <span class="node-type-label" style="color:var(--wire-quick);">Chat UI</span>
+              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+            </div>
+          </div>
+          <div class="node-body">
+            <div>
+              <div class="control-label"><span>Приветственная фраза</span></div>
+              <textarea class="control-textarea node-val-greeting" style="min-height:55px;">Привет! Я твой новый умный помощник. Спроси меня о чём угодно!</textarea>
+            </div>
+            <div>
+              <div class="control-label"><span>Быстрые кнопки для диалога</span></div>
+              <div style="display:flex; flex-direction:column; gap:5px;">
+                <input type="text" class="control-input node-val-q1" value="Кто ты и что умеешь?">
+                <input type="text" class="control-input node-val-q2" value="Расскажи секретный факт!">
+                <input type="text" class="control-input node-val-q3" value="Пошути или удиви меня!">
+              </div>
+            </div>
+            <div class="port-row port-row-out">
+              <span class="port-name" style="color:var(--wire-quick);">Приветствие</span>
+              <div class="port-circle out type-quick" id="${id}_out" 
+                   data-node="${id}" data-port="out" data-type="quick" data-dir="out"
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'quick', 'out')" title="Зажмите и потяните к сборщику"></div>
+            </div>
+          </div>
+        `;
       } else if (type === 'kb') {
         inner = `
           <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
@@ -1537,7 +1693,7 @@
           <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
             <span class="node-title">⚡ Сборщик Бота</span>
             <div class="node-header-actions">
-              <span class="node-type-label" style="color:#38bdf8;">Qwen 2.5 3B</span>
+              <span class="node-type-label" style="color:#ffffff;">Qwen 2.5 3B</span>
               <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
             </div>
           </div>
@@ -1557,18 +1713,32 @@
               <span class="status-badge status-prompt">ОЖИДАНИЕ</span>
             </div>
             <div class="port-row port-row-in">
+              <div class="port-circle in type-rules" id="${id}_in-rules" 
+                   data-node="${id}" data-port="in-rules" data-type="rules" data-dir="in"
+                   onmousedown="onSocketMouseDown(event, '${id}', 'in-rules', 'rules', 'in')"></div>
+              <span class="port-name" style="color:var(--wire-rules);">Стиль и Правила</span>
+              <span class="status-badge status-rules">ОПЦИЯ</span>
+            </div>
+            <div class="port-row port-row-in">
+              <div class="port-circle in type-quick" id="${id}_in-quick" 
+                   data-node="${id}" data-port="in-quick" data-type="quick" data-dir="in"
+                   onmousedown="onSocketMouseDown(event, '${id}', 'in-quick', 'quick', 'in')"></div>
+              <span class="port-name" style="color:var(--wire-quick);">Приветствие</span>
+              <span class="status-badge status-quick">ОПЦИЯ</span>
+            </div>
+            <div class="port-row port-row-in">
               <div class="port-circle in type-kb" id="${id}_in-kb" 
                    data-node="${id}" data-port="in-kb" data-type="kb" data-dir="in"
                    onmousedown="onSocketMouseDown(event, '${id}', 'in-kb', 'kb', 'in')"></div>
               <span class="port-name">База знаний</span>
               <span class="status-badge status-kb">ОЖИДАНИЕ</span>
             </div>
-            <div style="background:#090f19; border:1px solid #142239; border-radius:4px; padding:8px; font-size:11px; color:var(--text-muted); margin-top:2px;">
+            <div style="background:var(--c-darkest); border:1px solid var(--c-mid-dark); border-radius:4px; padding:8px; font-size:11px; color:var(--c-light); margin-top:2px;">
               <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
-                <span>Движок:</span> <span style="color:#f1f5f9; font-family:monospace;">llama-server (8000)</span>
+                <span>Движок:</span> <span style="color:#ffffff; font-family:monospace;">llama-server (8000)</span>
               </div>
               <div style="display:flex; justify-content:space-between;">
-                <span>Ранжирование:</span> <span style="color:#f1f5f9; font-family:monospace;">BM25Okapi</span>
+                <span>Ранжирование:</span> <span style="color:#ffffff; font-family:monospace;">BM25Okapi RAG</span>
               </div>
             </div>
             <button class="btn-assemble-node" onclick="queueBotAssembly('${id}')">
@@ -1636,7 +1806,7 @@
       el.querySelector('.file-tag').style.display = 'none';
     }
 
-    // 5. Drag-and-Drop Wires (Drag from socket, drop on target socket)
+    // 5. Drag-and-Drop Wires
     function onSocketMouseDown(e, nodeId, portId, type, dir) {
       if (e.button !== 0) return;
       e.stopPropagation();
@@ -1651,52 +1821,67 @@
       isDraggingPort = true;
       dragPortSource = { nodeId, portId, type, dir };
 
-      const pScreen = getSocketScreenCoord(nodeId, portId);
-      dragStartScreenPos = pScreen || { x: 0, y: 0 };
+      const sock = document.getElementById(`${nodeId}_${portId}`);
+      const viewRect = viewport.getBoundingClientRect();
+      const sockRect = sock.getBoundingClientRect();
 
-      // Highlight compatible sockets across all nodes
-      document.querySelectorAll('.port-circle').forEach(sock => {
-        if (sock.dataset.type === type && sock.dataset.dir !== dir && sock.dataset.node !== nodeId) {
-          sock.classList.add('highlight');
+      dragStartScreenPos = {
+        x: sockRect.left + sockRect.width / 2 - viewRect.left,
+        y: sockRect.top + sockRect.height / 2 - viewRect.top
+      };
+
+      tempWire.style.display = 'block';
+      tempWire.setAttribute('d', buildWirePath(dragStartScreenPos, dragStartScreenPos));
+      const wireCol = type === 'char' ? 'var(--wire-char)' : type === 'prompt' ? 'var(--wire-prompt)' : type === 'rules' ? 'var(--wire-rules)' : type === 'quick' ? 'var(--wire-quick)' : 'var(--wire-kb)';
+      tempWire.setAttribute('stroke', wireCol);
+
+      document.querySelectorAll(`.port-circle[data-type="${type}"]`).forEach(s => {
+        if (s.dataset.dir !== dir) {
+          s.classList.add('highlight');
         }
       });
     }
 
-    function attemptConnection(from, to) {
-      if (!from || !to) return;
-      if (from.nodeId === to.nodeId) return;
-
-      if (from.type !== to.type || from.dir === to.dir) {
-        showToast('Несовместимые типы портов', 'error');
+    function attemptConnection(s1, s2) {
+      if (!s1 || !s2) return;
+      if (s1.nodeId === s2.nodeId) {
+        showToast('Нельзя соединить порты одной ноды', 'error');
+        return;
+      }
+      if (s1.dir === s2.dir) {
+        showToast('Соединяйте Выход (справа) с Входом (слева)', 'error');
+        return;
+      }
+      if (s1.type !== s2.type) {
+        showToast(`Типы портов не совпадают (${s1.type} ≠ ${s2.type})`, 'error');
         return;
       }
 
-      const outSock = from.dir === 'out' ? from : to;
-      const inSock = from.dir === 'in' ? from : to;
+      const outSock = s1.dir === 'out' ? s1 : s2;
+      const inSock = s1.dir === 'in' ? s1 : s2;
 
-      connectPorts(outSock.nodeId, outSock.portId, inSock.nodeId, inSock.portId, from.type);
-      showToast('Провод соединён!', 'success');
+      connectPorts(outSock.nodeId, outSock.portId, inSock.nodeId, inSock.portId, outSock.type);
+      updateAllWires();
+      showToast('Связь установлена', 'success');
     }
 
     function connectPorts(fromNode, fromPort, toNode, toPort, type) {
+      // Remove existing incoming connection to single input ports
       connections = connections.filter(c => !(c.toNode === toNode && c.toPort === toPort));
       connections.push({ fromNode, fromPort, toNode, toPort, type });
-      updateAllWires();
     }
 
     function disconnectWire(index) {
       connections.splice(index, 1);
       updateAllWires();
-      showToast('Провод отсоединён', 'info');
+      showToast('Связь удалена', 'info');
     }
 
-    // Direct Screen-Space Coordinate for 100% Precision in Wires Overlay
     function getSocketScreenCoord(nodeId, portId) {
       const sock = document.getElementById(`${nodeId}_${portId}`);
       if (!sock) return null;
-      const sockRect = sock.getBoundingClientRect();
       const viewRect = viewport.getBoundingClientRect();
-
+      const sockRect = sock.getBoundingClientRect();
       return {
         x: sockRect.left + sockRect.width / 2 - viewRect.left,
         y: sockRect.top + sockRect.height / 2 - viewRect.top
@@ -1704,12 +1889,9 @@
     }
 
     function buildWirePath(p1, p2) {
-      const dx = Math.abs(p2.x - p1.x) * 0.55;
-      const cp1x = p1.x + Math.max(dx, 40);
-      const cp1y = p1.y;
-      const cp2x = p2.x - Math.max(dx, 40);
-      const cp2y = p2.y;
-      return `M ${p1.x} ${p1.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+      const dx = Math.abs(p2.x - p1.x);
+      const curvature = Math.max(dx * 0.45, 50);
+      return `M ${p1.x} ${p1.y} C ${p1.x + curvature} ${p1.y}, ${p2.x - curvature} ${p2.y}, ${p2.x} ${p2.y}`;
     }
 
     function updateAllWires() {
@@ -1720,8 +1902,12 @@
 
       // Reset all assembler status badges
       document.querySelectorAll('.status-badge').forEach(b => {
-        b.textContent = 'ОЖИДАНИЕ';
         b.classList.remove('connected');
+        if (b.classList.contains('status-rules') || b.classList.contains('status-quick')) {
+          b.textContent = 'ОПЦИЯ';
+        } else {
+          b.textContent = 'ОЖИДАНИЕ';
+        }
       });
 
       connections.forEach((conn, idx) => {
@@ -1731,10 +1917,16 @@
         if (!p1 || !p2) return;
 
         const pathD = buildWirePath(p1, p2);
-        const colorVar = conn.type === 'char' ? 'var(--wire-char)' : conn.type === 'prompt' ? 'var(--wire-prompt)' : 'var(--wire-kb)';
-        const labelText = conn.type === 'char' ? 'Характер' : conn.type === 'prompt' ? 'Промпт' : 'Знания';
+        const colorVar = conn.type === 'char' ? 'var(--wire-char)' : 
+                         conn.type === 'prompt' ? 'var(--wire-prompt)' : 
+                         conn.type === 'rules' ? 'var(--wire-rules)' : 
+                         conn.type === 'quick' ? 'var(--wire-quick)' : 'var(--wire-kb)';
+        
+        const labelText = conn.type === 'char' ? 'Характер' : 
+                          conn.type === 'prompt' ? 'Промпт' : 
+                          conn.type === 'rules' ? 'Правила' : 
+                          conn.type === 'quick' ? 'Приветствие' : 'Знания';
 
-        // Calculate midpoint for floating wire pill
         const midX = (p1.x + p2.x) / 2;
         const midY = (p1.y + p2.y) / 2;
         const badgeWidth = labelText.length * 7 + 16;
@@ -1745,7 +1937,7 @@
 
         labelsHtml += `
           <g onclick="disconnectWire(${idx})" style="cursor:pointer;" title="Кликните, чтобы отсоединить">
-            <rect x="${midX - badgeWidth / 2}" y="${midY - 9}" width="${badgeWidth}" height="18" rx="4" fill="#0b1322" stroke="${colorVar}" stroke-width="1.2" />
+            <rect x="${midX - badgeWidth / 2}" y="${midY - 9}" width="${badgeWidth}" height="18" rx="4" fill="var(--c-darkest)" stroke="${colorVar}" stroke-width="1.2" />
             <text x="${midX}" y="${midY}" class="wire-badge">${labelText}</text>
           </g>
         `;
@@ -1755,8 +1947,8 @@
         if (targetNodeEl) {
           const badge = targetNodeEl.querySelector(`.status-${conn.type}`);
           if (badge) {
-            badge.textContent = 'ПОДКЛЮЧЕН';
             badge.classList.add('connected');
+            badge.textContent = '✓ ПОДКЛЮЧЕНО';
           }
         }
       });
@@ -1769,18 +1961,14 @@
 
     // 6. Viewport Pan, Zoom & Drag Listeners
     function setupViewport() {
-      applyTransform();
-
-      // Wheel Zoom
       viewport.addEventListener('wheel', (e) => {
         e.preventDefault();
-        const factor = e.deltaY < 0 ? 1.12 : 0.88;
-        const newScale = Math.min(Math.max(0.35, scale * factor), 2.2);
-
+        const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
         const rect = viewport.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
+        const newScale = Math.min(Math.max(0.35, scale * zoomFactor), 2.2);
         panX = mouseX - (mouseX - panX) * (newScale / scale);
         panY = mouseY - (mouseY - panY) * (newScale / scale);
         scale = newScale;
@@ -1789,14 +1977,13 @@
         updateAllWires();
       }, { passive: false });
 
-      // Pan Canvas
       viewport.addEventListener('mousedown', (e) => {
-        if (isDraggingPort) return;
-        if (e.target === viewport || e.target === world || e.target.id === 'wiresSvg') {
+        if (e.button === 0 && !e.target.closest('.node') && !e.target.closest('.add-node-bar') && !e.target.closest('.viewport-controls') && !e.target.closest('.port-circle')) {
           isPanning = true;
           panStartX = e.clientX - panX;
           panStartY = e.clientY - panY;
           viewport.classList.add('panning');
+          clickPendingSocket = null;
         }
       });
 
@@ -1822,8 +2009,11 @@
           const pEnd = dragPortSource.dir === 'out' ? mouseScreen : dragStartScreenPos;
 
           tempWire.setAttribute('d', buildWirePath(pStart, pEnd));
-          tempWire.setAttribute('stroke', dragPortSource.type === 'char' ? 'var(--wire-char)' : dragPortSource.type === 'prompt' ? 'var(--wire-prompt)' : 'var(--wire-kb)');
-          tempWire.style.display = 'block';
+          const wireCol = dragPortSource.type === 'char' ? 'var(--wire-char)' : 
+                          dragPortSource.type === 'prompt' ? 'var(--wire-prompt)' : 
+                          dragPortSource.type === 'rules' ? 'var(--wire-rules)' : 
+                          dragPortSource.type === 'quick' ? 'var(--wire-quick)' : 'var(--wire-kb)';
+          tempWire.setAttribute('stroke', wireCol);
         }
       });
 
@@ -1843,7 +2033,7 @@
           const elem = document.elementFromPoint(e.clientX, e.clientY);
           const targetSock = elem ? elem.closest('.port-circle') : null;
 
-          if (targetSock && targetSock.dataset.node) {
+          if (targetSock) {
             const tNode = targetSock.dataset.node;
             const tPort = targetSock.dataset.port;
             const tType = targetSock.dataset.type;
@@ -1969,7 +2159,38 @@
         return;
       }
 
-      // 3. Find connected Knowledge Base nodes (aggregate all)
+      // 3. Find connected Rules Node (Style & Rules)
+      const rulesConn = connections.find(c => c.toNode === asmId && c.type === 'rules');
+      if (rulesConn) {
+        const rulesEl = document.getElementById(rulesConn.fromNode);
+        if (rulesEl) {
+          const tone = rulesEl.querySelector('.node-val-tone').value;
+          const checks = Array.from(rulesEl.querySelectorAll('.node-rule-check:checked')).map(cb => cb.value);
+          let extraRules = `\n\nСтиль общения и правила:\n- Тон: ${tone}`;
+          if (checks.length > 0) {
+            extraRules += `\n- ` + checks.join(`\n- `);
+          }
+          prompt += extraRules;
+        }
+      }
+
+      // 4. Find connected Quick Greeting Node
+      let customGreeting = "";
+      let customChips = [];
+      const quickConn = connections.find(c => c.toNode === asmId && c.type === 'quick');
+      if (quickConn) {
+        const quickEl = document.getElementById(quickConn.fromNode);
+        if (quickEl) {
+          customGreeting = quickEl.querySelector('.node-val-greeting').value.trim();
+          customChips = [
+            quickEl.querySelector('.node-val-q1').value.trim(),
+            quickEl.querySelector('.node-val-q2').value.trim(),
+            quickEl.querySelector('.node-val-q3').value.trim()
+          ].filter(Boolean);
+        }
+      }
+
+      // 5. Find connected Knowledge Base nodes (aggregate all)
       const kbConns = connections.filter(c => c.toNode === asmId && c.type === 'kb');
       let aggregatedKbText = '';
       let fileToUpload = null;
@@ -1999,6 +2220,15 @@
         }
 
         const newBot = await res.json();
+
+        // Store custom UI greeting & chips in localStorage if provided
+        if (customGreeting || customChips.length > 0) {
+          localStorage.setItem(`bot_ui_${newBot.id}`, JSON.stringify({
+            greeting: customGreeting,
+            chips: customChips
+          }));
+        }
+
         showToast(`Бот «${newBot.name}» успешно собран!`, 'success');
 
         await fetchBotsList();
@@ -2049,7 +2279,7 @@
     function renderGallery() {
       const container = document.getElementById('galleryList');
       if (allBots.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding:24px 8px; color:#556987; font-size:12px;">Ботов пока нет</div>`;
+        container.innerHTML = `<div style="text-align:center; padding:24px 8px; color:var(--c-light-mid); font-size:12px;">Ботов пока нет</div>`;
         return;
       }
 
@@ -2076,6 +2306,35 @@
 
       document.getElementById('currentAvatar').textContent = bot.avatar;
       document.getElementById('currentName').textContent = bot.name;
+
+      // Check for custom UI config
+      let uiConfig = null;
+      try {
+        const stored = localStorage.getItem(`bot_ui_${id}`);
+        if (stored) uiConfig = JSON.parse(stored);
+      } catch(e) {}
+
+      // If chat is empty and bot has a custom greeting, auto-greet!
+      if (!chatHistories[id] || chatHistories[id].length === 0) {
+        chatHistories[id] = [];
+        if (uiConfig && uiConfig.greeting) {
+          chatHistories[id].push({ role: 'assistant', content: uiConfig.greeting });
+        }
+      }
+
+      // Update quick chips
+      const chipsContainer = document.getElementById('chatQuickChips');
+      if (uiConfig && uiConfig.chips && uiConfig.chips.length > 0) {
+        chipsContainer.innerHTML = uiConfig.chips.map(chip => `
+          <button class="btn-chip" onclick="quickSend('${escapeHtml(chip)}')">${escapeHtml(chip)}</button>
+        `).join('');
+      } else {
+        chipsContainer.innerHTML = `
+          <button class="btn-chip" onclick="quickSend('Привет! Расскажи о себе и чем ты можешь помочь?')">Расскажи о себе</button>
+          <button class="btn-chip" onclick="quickSend('Какие интересные факты ты знаешь?')">Что ты знаешь?</button>
+          <button class="btn-chip" onclick="quickSend('Загадай мне интересную загадку!')">Загадай загадку</button>
+        `;
+      }
 
       renderGallery();
       renderMessages();
@@ -2104,7 +2363,7 @@
         const bot = allBots.find(b => b.id === currentBotId);
         const name = bot ? bot.name : 'бота';
         container.innerHTML = `
-          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#556987; gap:6px; font-size:13px;">
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--c-light-mid); gap:6px; font-size:13px;">
             <span>Начните диалог с <strong>${escapeHtml(name)}</strong></span>
           </div>
         `;
