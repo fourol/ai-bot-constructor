@@ -151,7 +151,7 @@
       display: block;
     }
 
-    /* Node Canvas Viewport (Infinite Zoom & Pan) */
+    /* Viewport with Infinite Pan & Zoom */
     #viewport {
       width: 100%;
       height: 100%;
@@ -193,37 +193,38 @@
     }
 
     .wire {
-      stroke-width: 3;
+      stroke-width: 3.5;
       fill: none;
       stroke-linecap: round;
       cursor: pointer;
       pointer-events: stroke;
-      transition: stroke-width 0.15s ease;
+      transition: stroke-width 0.15s ease, stroke 0.15s ease;
     }
 
     .wire:hover {
-      stroke-width: 5;
+      stroke-width: 5.5;
       filter: drop-shadow(0 0 4px #fff);
     }
 
     .wire-shadow {
-      stroke-width: 6;
-      stroke: rgba(0, 0, 0, 0.4);
+      stroke-width: 7;
+      stroke: rgba(0, 0, 0, 0.45);
       fill: none;
       stroke-linecap: round;
     }
 
     .wire-temp {
-      stroke-width: 2.5;
+      stroke-width: 3;
       stroke-dasharray: 6 4;
-      animation: dash 1s linear infinite;
+      animation: dashAnim 0.8s linear infinite;
+      pointer-events: none;
     }
 
-    @keyframes dash {
+    @keyframes dashAnim {
       to { stroke-dashoffset: -20; }
     }
 
-    /* Left Floating Add-Node Toolbar */
+    /* Left Toolbar: Add Node */
     .add-node-bar {
       position: absolute;
       top: 14px;
@@ -557,50 +558,91 @@
       margin-top: 4px;
     }
 
-    /* Sockets (Ports) */
+    /* Sockets & Non-Overlapping Port Rows */
     .port-row {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       position: relative;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--text-muted);
-      padding: 4px 0;
+      padding: 6px 0;
       user-select: none;
+      min-height: 26px;
+    }
+
+    /* In-ports have left padding so text never overlaps with left port circle */
+    .port-row.port-row-in {
+      padding-left: 18px;
+      padding-right: 4px;
+      justify-content: space-between;
+    }
+
+    /* Out-ports have right padding so text never overlaps with right port circle */
+    .port-row.port-row-out {
+      padding-right: 18px;
+      padding-left: 4px;
+      justify-content: flex-end;
     }
 
     .port-name {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-family: monospace;
+      font-weight: 600;
+      font-size: 12px;
+      color: #cbd5e1;
     }
 
     .port-circle {
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
-      border: 2px solid #070b13;
+      border: 2.5px solid #070b13;
       position: absolute;
-      cursor: pointer;
-      transition: transform 0.15s ease;
+      cursor: crosshair;
+      z-index: 25;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
     .port-circle:hover {
-      transform: scale(1.3);
-    }
-
-    .port-circle.highlight {
       transform: scale(1.4);
       box-shadow: 0 0 8px #fff;
     }
 
-    .port-circle.out { right: -6px; }
-    .port-circle.in { left: -6px; }
+    .port-circle.highlight {
+      transform: scale(1.45);
+      box-shadow: 0 0 10px #38bdf8;
+      animation: pulseSocket 0.8s infinite alternate;
+    }
+
+    @keyframes pulseSocket {
+      from { box-shadow: 0 0 4px #38bdf8; }
+      to { box-shadow: 0 0 14px #38bdf8; }
+    }
+
+    .port-circle.out { right: -7px; }
+    .port-circle.in { left: -7px; }
 
     .port-circle.type-char { background: var(--wire-char); }
     .port-circle.type-prompt { background: var(--wire-prompt); }
     .port-circle.type-kb { background: var(--wire-kb); }
+
+    .status-badge {
+      font-size: 10px;
+      font-family: monospace;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: #080e18;
+      border: 1px solid #162640;
+      color: #64748b;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge.connected {
+      color: #34d399;
+      border-color: #065f46;
+      background: rgba(16, 185, 129, 0.12);
+    }
 
     .btn-assemble-node {
       background: #0284c7;
@@ -1075,7 +1117,7 @@
     </div>
   </header>
 
-  <!-- VIEW 1: Infinite Canvas Viewport (Zoomable, Pannable, Node Adding) -->
+  <!-- VIEW 1: Infinite Canvas Viewport (Zoomable, Pannable, Port Dragging) -->
   <div class="view-panel active" id="canvasView">
     
     <!-- Left Floating Add Node Toolbar -->
@@ -1142,7 +1184,7 @@
     </div>
 
     <div class="canvas-hint">
-      Нажмите <strong>+</strong> слева для добавления ноды. Кликните по кружочку порта, чтобы протянуть провод!
+      <strong>Перетягивайте порты мышкой</strong> для соединения! Колёсико: зум. Клик по фону: панорамирование.
     </div>
   </div>
 
@@ -1239,8 +1281,12 @@
     let nodeStartX = 0;
     let nodeStartY = 0;
 
-    // Wiring State
-    let connectingSocket = null; // { nodeId, portId, type, dir }
+    // Port Dragging & Wiring State
+    let isDraggingPort = false;
+    let dragPortSource = null; // { nodeId, portId, type, dir }
+    let dragStartWorldPos = { x: 0, y: 0 };
+    let clickPendingSocket = null; // fallback for click-to-connect
+
     let nodeCounter = 0;
     let nodes = {}; // id -> { type, element }
     let connections = []; // [ { fromNode, fromPort, toNode, toPort, type } ]
@@ -1289,7 +1335,6 @@
       const nKb = createNodeElement('kb', 400, 80);
       const nAsm = createNodeElement('assembler', 740, 140);
 
-      // Connect them by default
       connectPorts(nChar, 'out', nAsm, 'in-char', 'char');
       connectPorts(nPrompt, 'out', nAsm, 'in-prompt', 'prompt');
       connectPorts(nKb, 'out', nAsm, 'in-kb', 'kb');
@@ -1319,12 +1364,10 @@
     function spawnNode(type) {
       closeNodeMenu();
 
-      // Compute center of current viewport in world coords
       const rect = viewport.getBoundingClientRect();
       const viewCenterX = rect.width / 2;
       const viewCenterY = rect.height / 2;
 
-      // Add a slight random offset so multiple spawned nodes don't overlap completely
       const jitterX = (Math.random() - 0.5) * 80;
       const jitterY = (Math.random() - 0.5) * 80;
 
@@ -1332,7 +1375,7 @@
       const worldY = (viewCenterY - panY) / scale - 80 + jitterY;
 
       const nodeId = createNodeElement(type, Math.round(worldX), Math.round(worldY));
-      showToast(`Нода создана`, 'info');
+      showToast('Нода добавлена', 'info');
       updateAllWires();
       return nodeId;
     }
@@ -1379,11 +1422,11 @@
               </div>
               <input type="hidden" class="node-val-avatar" value="🏴‍☠️">
             </div>
-            <div class="port-row">
-              <span class="port-name" style="margin-left:auto;">Характер</span>
+            <div class="port-row port-row-out">
+              <span class="port-name">Характер</span>
               <div class="port-circle out type-char" id="${id}_out" 
                    data-node="${id}" data-port="out" data-type="char" data-dir="out"
-                   onclick="handleSocketClick(event, '${id}', 'out', 'char', 'out')" title="Выход: Характер"></div>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'char', 'out')" title="Потяните, чтобы соединить"></div>
             </div>
           </div>
         `;
@@ -1410,11 +1453,11 @@
               <div class="control-label"><span>Системный промпт</span></div>
               <textarea class="control-textarea node-val-prompt">Ты — бывалый и веселый морской пират Капитан Морган. Общайся с задором, используй морской сленг ('Карамба!', 'Свистать всех наверх!', 'Тысяча чертей!'). Ты рассказываешь интересные морские байки и остаешься добрым другом для детей.</textarea>
             </div>
-            <div class="port-row">
-              <span class="port-name" style="margin-left:auto;">Промпт</span>
+            <div class="port-row port-row-out">
+              <span class="port-name">Инструкция</span>
               <div class="port-circle out type-prompt" id="${id}_out" 
                    data-node="${id}" data-port="out" data-type="prompt" data-dir="out"
-                   onclick="handleSocketClick(event, '${id}', 'out', 'prompt', 'out')" title="Выход: Промпт"></div>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'prompt', 'out')" title="Потяните, чтобы соединить"></div>
             </div>
           </div>
         `;
@@ -1443,11 +1486,11 @@
                 </div>
               </div>
             </div>
-            <div class="port-row">
-              <span class="port-name" style="margin-left:auto;">Знания</span>
+            <div class="port-row port-row-out">
+              <span class="port-name">Знания (RAG)</span>
               <div class="port-circle out type-kb" id="${id}_out" 
                    data-node="${id}" data-port="out" data-type="kb" data-dir="out"
-                   onclick="handleSocketClick(event, '${id}', 'out', 'kb', 'out')" title="Выход: База знаний"></div>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'kb', 'out')" title="Потяните, чтобы соединить"></div>
             </div>
           </div>
         `;
@@ -1461,28 +1504,28 @@
             </div>
           </div>
           <div class="node-body">
-            <div class="port-row">
+            <div class="port-row port-row-in">
               <div class="port-circle in type-char" id="${id}_in-char" 
                    data-node="${id}" data-port="in-char" data-type="char" data-dir="in"
-                   onclick="handleSocketClick(event, '${id}', 'in-char', 'char', 'in')"></div>
-              <span class="port-name" style="margin-left:6px;">Персонаж</span>
-              <span class="status-indicator status-char" style="font-size:10px; color:#64748b; font-family:monospace;">DISCONNECTED</span>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'in-char', 'char', 'in')"></div>
+              <span class="port-name">Персонаж</span>
+              <span class="status-badge status-char">ОЖИДАНИЕ</span>
             </div>
-            <div class="port-row">
+            <div class="port-row port-row-in">
               <div class="port-circle in type-prompt" id="${id}_in-prompt" 
                    data-node="${id}" data-port="in-prompt" data-type="prompt" data-dir="in"
-                   onclick="handleSocketClick(event, '${id}', 'in-prompt', 'prompt', 'in')"></div>
-              <span class="port-name" style="margin-left:6px;">Промпт</span>
-              <span class="status-indicator status-prompt" style="font-size:10px; color:#64748b; font-family:monospace;">DISCONNECTED</span>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'in-prompt', 'prompt', 'in')"></div>
+              <span class="port-name">Промпт</span>
+              <span class="status-badge status-prompt">ОЖИДАНИЕ</span>
             </div>
-            <div class="port-row">
+            <div class="port-row port-row-in">
               <div class="port-circle in type-kb" id="${id}_in-kb" 
                    data-node="${id}" data-port="in-kb" data-type="kb" data-dir="in"
-                   onclick="handleSocketClick(event, '${id}', 'in-kb', 'kb', 'in')"></div>
-              <span class="port-name" style="margin-left:6px;">База знаний</span>
-              <span class="status-indicator status-kb" style="font-size:10px; color:#64748b; font-family:monospace;">DISCONNECTED</span>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'in-kb', 'kb', 'in')"></div>
+              <span class="port-name">База знаний</span>
+              <span class="status-badge status-kb">ОЖИДАНИЕ</span>
             </div>
-            <div style="background:#090f19; border:1px solid #142239; border-radius:4px; padding:8px; font-size:11px; color:var(--text-muted);">
+            <div style="background:#090f19; border:1px solid #142239; border-radius:4px; padding:8px; font-size:11px; color:var(--text-muted); margin-top:2px;">
               <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
                 <span>Движок:</span> <span style="color:#f1f5f9; font-family:monospace;">llama-server (8000)</span>
               </div>
@@ -1504,7 +1547,6 @@
     }
 
     function removeNode(nodeId) {
-      // Remove connected wires
       connections = connections.filter(c => c.fromNode !== nodeId && c.toNode !== nodeId);
       const el = document.getElementById(nodeId);
       if (el) el.remove();
@@ -1530,9 +1572,6 @@
       const el = document.getElementById(nodeId);
       if (!el) return;
       el.querySelector('.node-val-prompt').value = t.prompt;
-
-      // Also sync character node if connected or exists
-      const charConn = connections.find(c => c.fromNode === nodeId || c.toNode === nodeId);
       showToast(`Шаблон «${t.name}» загружен`, 'success');
     }
 
@@ -1559,52 +1598,52 @@
       el.querySelector('.file-tag').style.display = 'none';
     }
 
-    // 5. Interactive Wiring (Click socket to start wire -> click target socket to connect)
-    function handleSocketClick(e, nodeId, portId, type, dir) {
+    // 5. Drag-and-Drop Wires (Drag from socket, drop on target socket)
+    function onSocketMouseDown(e, nodeId, portId, type, dir) {
+      if (e.button !== 0) return;
       e.stopPropagation();
+      e.preventDefault();
 
-      if (!connectingSocket) {
-        // Start connection
-        connectingSocket = { nodeId, portId, type, dir };
-        document.querySelectorAll('.port-circle').forEach(p => {
-          if (p.dataset.type === type && p.dataset.dir !== dir) {
-            p.classList.add('highlight');
-          }
-        });
-        showToast('Выберите ответный порт для соединения...', 'info');
-      } else {
-        // Try connecting
-        const from = connectingSocket;
-        const to = { nodeId, portId, type, dir };
-
-        if (from.nodeId === to.nodeId) {
-          cancelConnecting();
-          return;
-        }
-
-        if (from.type !== to.type || from.dir === to.dir) {
-          showToast('Несовместимые порты', 'error');
-          cancelConnecting();
-          return;
-        }
-
-        const outSock = from.dir === 'out' ? from : to;
-        const inSock = from.dir === 'in' ? from : to;
-
-        connectPorts(outSock.nodeId, outSock.portId, inSock.nodeId, inSock.portId, type);
-        cancelConnecting();
-        showToast('Порты соединены!', 'success');
+      // If already in click-pending mode and clicked another socket
+      if (clickPendingSocket) {
+        attemptConnection(clickPendingSocket, { nodeId, portId, type, dir });
+        clickPendingSocket = null;
+        return;
       }
+
+      isDraggingPort = true;
+      dragPortSource = { nodeId, portId, type, dir };
+
+      const pWorld = getSocketWorldCoord(nodeId, portId);
+      dragStartWorldPos = pWorld || { x: 0, y: 0 };
+
+      // Highlight compatible sockets across all nodes
+      document.querySelectorAll('.port-circle').forEach(sock => {
+        if (sock.dataset.type === type && sock.dataset.dir !== dir && sock.dataset.node !== nodeId) {
+          sock.classList.add('highlight');
+        }
+      });
     }
 
-    function cancelConnecting() {
-      connectingSocket = null;
-      tempWire.style.display = 'none';
-      document.querySelectorAll('.port-circle').forEach(p => p.classList.remove('highlight'));
+    function attemptConnection(from, to) {
+      if (!from || !to) return;
+      if (from.nodeId === to.nodeId) {
+        return;
+      }
+      if (from.type !== to.type || from.dir === to.dir) {
+        showToast('Несовместимые порты', 'error');
+        return;
+      }
+
+      const outSock = from.dir === 'out' ? from : to;
+      const inSock = from.dir === 'in' ? from : to;
+
+      connectPorts(outSock.nodeId, outSock.portId, inSock.nodeId, inSock.portId, from.type);
+      showToast('Порты соединены!', 'success');
     }
 
     function connectPorts(fromNode, fromPort, toNode, toPort, type) {
-      // Remove any existing connection to the same input port
+      // Avoid duplicate connection
       connections = connections.filter(c => !(c.toNode === toNode && c.toPort === toPort));
       connections.push({ fromNode, fromPort, toNode, toPort, type });
       updateAllWires();
@@ -1616,7 +1655,6 @@
       showToast('Связь удалена', 'info');
     }
 
-    // Update Wire Paths
     function getSocketWorldCoord(nodeId, portId) {
       const sock = document.getElementById(`${nodeId}_${portId}`);
       if (!sock) return null;
@@ -1644,10 +1682,10 @@
     function updateAllWires() {
       let svgHtml = '';
 
-      // Update assembler status indicators
-      document.querySelectorAll('.status-indicator').forEach(s => {
-        s.textContent = 'DISCONNECTED';
-        s.style.color = '#64748b';
+      // Reset all assembler status badges
+      document.querySelectorAll('.status-badge').forEach(b => {
+        b.textContent = 'ОЖИДАНИЕ';
+        b.classList.remove('connected');
       });
 
       connections.forEach((conn, idx) => {
@@ -1664,13 +1702,13 @@
           <path class="wire" stroke="${colorVar}" d="${pathD}" onclick="disconnectWire(${idx})" title="Кликните, чтобы удалить связь"></path>
         `;
 
-        // Update target assembler status indicator if applicable
+        // Update target assembler status badge
         const targetNodeEl = document.getElementById(conn.toNode);
         if (targetNodeEl) {
-          const indicator = targetNodeEl.querySelector(`.status-${conn.type}`);
-          if (indicator) {
-            indicator.textContent = 'CONNECT';
-            indicator.style.color = '#10b981';
+          const badge = targetNodeEl.querySelector(`.status-${conn.type}`);
+          if (badge) {
+            badge.textContent = 'ПОДКЛЮЧЕН';
+            badge.classList.add('connected');
           }
         }
       });
@@ -1678,7 +1716,7 @@
       wiresGroup.innerHTML = svgHtml;
     }
 
-    // 6. Viewport Pan & Zoom Implementation
+    // 6. Viewport Pan, Zoom & Drag Listeners
     function setupViewport() {
       applyTransform();
 
@@ -1702,10 +1740,7 @@
 
       // Pan Canvas
       viewport.addEventListener('mousedown', (e) => {
-        if (connectingSocket) {
-          cancelConnecting();
-          return;
-        }
+        if (isDraggingPort) return;
         if (e.target === viewport || e.target === world || e.target.id === 'wiresSvg') {
           isPanning = true;
           panStartX = e.clientX - panX;
@@ -1725,24 +1760,23 @@
           draggedNode.style.left = `${nodeStartX + dx}px`;
           draggedNode.style.top = `${nodeStartY + dy}px`;
           updateAllWires();
-        } else if (connectingSocket) {
-          // Render temp wire
-          const p1 = getSocketWorldCoord(connectingSocket.nodeId, connectingSocket.portId);
-          if (p1) {
-            const viewRect = viewport.getBoundingClientRect();
-            const mouseWorld = {
-              x: (e.clientX - viewRect.left - panX) / scale,
-              y: (e.clientY - viewRect.top - panY) / scale
-            };
-            const pStart = connectingSocket.dir === 'out' ? p1 : mouseWorld;
-            const pEnd = connectingSocket.dir === 'out' ? mouseWorld : p1;
-            tempWire.setAttribute('d', buildWirePath(pStart, pEnd));
-            tempWire.style.display = 'block';
-          }
+        } else if (isDraggingPort) {
+          // Live temporary wire dragging
+          const viewRect = viewport.getBoundingClientRect();
+          const mouseWorld = {
+            x: (e.clientX - viewRect.left - panX) / scale,
+            y: (e.clientY - viewRect.top - panY) / scale
+          };
+          const pStart = dragPortSource.dir === 'out' ? dragStartWorldPos : mouseWorld;
+          const pEnd = dragPortSource.dir === 'out' ? mouseWorld : dragStartWorldPos;
+
+          tempWire.setAttribute('d', buildWirePath(pStart, pEnd));
+          tempWire.setAttribute('stroke', dragPortSource.type === 'char' ? 'var(--wire-char)' : dragPortSource.type === 'prompt' ? 'var(--wire-prompt)' : 'var(--wire-kb)');
+          tempWire.style.display = 'block';
         }
       });
 
-      window.addEventListener('mouseup', () => {
+      window.addEventListener('mouseup', (e) => {
         if (isPanning) {
           isPanning = false;
           viewport.classList.remove('panning');
@@ -1750,6 +1784,29 @@
         if (draggedNode) {
           draggedNode.classList.remove('dragging');
           draggedNode = null;
+        }
+        if (isDraggingPort) {
+          tempWire.style.display = 'none';
+          document.querySelectorAll('.port-circle').forEach(s => s.classList.remove('highlight'));
+
+          // Check if released over another port-circle
+          const elem = document.elementFromPoint(e.clientX, e.clientY);
+          const targetSock = elem ? elem.closest('.port-circle') : null;
+
+          if (targetSock && targetSock.dataset.node) {
+            const tNode = targetSock.dataset.node;
+            const tPort = targetSock.dataset.port;
+            const tType = targetSock.dataset.type;
+            const tDir = targetSock.dataset.dir;
+
+            attemptConnection(dragPortSource, { nodeId: tNode, portId: tPort, type: tType, dir: tDir });
+          } else {
+            // Enable click-to-connect fallback if user didn't drop on socket
+            clickPendingSocket = dragPortSource;
+          }
+
+          isDraggingPort = false;
+          dragPortSource = null;
         }
       });
 
@@ -1798,7 +1855,6 @@
 
     // 7. Queue Bot Assembly (Compile from connected nodes)
     async function queueBotAssembly(targetAssemblerId) {
-      // Find the assembler node
       let asmId = targetAssemblerId;
       if (!asmId) {
         const anyAsm = Object.keys(nodes).find(k => nodes[k].type === 'assembler');
@@ -1827,7 +1883,6 @@
           avatar = charEl.querySelector('.node-val-avatar').value.trim();
         }
       } else {
-        // Fallback: look for any character node on canvas
         const anyChar = Object.keys(nodes).find(k => nodes[k].type === 'char');
         if (anyChar) {
           const charEl = document.getElementById(anyChar);
