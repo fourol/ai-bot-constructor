@@ -37,6 +37,9 @@
       --wire-params: #f43f5e; /* Красный - Креативность и Длина (Параметры) */
       --wire-quick: #fb923c;  /* Оранжевый - Приветствие и Кнопки */
       --wire-kb: #34d399;     /* Изумрудный - База знаний */
+      --wire-format: #06b6d4; /* Неоновый Циан - Формат данных */
+      --wire-fewshot: #ec4899;/* Пурпурно-розовый - Few-Shot примеры */
+      --wire-guard: #eab308;  /* Золотой - Рамки и Guardrails */
 
       --danger: #ef4444;
       --success: #10b981;
@@ -463,6 +466,10 @@
       box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55);
     }
 
+    .node.fewshot-node {
+      width: 310px;
+    }
+
     /* Terminal / Endpoint Node (Central Window) */
     .node.assembler-node {
       width: 350px;
@@ -839,6 +846,9 @@
     .port-circle.type-params { background: var(--wire-params); }
     .port-circle.type-quick { background: var(--wire-quick); }
     .port-circle.type-kb { background: var(--wire-kb); }
+    .port-circle.type-format { background: var(--wire-format); }
+    .port-circle.type-fewshot { background: var(--wire-fewshot); }
+    .port-circle.type-guard { background: var(--wire-guard); }
 
     .status-badge {
       font-size: 10px;
@@ -1546,6 +1556,27 @@
             <div class="menu-desc">Градус фантазии и размер ответа</div>
           </div>
         </div>
+        <div class="menu-item" onclick="spawnNode('format')">
+          <div class="menu-icon">📊</div>
+          <div>
+            <div class="menu-title">Формат Данных</div>
+            <div class="menu-desc">JSON, Таблицы, Чистый код, TL;DR</div>
+          </div>
+        </div>
+        <div class="menu-item" onclick="spawnNode('fewshot')">
+          <div class="menu-icon">🎯</div>
+          <div>
+            <div class="menu-title">Few-Shot (Примеры)</div>
+            <div class="menu-desc">Обучение на парах вопрос-ответ</div>
+          </div>
+        </div>
+        <div class="menu-item" onclick="spawnNode('guard')">
+          <div class="menu-icon">🌐</div>
+          <div>
+            <div class="menu-title">Рамки и Фильтры</div>
+            <div class="menu-desc">Языковой лок, LaTeX, Сократ, Факт-лок</div>
+          </div>
+        </div>
         <div class="menu-item" onclick="spawnNode('quick')">
           <div class="menu-icon">💬</div>
           <div>
@@ -1809,7 +1840,7 @@
       const id = `node_${nodeCounter}_${type}`;
 
       const el = document.createElement('div');
-      el.className = `node ${type === 'assembler' ? 'assembler-node' : ''} ${type === 'brain' ? 'brain-node' : ''}`;
+      el.className = `node ${type === 'assembler' ? 'assembler-node' : ''} ${type === 'brain' ? 'brain-node' : ''} ${type === 'fewshot' ? 'fewshot-node' : ''}`;
       el.id = id;
       el.style.left = `${x}px`;
       el.style.top = `${y}px`;
@@ -1975,6 +2006,117 @@
             </div>
           </div>
         `;
+      } else if (type === 'format') {
+        inner = `
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
+            <span class="node-title">📊 Формат Данных</span>
+            <div class="node-header-actions">
+              <span class="node-type-label" style="color:var(--wire-format);">Output</span>
+              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+            </div>
+          </div>
+          <div class="node-body">
+            <div>
+              <div class="control-label"><span>Структура ответа</span></div>
+              <select class="control-select node-val-format-type" onchange="onFormatChange('${id}')">
+                <option value="markdown">📄 Человеческий диалог (Markdown)</option>
+                <option value="table">📋 Сводная таблица (Markdown Table)</option>
+                <option value="json">🧩 Строгий JSON (для API / кода)</option>
+                <option value="code">💻 Чистый код (Python / C++ / Web)</option>
+                <option value="tldr">⚡ TL;DR (Выжимка в 3 тезиса)</option>
+              </select>
+            </div>
+            <div class="format-hint-box" id="${id}_hint" style="background:var(--c-darkest); border:1px solid var(--c-dark); border-radius:4px; padding:6px; font-size:11px; color:var(--c-light); margin-top:6px; line-height:1.3;">
+              Стандартный диалоговый режим с форматированием текста, списками и жирным шрифтом.
+            </div>
+            <div class="port-row port-row-out">
+              <span class="port-name" style="color:var(--wire-format);">Формат данных</span>
+              <div class="port-circle out type-format" id="${id}_out" 
+                   data-node="${id}" data-port="out" data-type="format" data-dir="out"
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'format', 'out')" title="Зажмите и потяните к Мозгу Бота"></div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'fewshot') {
+        inner = `
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
+            <span class="node-title">🎯 Few-Shot (Примеры)</span>
+            <div class="node-header-actions">
+              <span class="node-type-label" style="color:var(--wire-fewshot);">Learning</span>
+              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+            </div>
+          </div>
+          <div class="node-body">
+            <div>
+              <div class="control-label"><span>Пресеты для обучения</span></div>
+              <div class="template-bar">
+                <button type="button" class="btn-template" onclick="loadFewShotPreset('${id}', 'oge')">🎓 ОГЭ</button>
+                <button type="button" class="btn-template" onclick="loadFewShotPreset('${id}', 'coder')">💻 Python</button>
+                <button type="button" class="btn-template" onclick="loadFewShotPreset('${id}', 'quest')">🎮 Квест</button>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div>
+                <div class="control-label" style="font-size:10px; color:var(--wire-fewshot);"><span>Пример 1: Вопрос ученика</span></div>
+                <input type="text" class="control-input node-val-few-q1" value="Как найти площадь круга?" oninput="updateAllTerminals()">
+                <div class="control-label" style="font-size:10px; color:var(--c-light); margin-top:2px;"><span>Эталонный ответ:</span></div>
+                <input type="text" class="control-input node-val-few-a1" value="Формула: S = π * R². Если дан диаметр d, то радиус R = d/2!" oninput="updateAllTerminals()">
+              </div>
+              <div>
+                <div class="control-label" style="font-size:10px; color:var(--wire-fewshot);"><span>Пример 2: Вопрос ученика</span></div>
+                <input type="text" class="control-input node-val-few-q2" value="Зачем нужна теорема Пифагора?" oninput="updateAllTerminals()">
+                <div class="control-label" style="font-size:10px; color:var(--c-light); margin-top:2px;"><span>Эталонный ответ:</span></div>
+                <input type="text" class="control-input node-val-few-a2" value="Чтобы найти третью сторону прямоугольного треугольника: a² + b² = c²!" oninput="updateAllTerminals()">
+              </div>
+            </div>
+            <div class="port-row port-row-out">
+              <span class="port-name" style="color:var(--wire-fewshot);">Few-Shot примеры</span>
+              <div class="port-circle out type-fewshot" id="${id}_out" 
+                   data-node="${id}" data-port="out" data-type="fewshot" data-dir="out"
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'fewshot', 'out')" title="Зажмите и потяните к Мозгу Бота"></div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'guard') {
+        inner = `
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
+            <span class="node-title">🌐 Рамки и Фильтры</span>
+            <div class="node-header-actions">
+              <span class="node-type-label" style="color:var(--wire-guard);">Guardrails</span>
+              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+            </div>
+          </div>
+          <div class="node-body">
+            <div>
+              <div class="control-label"><span>Языковой лок</span></div>
+              <select class="control-select node-val-guard-lang" onchange="updateAllTerminals()">
+                <option value="any">🌐 Любой язык (Авто)</option>
+                <option value="ru">🇷🇺 Только русский</option>
+                <option value="en">🇬🇧 Strict English Only (Тренажер)</option>
+              </select>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:5px; margin-top:6px;">
+              <label class="rule-checkbox-row">
+                <input type="checkbox" class="node-val-guard-socratic" onchange="updateAllTerminals()">
+                <span>🎓 Метод Сократа (не решать, а наводить)</span>
+              </label>
+              <label class="rule-checkbox-row">
+                <input type="checkbox" class="node-val-guard-latex" checked onchange="updateAllTerminals()">
+                <span>📐 Формулы строго в LaTeX ($...$)</span>
+              </label>
+              <label class="rule-checkbox-row">
+                <input type="checkbox" class="node-val-guard-nofake" checked onchange="updateAllTerminals()">
+                <span>🔒 Анти-галлюцинация (строго по фактам)</span>
+              </label>
+            </div>
+            <div class="port-row port-row-out">
+              <span class="port-name" style="color:var(--wire-guard);">Рамки & Guardrails</span>
+              <div class="port-circle out type-guard" id="${id}_out" 
+                   data-node="${id}" data-port="out" data-type="guard" data-dir="out"
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'guard', 'out')" title="Зажмите и потяните к Мозгу Бота"></div>
+            </div>
+          </div>
+        `;
       } else if (type === 'quick') {
         inner = `
           <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
@@ -2084,6 +2226,27 @@
                 <span class="status-badge status-params">ОПЦИЯ</span>
               </div>
               <div class="port-row port-row-in">
+                <div class="port-circle in type-format" id="${id}_in-format" 
+                     data-node="${id}" data-port="in-format" data-type="format" data-dir="in"
+                     onmousedown="onSocketMouseDown(event, '${id}', 'in-format', 'format', 'in')"></div>
+                <span class="port-name" style="color:var(--wire-format);">Формат данных</span>
+                <span class="status-badge status-format">ОПЦИЯ</span>
+              </div>
+              <div class="port-row port-row-in">
+                <div class="port-circle in type-fewshot" id="${id}_in-fewshot" 
+                     data-node="${id}" data-port="in-fewshot" data-type="fewshot" data-dir="in"
+                     onmousedown="onSocketMouseDown(event, '${id}', 'in-fewshot', 'fewshot', 'in')"></div>
+                <span class="port-name" style="color:var(--wire-fewshot);">Few-Shot примеры</span>
+                <span class="status-badge status-fewshot">ОПЦИЯ</span>
+              </div>
+              <div class="port-row port-row-in">
+                <div class="port-circle in type-guard" id="${id}_in-guard" 
+                     data-node="${id}" data-port="in-guard" data-type="guard" data-dir="in"
+                     onmousedown="onSocketMouseDown(event, '${id}', 'in-guard', 'guard', 'in')"></div>
+                <span class="port-name" style="color:var(--wire-guard);">Рамки & Guardrails</span>
+                <span class="status-badge status-guard">ОПЦИЯ</span>
+              </div>
+              <div class="port-row port-row-in">
                 <div class="port-circle in type-quick" id="${id}_in-quick" 
                      data-node="${id}" data-port="in-quick" data-type="quick" data-dir="in"
                      onmousedown="onSocketMouseDown(event, '${id}', 'in-quick', 'quick', 'in')"></div>
@@ -2106,6 +2269,9 @@
                 <span class="status-badge brain-chip-prompt">📝 Промпт</span>
                 <span class="status-badge brain-chip-rules">⚙️ Стиль</span>
                 <span class="status-badge brain-chip-params">🔥 Параметры</span>
+                <span class="status-badge brain-chip-format">📊 Формат</span>
+                <span class="status-badge brain-chip-fewshot">🎯 Few-Shot</span>
+                <span class="status-badge brain-chip-guard">🌐 Рамки</span>
               </div>
             </div>
 
@@ -2164,6 +2330,9 @@
                 <span class="terminal-chip chip-prompt">📝 Промпт</span>
                 <span class="terminal-chip chip-rules">⚙️ Стиль</span>
                 <span class="terminal-chip chip-params">🔥 Фантазия</span>
+                <span class="terminal-chip chip-format">📊 Формат</span>
+                <span class="terminal-chip chip-fewshot">🎯 Примеры</span>
+                <span class="terminal-chip chip-guard">🌐 Рамки</span>
                 <span class="terminal-chip chip-kb">📚 Знания</span>
               </div>
 
@@ -2270,6 +2439,66 @@
       updateAllTerminals();
     }
 
+    const FEWSHOT_PRESETS = {
+      oge: {
+        q1: 'Как найти площадь круга?',
+        a1: 'Формула: S = π * R². Если дан диаметр d, то радиус R = d/2!',
+        q2: 'Зачем нужна теорема Пифагора?',
+        a2: 'Чтобы найти сторону прямоугольного треугольника: a² + b² = c²!'
+      },
+      coder: {
+        q1: 'Как развернуть строку в Python?',
+        a1: 'Срез с шагом -1: s[::-1]. Быстро и без лишних библиотек!',
+        q2: 'Что делает enumerate()?',
+        a2: 'Возвращает кортежи (индекс, элемент): for i, v in enumerate(arr): ...'
+      },
+      quest: {
+        q1: 'Осматриваю старую железную дверь.',
+        a1: 'Дверь заперта на кодовый замок. Рядом надпись: "2 + 2 * 2". Твой выбор: [1] Ввести 6, [2] Ввести 8, [3] Взломать лом?',
+        q2: 'Выбираю ввести 6.',
+        a2: 'Замок щёлкает и дверь отворяется! Внутри мерцает древний сервер. Что делаешь дальше?'
+      }
+    };
+
+    function loadFewShotPreset(nodeId, key) {
+      const p = FEWSHOT_PRESETS[key];
+      if (!p) return;
+      const el = document.getElementById(nodeId);
+      if (!el) return;
+      el.querySelector('.node-val-few-q1').value = p.q1;
+      el.querySelector('.node-val-few-a1').value = p.a1;
+      el.querySelector('.node-val-few-q2').value = p.q2;
+      el.querySelector('.node-val-few-a2').value = p.a2;
+      showToast('Пресет загружен', 'success');
+      updateAllTerminals();
+    }
+
+    function onFormatChange(nodeId) {
+      const el = document.getElementById(nodeId);
+      if (!el) return;
+      const val = el.querySelector('.node-val-format-type').value;
+      const hint = document.getElementById(`${nodeId}_hint`);
+      if (hint) {
+        switch (val) {
+          case 'json':
+            hint.textContent = 'Строгий JSON: {"status": "ok", "result": ...} для удобного парсинга в Python/JS.';
+            break;
+          case 'table':
+            hint.textContent = 'Markdown-таблица с колонками и строками — идеально для сравнений и списков.';
+            break;
+          case 'code':
+            hint.textContent = 'Чистый исполняемый код с подсветкой синтаксиса и комментариями.';
+            break;
+          case 'tldr':
+            hint.textContent = 'TL;DR: супер-кратко, ровно 3 ключевых тезиса с маркерами.';
+            break;
+          default:
+            hint.textContent = 'Стандартный диалоговый режим с Markdown-форматированием текста.';
+        }
+      }
+      updateAllTerminals();
+    }
+
     function clearNodeFile(e, nodeId) {
       if (e) { e.preventDefault(); e.stopPropagation(); }
       const el = document.getElementById(nodeId);
@@ -2286,6 +2515,9 @@
         case 'brain': return 'var(--wire-brain)';
         case 'rules': return 'var(--wire-rules)';
         case 'params': return 'var(--wire-params)';
+        case 'format': return 'var(--wire-format)';
+        case 'fewshot': return 'var(--wire-fewshot)';
+        case 'guard': return 'var(--wire-guard)';
         case 'quick': return 'var(--wire-quick)';
         case 'kb': return 'var(--wire-kb)';
         default: return '#ffffff';
@@ -2299,6 +2531,9 @@
         case 'brain': return '🤖 Мозг Бота';
         case 'rules': return 'Правила';
         case 'params': return 'Параметры';
+        case 'format': return 'Формат';
+        case 'fewshot': return 'Few-Shot';
+        case 'guard': return 'Рамки';
         case 'quick': return 'Приветствие';
         case 'kb': return 'Знания';
         default: return 'Связь';
@@ -2402,7 +2637,7 @@
       // Reset all status badges
       document.querySelectorAll('.status-badge').forEach(b => {
         b.classList.remove('connected');
-        if (b.classList.contains('status-rules') || b.classList.contains('status-quick') || b.classList.contains('status-params') || b.classList.contains('status-kb')) {
+        if (b.classList.contains('status-rules') || b.classList.contains('status-quick') || b.classList.contains('status-params') || b.classList.contains('status-kb') || b.classList.contains('status-format') || b.classList.contains('status-fewshot') || b.classList.contains('status-guard')) {
           b.textContent = 'ОПЦИЯ';
         } else {
           b.textContent = 'ОЖИДАНИЕ';
@@ -2506,15 +2741,25 @@
         }
       }
 
+      const formatConn = connections.find(c => c.toNode === brainId && c.type === 'format');
+      const fewshotConn = connections.find(c => c.toNode === brainId && c.type === 'fewshot');
+      const guardConn = connections.find(c => c.toNode === brainId && c.type === 'guard');
+
       const chipChar = brainEl.querySelector('.brain-chip-char');
       const chipPrompt = brainEl.querySelector('.brain-chip-prompt');
       const chipRules = brainEl.querySelector('.brain-chip-rules');
       const chipParams = brainEl.querySelector('.brain-chip-params');
+      const chipFormat = brainEl.querySelector('.brain-chip-format');
+      const chipFewshot = brainEl.querySelector('.brain-chip-fewshot');
+      const chipGuard = brainEl.querySelector('.brain-chip-guard');
 
       if (chipChar) chipChar.classList.toggle('connected', !!charConn);
       if (chipPrompt) chipPrompt.classList.toggle('connected', !!promptConn);
       if (chipRules) chipRules.classList.toggle('connected', !!rulesConn);
       if (chipParams) chipParams.classList.toggle('connected', !!paramsConn);
+      if (chipFormat) chipFormat.classList.toggle('connected', !!formatConn);
+      if (chipFewshot) chipFewshot.classList.toggle('connected', !!fewshotConn);
+      if (chipGuard) chipGuard.classList.toggle('connected', !!guardConn);
     }
 
     function updateTerminalPreview(termNodeId) {
@@ -2568,10 +2813,24 @@
       if (nameBox) nameBox.textContent = name || (hasBrain ? '(Имя в Мозге не задано)' : '(Подключите Мозг Бота)');
 
       const chipBrain = termEl.querySelector('.chip-brain');
+      let hasFormat = false;
+      let hasFewshot = false;
+      let hasGuard = false;
+
+      if (brainConn) {
+        const brainId = brainConn.fromNode;
+        hasFormat = connections.some(c => c.toNode === brainId && c.type === 'format');
+        hasFewshot = connections.some(c => c.toNode === brainId && c.type === 'fewshot');
+        hasGuard = connections.some(c => c.toNode === brainId && c.type === 'guard');
+      }
+
       const chipChar = termEl.querySelector('.chip-char');
       const chipPrompt = termEl.querySelector('.chip-prompt');
       const chipRules = termEl.querySelector('.chip-rules');
       const chipParams = termEl.querySelector('.chip-params');
+      const chipFormat = termEl.querySelector('.chip-format');
+      const chipFewshot = termEl.querySelector('.chip-fewshot');
+      const chipGuard = termEl.querySelector('.chip-guard');
       const chipKb = termEl.querySelector('.chip-kb');
 
       if (chipBrain) chipBrain.classList.toggle('active', hasBrain);
@@ -2579,6 +2838,9 @@
       if (chipPrompt) chipPrompt.classList.toggle('active', hasPrompt);
       if (chipRules) chipRules.classList.toggle('active', hasRules);
       if (chipParams) chipParams.classList.toggle('active', hasParams);
+      if (chipFormat) chipFormat.classList.toggle('active', hasFormat);
+      if (chipFewshot) chipFewshot.classList.toggle('active', hasFewshot);
+      if (chipGuard) chipGuard.classList.toggle('active', hasGuard);
       if (chipKb) chipKb.classList.toggle('active', hasKb);
 
       if (statusText) {
@@ -2654,6 +2916,59 @@
           if (parEl) {
             temperature = parseFloat(parEl.querySelector('.node-val-temp').value) || 0.7;
             maxTokens = parseInt(parEl.querySelector('.node-val-tokens').value) || 160;
+          }
+        }
+
+        // Format
+        const formatConn = connections.find(c => c.toNode === brainNodeId && c.type === 'format');
+        if (formatConn) {
+          const fEl = document.getElementById(formatConn.fromNode);
+          if (fEl) {
+            const fmt = fEl.querySelector('.node-val-format-type').value;
+            if (fmt === 'json') {
+              prompt += '\n\nФормат вывода: Отвечай строго валидным JSON-объектом {"status": "ok", "response": ...} без пояснительного текста.';
+            } else if (fmt === 'table') {
+              prompt += '\n\nФормат вывода: Оформи свой ответ в виде четкой Markdown-таблицы со столбцами и строками.';
+            } else if (fmt === 'code') {
+              prompt += '\n\nФормат вывода: Отвечай только исполняемым программным кодом с краткими поясняющими комментариями. Оформи в блок кода ```язык ... ```.';
+            } else if (fmt === 'tldr') {
+              prompt += '\n\nФормат вывода: Отвечай максимально лаконично (TL;DR): ровно 3 ключевых пункта с маркерами.';
+            }
+          }
+        }
+
+        // Guardrails
+        const guardConn = connections.find(c => c.toNode === brainNodeId && c.type === 'guard');
+        if (guardConn) {
+          const gEl = document.getElementById(guardConn.fromNode);
+          if (gEl) {
+            const lang = gEl.querySelector('.node-val-guard-lang').value;
+            const socratic = gEl.querySelector('.node-val-guard-socratic').checked;
+            const latex = gEl.querySelector('.node-val-guard-latex').checked;
+            const nofake = gEl.querySelector('.node-val-guard-nofake').checked;
+
+            if (lang === 'ru') prompt += '\n\nЯзыковое ограничение: Отвечай исключительно на русском языке.';
+            if (lang === 'en') prompt += '\n\nLanguage Constraint: Respond strictly in English only (language training immersion).';
+            if (socratic) prompt += '\n\nМетод Сократа: Не давай готовых решений или прямых ответов на задачи! Задай один короткий наводящий вопрос, чтобы натолкнуть ученика на следующий шаг решения.';
+            if (latex) prompt += '\n\nФормулы: Все математические формулы и переменные обязательно оформляй через LaTeX ($...$).';
+            if (nofake) prompt += '\n\nАнти-галлюцинация: Если точного ответа нет в твоих данных или базе знаний, строго скажи: "В моей базе нет проверенных данных по этому вопросу", не придумывай.';
+          }
+        }
+
+        // Few-Shot Examples
+        const fewshotConn = connections.find(c => c.toNode === brainNodeId && c.type === 'fewshot');
+        if (fewshotConn) {
+          const fsEl = document.getElementById(fewshotConn.fromNode);
+          if (fsEl) {
+            const q1 = fsEl.querySelector('.node-val-few-q1').value.trim();
+            const a1 = fsEl.querySelector('.node-val-few-a1').value.trim();
+            const q2 = fsEl.querySelector('.node-val-few-q2').value.trim();
+            const a2 = fsEl.querySelector('.node-val-few-a2').value.trim();
+
+            let examplesText = '\n\nПримеры правильного диалога (Few-Shot):';
+            if (q1 && a1) examplesText += `\nПользователь: "${q1}"\nБот: "${a1}"`;
+            if (q2 && a2) examplesText += `\nПользователь: "${q2}"\nБот: "${a2}"`;
+            prompt += examplesText;
           }
         }
       }
@@ -2933,6 +3248,59 @@
           if (paramsEl) {
             temperature = parseFloat(paramsEl.querySelector('.node-val-temp').value) || 0.7;
             maxTokens = parseInt(paramsEl.querySelector('.node-val-tokens').value) || 350;
+          }
+        }
+
+        // Format connected to Brain
+        const formatConn = connections.find(c => c.toNode === brainNodeId && c.type === 'format');
+        if (formatConn) {
+          const fEl = document.getElementById(formatConn.fromNode);
+          if (fEl) {
+            const fmt = fEl.querySelector('.node-val-format-type').value;
+            if (fmt === 'json') {
+              prompt += '\n\nФормат вывода: Отвечай строго валидным JSON-объектом {"status": "ok", "response": ...} без пояснительного текста.';
+            } else if (fmt === 'table') {
+              prompt += '\n\nФормат вывода: Оформи свой ответ в виде четкой Markdown-таблицы со столбцами и строками.';
+            } else if (fmt === 'code') {
+              prompt += '\n\nФормат вывода: Отвечай только исполняемым программным кодом с краткими поясняющими комментариями. Оформи в блок кода ```язык ... ```.';
+            } else if (fmt === 'tldr') {
+              prompt += '\n\nФормат вывода: Отвечай максимально лаконично (TL;DR): ровно 3 ключевых пункта с маркерами.';
+            }
+          }
+        }
+
+        // Guardrails connected to Brain
+        const guardConn = connections.find(c => c.toNode === brainNodeId && c.type === 'guard');
+        if (guardConn) {
+          const gEl = document.getElementById(guardConn.fromNode);
+          if (gEl) {
+            const lang = gEl.querySelector('.node-val-guard-lang').value;
+            const socratic = gEl.querySelector('.node-val-guard-socratic').checked;
+            const latex = gEl.querySelector('.node-val-guard-latex').checked;
+            const nofake = gEl.querySelector('.node-val-guard-nofake').checked;
+
+            if (lang === 'ru') prompt += '\n\nЯзыковое ограничение: Отвечай исключительно на русском языке.';
+            if (lang === 'en') prompt += '\n\nLanguage Constraint: Respond strictly in English only (language training immersion).';
+            if (socratic) prompt += '\n\nМетод Сократа: Не давай готовых решений или прямых ответов на задачи! Задай один короткий наводящий вопрос, чтобы натолкнуть ученика на следующий шаг решения.';
+            if (latex) prompt += '\n\nФормулы: Все математические формулы и переменные обязательно оформляй через LaTeX ($...$).';
+            if (nofake) prompt += '\n\nАнти-галлюцинация: Если точного ответа нет в твоих данных или базе знаний, строго скажи: "В моей базе нет проверенных данных по этому вопросу", не придумывай.';
+          }
+        }
+
+        // Few-Shot Examples connected to Brain
+        const fewshotConn = connections.find(c => c.toNode === brainNodeId && c.type === 'fewshot');
+        if (fewshotConn) {
+          const fsEl = document.getElementById(fewshotConn.fromNode);
+          if (fsEl) {
+            const q1 = fsEl.querySelector('.node-val-few-q1').value.trim();
+            const a1 = fsEl.querySelector('.node-val-few-a1').value.trim();
+            const q2 = fsEl.querySelector('.node-val-few-q2').value.trim();
+            const a2 = fsEl.querySelector('.node-val-few-a2').value.trim();
+
+            let examplesText = '\n\nПримеры правильного диалога (Few-Shot):';
+            if (q1 && a1) examplesText += `\nПользователь: "${q1}"\nБот: "${a1}"`;
+            if (q2 && a2) examplesText += `\nПользователь: "${q2}"\nБот: "${a2}"`;
+            prompt += examplesText;
           }
         }
 
