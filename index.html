@@ -3,345 +3,443 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Конструктор ИИ-ботов 🤖 Мастер-класс</title>
+  <title>Конструктор ИИ-ботов ⚡ Comfy Node Studio</title>
   <style>
     :root {
-      --primary: #6366f1;
-      --primary-hover: #4f46e5;
-      --primary-light: #e0e7ff;
-      --secondary: #ec4899;
-      --accent: #06b6d4;
-      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-      --surface: rgba(30, 41, 59, 0.7);
-      --surface-border: rgba(255, 255, 255, 0.1);
-      --surface-card: rgba(15, 23, 42, 0.6);
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --success: #10b981;
+      --bg-dark: #070b14;
+      --bg-canvas: #090e1a;
+      --node-bg: rgba(12, 21, 39, 0.95);
+      --node-border: #1c2e4f;
+      --node-border-active: #38bdf8;
+      --node-header: #11203b;
+      --node-header-text: #f1f5f9;
+      --text-main: #e2e8f0;
+      --text-muted: #8496b3;
+      --accent-cyan: #38bdf8;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-blue: #3b82f6;
       --danger: #ef4444;
-      --radius-lg: 20px;
-      --radius-md: 12px;
-      --radius-sm: 8px;
-      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      --wire-char: #38bdf8;
+      --wire-prompt: #818cf8;
+      --wire-kb: #34d399;
+      --radius-node: 12px;
+      --radius-sm: 6px;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
 
     body {
-      background: var(--bg-gradient);
-      color: var(--text);
-      min-height: 100vh;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
-      overflow-x: hidden;
+      user-select: none;
     }
 
-    /* Header */
-    header {
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--surface-border);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      padding: 12px 24px;
-    }
-
-    .header-inner {
-      max-width: 1400px;
-      margin: 0 auto;
+    /* Top Bar (ComfyUI Style) */
+    .top-bar {
+      height: 52px;
+      background: #0b1324;
+      border-bottom: 1px solid #162642;
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo-icon {
-      font-size: 32px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      width: 48px;
-      height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--radius-md);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
-    }
-
-    .logo-title {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(to right, #ffffff, #c7d2fe);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .logo-badge {
-      font-size: 11px;
-      font-weight: 600;
-      background: rgba(99, 102, 241, 0.2);
-      color: #a5b4fc;
-      border: 1px solid rgba(99, 102, 241, 0.4);
-      padding: 2px 8px;
-      border-radius: 20px;
-      display: inline-block;
-      margin-left: 8px;
-    }
-
-    /* Tabs Navigation */
-    .tabs-nav {
-      display: flex;
-      background: rgba(15, 23, 42, 0.6);
-      padding: 4px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--surface-border);
-      gap: 4px;
-    }
-
-    .tab-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      padding: 8px 18px;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-    }
-
-    .tab-btn:hover {
-      color: var(--text);
-      background: rgba(255, 255, 255, 0.05);
-    }
-
-    .tab-btn.active {
-      background: var(--primary);
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
-    }
-
-    .tab-badge {
-      background: rgba(255, 255, 255, 0.2);
-      font-size: 11px;
-      padding: 1px 6px;
-      border-radius: 10px;
-    }
-
-    /* Main Container */
-    main {
-      max-width: 1400px;
-      width: 100%;
-      margin: 20px auto;
-      padding: 0 20px;
-      flex: 1;
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-      animation: fadeIn 0.25s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Card styling */
-    .card {
-      background: var(--surface);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius-lg);
-      padding: 28px;
-      box-shadow: var(--shadow);
-    }
-
-    /* Tab 1: Constructor */
-    .constructor-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 24px;
-      max-width: 820px;
-      margin: 0 auto;
-    }
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      font-size: 14px;
-      font-weight: 700;
-      color: #cbd5e1;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .label-hint {
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--text-muted);
-      margin-left: auto;
-    }
-
-    input[type="text"],
-    textarea {
-      width: 100%;
-      background: rgba(15, 23, 42, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: var(--radius-md);
-      padding: 12px 16px;
-      font-size: 15px;
-      color: var(--text);
-      outline: none;
-      transition: all 0.2s ease;
-    }
-
-    input[type="text"]:focus,
-    textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
-      background: rgba(15, 23, 42, 0.95);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 120px;
-      line-height: 1.5;
-    }
-
-    /* Avatar Selector */
-    .avatar-selection-wrapper {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .current-avatar-preview {
-      width: 56px;
-      height: 56px;
-      font-size: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(99, 102, 241, 0.2);
-      border: 2px solid var(--primary);
-      border-radius: var(--radius-md);
-      box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+      padding: 0 18px;
+      z-index: 100;
       flex-shrink: 0;
     }
 
-    .emoji-presets {
+    .brand-section {
       display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      flex: 1;
+      align-items: center;
+      gap: 12px;
     }
 
-    .emoji-btn {
-      width: 38px;
-      height: 38px;
-      font-size: 20px;
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #1e3a8a, #0284c7);
+      border: 1px solid #38bdf8;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: all 0.15s ease;
+      font-size: 18px;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
     }
 
-    .emoji-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: scale(1.15);
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: #f8fafc;
     }
 
-    .emoji-btn.active {
-      background: rgba(99, 102, 241, 0.3);
-      border-color: var(--primary);
+    .brand-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #22426f;
+      padding: 2px 6px;
+      border-radius: 4px;
     }
 
-    .custom-emoji-input {
-      width: 80px !important;
-      text-align: center;
-      font-size: 18px !important;
-    }
-
-    /* Prompt Templates */
-    .templates-bar {
+    .mode-switch {
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-      margin-bottom: 8px;
+      background: #060a12;
+      border: 1px solid #162642;
+      border-radius: 8px;
+      padding: 3px;
+      gap: 4px;
     }
 
-    .template-pill {
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid var(--surface-border);
-      color: #cbd5e1;
-      padding: 6px 12px;
-      font-size: 12px;
+    .mode-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      font-size: 13px;
       font-weight: 600;
-      border-radius: 20px;
+      border-radius: 6px;
       cursor: pointer;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: 6px;
       transition: all 0.15s ease;
     }
 
-    .template-pill:hover {
-      background: rgba(99, 102, 241, 0.2);
-      border-color: var(--primary);
+    .mode-btn:hover {
       color: #fff;
-      transform: translateY(-1px);
+      background: #111d33;
     }
 
-    /* Knowledge base file drop */
-    .file-upload-box {
-      border: 2px dashed rgba(255, 255, 255, 0.18);
-      border-radius: var(--radius-md);
-      padding: 16px;
-      text-align: center;
-      background: rgba(15, 23, 42, 0.4);
+    .mode-btn.active {
+      background: #1a365d;
+      color: #38bdf8;
+      border: 1px solid #2b538c;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+    }
+
+    .queue-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-queue {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: white;
+      border: 1px solid #38bdf8;
+      padding: 7px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 6px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 0 12px rgba(2, 132, 199, 0.4);
+      transition: all 0.15s ease;
+    }
+
+    .btn-queue:hover:not(:disabled) {
+      background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.5);
+    }
+
+    .btn-queue:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-reset-view {
+      background: #111d33;
+      border: 1px solid #1e3357;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-reset-view:hover {
+      color: #fff;
+      background: #1a2c4e;
+    }
+
+    /* Views container */
+    .view-container {
+      flex: 1;
       position: relative;
+      overflow: hidden;
+      display: none;
     }
 
-    .file-upload-box:hover {
-      border-color: var(--primary);
-      background: rgba(99, 102, 241, 0.08);
+    .view-container.active {
+      display: block;
     }
 
-    .file-upload-box input[type="file"] {
+    /* Node Canvas (ComfyUI Graph) */
+    #nodeCanvasView {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg-canvas);
+      background-image: 
+        radial-gradient(#16243d 1.2px, transparent 1.2px),
+        linear-gradient(to right, rgba(22, 36, 61, 0.15) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(22, 36, 61, 0.15) 1px, transparent 1px);
+      background-size: 24px 24px, 120px 120px, 120px 120px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #canvasSvg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .wire-path {
+      stroke-width: 3.5;
+      fill: none;
+      filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.6));
+      stroke-linecap: round;
+      transition: stroke-width 0.15s ease;
+    }
+
+    .wire-glow {
+      stroke-width: 8;
+      fill: none;
+      opacity: 0.25;
+      stroke-linecap: round;
+    }
+
+    /* Node Element */
+    .node {
+      position: absolute;
+      background: var(--node-bg);
+      border: 1px solid var(--node-border);
+      border-radius: var(--radius-node);
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.5), 0 0 1px rgba(56, 189, 248, 0.2);
+      width: 290px;
+      z-index: 20;
+      user-select: none;
+      backdrop-filter: blur(8px);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .node:hover {
+      border-color: #274775;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6), 0 0 10px rgba(56, 189, 248, 0.15);
+    }
+
+    .node.dragging {
+      border-color: var(--node-border-active);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 16px rgba(56, 189, 248, 0.35);
+      z-index: 30;
+    }
+
+    .node.node-target {
+      width: 340px;
+      border-color: #22426f;
+    }
+
+    .node-header {
+      padding: 10px 14px;
+      background: var(--node-header);
+      border-top-left-radius: var(--radius-node);
+      border-top-right-radius: var(--radius-node);
+      border-bottom: 1px solid #162642;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: grab;
+    }
+
+    .node-header:active {
+      cursor: grabbing;
+    }
+
+    .node-title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .node-icon {
+      font-size: 16px;
+    }
+
+    .node-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--node-header-text);
+      letter-spacing: -0.2px;
+    }
+
+    .node-tag {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.3);
+      color: #94a3b8;
+    }
+
+    .node-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      user-select: text;
+    }
+
+    /* Form inputs inside nodes */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .field-input,
+    .field-textarea {
+      background: #080d17;
+      border: 1px solid #192a47;
+      border-radius: var(--radius-sm);
+      color: #f1f5f9;
+      font-size: 13px;
+      padding: 8px 10px;
+      outline: none;
+      transition: all 0.15s ease;
+      width: 100%;
+    }
+
+    .field-input:focus,
+    .field-textarea:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+      background: #0a1120;
+    }
+
+    .field-textarea {
+      resize: vertical;
+      min-height: 85px;
+      line-height: 1.4;
+    }
+
+    /* Node Emojis */
+    .emoji-row {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .node-emoji-btn {
+      width: 32px;
+      height: 32px;
+      font-size: 17px;
+      background: #080d17;
+      border: 1px solid #192a47;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .node-emoji-btn:hover {
+      background: #14223d;
+      transform: scale(1.1);
+    }
+
+    .node-emoji-btn.active {
+      background: #163056;
+      border-color: #38bdf8;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+    }
+
+    .current-avatar-badge {
+      width: 36px;
+      height: 36px;
+      font-size: 22px;
+      background: #0f1c33;
+      border: 1px solid #38bdf8;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Template pills in node */
+    .template-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .chip-btn {
+      background: #091222;
+      border: 1px solid #1a2f52;
+      color: #94a3b8;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .chip-btn:hover {
+      color: #fff;
+      border-color: #38bdf8;
+      background: #11223f;
+    }
+
+    /* File drop area */
+    .file-box {
+      border: 1px dashed #203860;
+      border-radius: 6px;
+      padding: 10px;
+      background: #070c17;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+
+    .file-box:hover {
+      border-color: #38bdf8;
+      background: #0b1527;
+    }
+
+    .file-box input[type="file"] {
       position: absolute;
       top: 0;
       left: 0;
@@ -351,899 +449,1104 @@
       cursor: pointer;
     }
 
-    .file-upload-info {
+    .file-label {
+      font-size: 11px;
+      color: #94a3b8;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 4px;
+      justify-content: center;
+      gap: 6px;
       pointer-events: none;
     }
 
-    .file-selected-badge {
+    .file-badge {
       display: none;
       align-items: center;
-      gap: 8px;
-      background: rgba(16, 185, 129, 0.2);
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      color: #6ee7b7;
-      padding: 6px 12px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      margin-top: 10px;
-    }
-
-    .clear-file-btn {
-      background: transparent;
-      border: none;
-      color: #f87171;
-      cursor: pointer;
-      font-size: 14px;
-      margin-left: 6px;
-    }
-
-    /* Submit Button */
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-      color: white;
-      border: none;
-      border-radius: var(--radius-md);
-      padding: 14px 28px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
-      transition: all 0.2s ease;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* Tab 2: Chat & Gallery Layout */
-    .chat-layout {
-      display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 20px;
-      min-height: 700px;
-      height: calc(100vh - 140px);
-    }
-
-    @media (max-width: 960px) {
-      .chat-layout {
-        grid-template-columns: 1fr;
-        height: auto;
-      }
-    }
-
-    /* Gallery Sidebar */
-    .gallery-sidebar {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      padding: 20px;
-      height: 100%;
-    }
-
-    .gallery-header {
-      display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-
-    .gallery-title {
-      font-size: 16px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .refresh-btn {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--surface-border);
-      color: var(--text-muted);
-      padding: 6px 10px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      font-size: 12px;
-      transition: all 0.15s ease;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .refresh-btn:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    .gallery-list {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding-right: 4px;
-    }
-
-    .bot-card {
-      background: var(--surface-card);
-      border: 1px solid var(--surface-border);
-      border-radius: var(--radius-md);
-      padding: 12px 14px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .bot-card:hover {
-      background: rgba(99, 102, 241, 0.12);
-      border-color: rgba(99, 102, 241, 0.3);
-      transform: translateX(3px);
-    }
-
-    .bot-card.active {
-      background: rgba(99, 102, 241, 0.22);
-      border-color: var(--primary);
-      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-    }
-
-    .bot-card-avatar {
-      font-size: 26px;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: var(--radius-sm);
-      flex-shrink: 0;
-    }
-
-    .bot-card-info {
-      flex: 1;
-      overflow: hidden;
-    }
-
-    .bot-card-name {
-      font-size: 14px;
-      font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: #f8fafc;
-    }
-
-    .bot-card-meta {
+      background: #092019;
+      border: 1px solid #10b981;
+      color: #6ee7b7;
+      padding: 5px 8px;
+      border-radius: 4px;
       font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 2px;
+      margin-top: 6px;
+    }
+
+    /* Sockets (Ports) */
+    .socket {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      border: 2px solid #000;
+      position: absolute;
+      cursor: pointer;
+      z-index: 25;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .socket:hover {
+      transform: scale(1.35);
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .socket.socket-out {
+      right: -7px;
+    }
+
+    .socket.socket-in {
+      left: -7px;
+    }
+
+    .socket-char { background: var(--wire-char); color: var(--wire-char); }
+    .socket-prompt { background: var(--wire-prompt); color: var(--wire-prompt); }
+    .socket-kb { background: var(--wire-kb); color: var(--wire-kb); }
+
+    .node-port-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 600;
+      padding: 4px 0;
+    }
+
+    .port-label-in {
       display: flex;
       align-items: center;
       gap: 6px;
+      margin-left: 2px;
     }
 
-    /* Chat Section */
-    .chat-section {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      padding: 0;
-      height: 100%;
-    }
-
-    .chat-header {
-      padding: 16px 24px;
-      background: rgba(15, 23, 42, 0.6);
-      border-bottom: 1px solid var(--surface-border);
+    .port-label-out {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
+      gap: 6px;
+      margin-right: 2px;
+      margin-left: auto;
     }
 
-    .chat-bot-details {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .port-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #334155;
     }
 
-    .chat-bot-avatar {
-      font-size: 32px;
-      width: 48px;
-      height: 48px;
+    .port-status-dot.connected {
+      background: #10b981;
+      box-shadow: 0 0 6px #10b981;
+    }
+
+    /* Assembler Action button */
+    .btn-assemble {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: white;
+      border: 1px solid #38bdf8;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(99, 102, 241, 0.2);
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(99, 102, 241, 0.3);
+      gap: 8px;
+      margin-top: 6px;
+      box-shadow: 0 0 16px rgba(2, 132, 199, 0.4);
+      transition: all 0.15s ease;
     }
 
-    .chat-bot-name {
-      font-size: 17px;
+    .btn-assemble:hover:not(:disabled) {
+      background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+    }
+
+    .btn-assemble:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* VIEW 2: Chat & Gallery (Dark Navy Palette) */
+    #chatGalleryView {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      background: #070b14;
+    }
+
+    @media (max-width: 900px) {
+      #chatGalleryView {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sidebar-gallery {
+      background: #090e1a;
+      border-right: 1px solid #142138;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid #142138;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bots-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .bot-item {
+      background: #0d1527;
+      border: 1px solid #182845;
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.15s ease;
+    }
+
+    .bot-item:hover {
+      background: #111d36;
+      border-color: #274775;
+      transform: translateX(2px);
+    }
+
+    .bot-item.active {
+      background: #142647;
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
+
+    .bot-avatar-thumb {
+      width: 36px;
+      height: 36px;
+      background: #080d17;
+      border: 1px solid #1e3357;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .bot-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .bot-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f1f5f9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bot-facts-count {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    /* Main chat window */
+    .chat-area {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: #080d17;
+    }
+
+    .chat-top-header {
+      padding: 14px 20px;
+      background: #0a1120;
+      border-bottom: 1px solid #142138;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chat-target-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-target-avatar {
+      font-size: 26px;
+      width: 42px;
+      height: 42px;
+      background: #0f1c33;
+      border: 1px solid #233e6b;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-target-name {
+      font-size: 16px;
       font-weight: 800;
+      color: #f8fafc;
     }
 
-    .chat-bot-status {
-      font-size: 12px;
+    .chat-target-badge {
+      font-size: 11px;
       color: #10b981;
       display: flex;
       align-items: center;
       gap: 5px;
     }
 
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      background: #10b981;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #10b981;
-    }
-
-    .chat-actions {
+    .chat-actions-btn-group {
       display: flex;
       gap: 8px;
     }
 
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid var(--surface-border);
-      color: var(--text);
-      padding: 8px 14px;
-      font-size: 13px;
+    .btn-action-nav {
+      background: #111d33;
+      border: 1px solid #1e3357;
+      color: #cbd5e1;
+      padding: 6px 12px;
+      font-size: 12px;
       font-weight: 600;
-      border-radius: var(--radius-sm);
+      border-radius: 6px;
       cursor: pointer;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: 6px;
       transition: all 0.15s ease;
     }
 
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.3);
+    .btn-action-nav:hover {
+      background: #1a2c4e;
+      border-color: #38bdf8;
+      color: #fff;
     }
 
-    /* Messages container */
-    .messages-container {
+    .chat-messages {
       flex: 1;
       overflow-y: auto;
-      padding: 24px;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
 
-    .message {
+    .chat-msg {
       display: flex;
-      gap: 12px;
-      max-width: 82%;
-      animation: messageAppear 0.2s ease-out;
+      gap: 10px;
+      max-width: 80%;
+      animation: msgFadeIn 0.2s ease-out;
     }
 
-    @keyframes messageAppear {
-      from { opacity: 0; transform: translateY(8px); }
+    @keyframes msgFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .message.user {
+    .chat-msg.user {
       align-self: flex-end;
       flex-direction: row-reverse;
     }
 
-    .message.bot {
+    .chat-msg.bot {
       align-self: flex-start;
     }
 
-    .message-avatar {
-      width: 38px;
-      height: 38px;
-      font-size: 20px;
+    .msg-avatar {
+      width: 34px;
+      height: 34px;
+      font-size: 18px;
+      border-radius: 6px;
+      background: #0f1c33;
+      border: 1px solid #1e3357;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: var(--radius-sm);
       flex-shrink: 0;
     }
 
-    .message.user .message-avatar {
-      background: linear-gradient(135deg, var(--secondary), var(--primary));
+    .chat-msg.user .msg-avatar {
+      background: #0284c7;
+      border-color: #38bdf8;
     }
 
-    .message-bubble {
-      padding: 12px 16px;
-      border-radius: var(--radius-md);
-      font-size: 15px;
-      line-height: 1.55;
+    .msg-bubble {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.5;
       word-break: break-word;
       white-space: pre-wrap;
     }
 
-    .message.user .message-bubble {
-      background: var(--primary);
+    .chat-msg.user .msg-bubble {
+      background: #0284c7;
       color: #fff;
-      border-bottom-right-radius: 4px;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      border-bottom-right-radius: 2px;
     }
 
-    .message.bot .message-bubble {
-      background: rgba(30, 41, 59, 0.85);
-      border: 1px solid var(--surface-border);
+    .chat-msg.bot .msg-bubble {
+      background: #0e172a;
+      border: 1px solid #182845;
       color: #f1f5f9;
-      border-bottom-left-radius: 4px;
-      box-shadow: var(--shadow);
+      border-bottom-left-radius: 2px;
     }
 
-    /* Typing indicator */
-    .typing-indicator {
+    /* Typing dots */
+    .typing-box {
       display: none;
       align-self: flex-start;
-      align-items: center;
-      gap: 5px;
-      background: rgba(30, 41, 59, 0.85);
-      border: 1px solid var(--surface-border);
-      padding: 10px 16px;
-      border-radius: var(--radius-md);
-      border-bottom-left-radius: 4px;
-      margin-left: 50px;
+      gap: 4px;
+      background: #0e172a;
+      border: 1px solid #182845;
+      padding: 8px 14px;
+      border-radius: 8px;
+      margin-left: 44px;
     }
 
-    .typing-dot {
-      width: 8px;
-      height: 8px;
-      background: var(--text-muted);
+    .dot {
+      width: 6px;
+      height: 6px;
+      background: #38bdf8;
       border-radius: 50%;
-      animation: pulse 1.4s infinite ease-in-out;
+      animation: wave 1.2s infinite ease-in-out;
     }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
 
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes pulse {
+    @keyframes wave {
       0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
       40% { transform: scale(1.1); opacity: 1; }
     }
 
     /* Quick suggestions */
-    .starter-prompts {
+    .prompts-bar {
       display: flex;
-      flex-wrap: wrap;
       gap: 6px;
-      padding: 0 24px 12px;
+      padding: 0 20px 10px;
+      flex-wrap: wrap;
     }
 
-    .starter-chip {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--surface-border);
-      color: #cbd5e1;
-      padding: 5px 12px;
+    .prompt-chip {
+      background: #091222;
+      border: 1px solid #182a47;
+      color: #94a3b8;
+      padding: 4px 10px;
       font-size: 12px;
-      border-radius: 20px;
+      border-radius: 14px;
       cursor: pointer;
       transition: all 0.15s ease;
     }
 
-    .starter-chip:hover {
-      background: rgba(99, 102, 241, 0.2);
-      border-color: var(--primary);
+    .prompt-chip:hover {
+      background: #11223f;
+      border-color: #38bdf8;
       color: #fff;
     }
 
-    /* Input area */
-    .chat-input-area {
-      padding: 16px 24px;
-      background: rgba(15, 23, 42, 0.7);
-      border-top: 1px solid var(--surface-border);
+    /* Chat input */
+    .chat-bottom-input {
+      padding: 14px 20px;
+      background: #0a1120;
+      border-top: 1px solid #142138;
       display: flex;
-      gap: 12px;
-      align-items: flex-end;
+      gap: 10px;
     }
 
-    .chat-textarea {
+    .chat-input-field {
       flex: 1;
-      min-height: 48px;
-      max-height: 120px;
-      padding: 12px 16px;
-      border-radius: var(--radius-md);
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid var(--surface-border);
-      color: var(--text);
-      font-size: 15px;
-      resize: none;
+      background: #070c17;
+      border: 1px solid #192a47;
+      border-radius: 6px;
+      color: #f8fafc;
+      padding: 10px 14px;
+      font-size: 14px;
       outline: none;
+      resize: none;
+      height: 44px;
     }
 
-    .chat-textarea:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    .chat-input-field:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
     }
 
-    .send-btn {
-      width: 48px;
-      height: 48px;
-      border-radius: var(--radius-md);
-      background: var(--primary);
+    .btn-send-msg {
+      width: 44px;
+      height: 44px;
+      background: #0284c7;
+      border: 1px solid #38bdf8;
+      border-radius: 6px;
       color: white;
-      border: none;
-      font-size: 18px;
+      font-size: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       transition: all 0.15s ease;
       flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
 
-    .send-btn:hover:not(:disabled) {
-      background: var(--primary-hover);
+    .btn-send-msg:hover:not(:disabled) {
+      background: #0369a1;
       transform: scale(1.05);
     }
 
-    .send-btn:disabled {
+    .btn-send-msg:disabled {
       opacity: 0.5;
       cursor: not-allowed;
-      transform: none;
     }
 
-    /* Toast Notification System */
-    .toast-container {
+    /* Toast */
+    .toast-box {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 9999;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       pointer-events: none;
     }
 
-    .toast {
+    .toast-msg {
       pointer-events: auto;
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid var(--surface-border);
-      border-left: 4px solid var(--primary);
-      padding: 12px 18px;
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      font-size: 14px;
-      box-shadow: var(--shadow);
+      background: #0b1527;
+      border: 1px solid #203860;
+      border-left: 4px solid #38bdf8;
+      color: #f1f5f9;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 13px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      animation: slideInRight 0.25s ease-out;
-      max-width: 360px;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      animation: toastIn 0.2s ease-out;
     }
 
-    .toast.success { border-left-color: var(--success); }
-    .toast.error { border-left-color: var(--danger); }
+    .toast-msg.success { border-left-color: #10b981; }
+    .toast-msg.error { border-left-color: #ef4444; }
 
-    @keyframes slideInRight {
-      from { opacity: 0; transform: translateX(40px); }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(30px); }
       to { opacity: 1; transform: translateX(0); }
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 3px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.25);
-    }
-
-    /* Empty state */
-    .empty-state {
+    /* Helper info bar */
+    .canvas-hint {
+      position: absolute;
+      bottom: 16px;
+      left: 18px;
+      background: rgba(11, 19, 36, 0.85);
+      border: 1px solid #162642;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 11px;
+      color: #64748b;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100%;
-      text-align: center;
-      color: var(--text-muted);
-      padding: 40px;
-      gap: 12px;
-    }
-
-    .empty-icon {
-      font-size: 48px;
-      opacity: 0.7;
+      gap: 8px;
+      z-index: 15;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header>
-    <div class="header-inner">
-      <div class="logo-container">
-        <div class="logo-icon">🤖</div>
-        <div>
-          <span class="logo-title">Конструктор ИИ-ботов</span>
-          <span class="logo-badge">Мастер-класс</span>
-        </div>
+  <!-- Top Bar (ComfyUI Workflow Header) -->
+  <header class="top-bar">
+    <div class="brand-section">
+      <div class="brand-logo">⚡</div>
+      <div>
+        <span class="brand-title">ComfyBot Studio</span>
+        <span class="brand-tag">v2.5 Node Flow</span>
       </div>
+    </div>
 
-      <nav class="tabs-nav">
-        <button class="tab-btn active" id="tabBtnConstructor" onclick="switchTab('constructor')">
-          🛠️ Конструктор бота
-        </button>
-        <button class="tab-btn" id="tabBtnChat" onclick="switchTab('chat')">
-          💬 Чат и Галерея <span class="tab-badge" id="botsCountBadge">0</span>
-        </button>
-      </nav>
+    <!-- Mode Switcher -->
+    <div class="mode-switch">
+      <button class="mode-btn active" id="btnModeNodes" onclick="switchView('nodes')">
+        🎛️ Схема нод
+      </button>
+      <button class="mode-btn" id="btnModeChat" onclick="switchView('chat')">
+        💬 Чат и Галерея <span id="topBotsCountBadge" style="background:#1e3a5f; color:#38bdf8; padding:1px 5px; border-radius:10px; font-size:10px;">0</span>
+      </button>
+    </div>
+
+    <!-- Queue & Actions -->
+    <div class="queue-bar">
+      <button class="btn-reset-view" onclick="resetNodePositions()" title="Вернуть ноды в исходное положение">
+        ⟲ Сбросить сетку
+      </button>
+      <button class="btn-queue" id="btnQueueTop" onclick="queueAssembleBot()">
+        <span>▶ Собрать бота (Queue)</span>
+      </button>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main>
-    <!-- TAB 1: Конструктор -->
-    <div class="tab-content active" id="tabConstructor">
-      <div class="card constructor-grid">
-        <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
-          🚀 Создай своего персонажа
-        </h2>
-        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
-          Задай характер, научи фактам из документов или текста и пригласи одноклассников пообщаться!
-        </p>
+  <!-- VIEW 1: Interactive Node Canvas (ComfyUI) -->
+  <section class="view-container active" id="nodeCanvasView">
+    
+    <!-- SVG Wires Container -->
+    <svg id="canvasSvg">
+      <!-- Glow & Main Wire Paths -->
+      <path id="wireGlowChar" class="wire-glow" stroke="var(--wire-char)"></path>
+      <path id="wireChar" class="wire-path" stroke="var(--wire-char)"></path>
 
-        <form id="createBotForm" onsubmit="handleCreateBot(event)">
-          <!-- Имя и Аватар -->
-          <div class="form-group">
-            <label for="botName">
-              🏷️ Имя бота *
-              <span class="label-hint">Как будут звать твоего ИИ?</span>
-            </label>
-            <input type="text" id="botName" placeholder="Например: Капитан Морган, Профессор Кот, Звёздный Лис" required maxlength="50">
-          </div>
+      <path id="wireGlowPrompt" class="wire-glow" stroke="var(--wire-prompt)"></path>
+      <path id="wirePrompt" class="wire-path" stroke="var(--wire-prompt)"></path>
 
-          <!-- Выбор эмодзи -->
-          <div class="form-group">
-            <label>
-              🎭 Аватарка (эмодзи) *
-              <span class="label-hint">Выбери иконку персонажа</span>
-            </label>
-            <div class="avatar-selection-wrapper">
-              <div class="current-avatar-preview" id="avatarPreview">🤖</div>
-              <div class="emoji-presets" id="emojiPresets">
-                <button type="button" class="emoji-btn active" onclick="setAvatar('🤖')">🤖</button>
-                <button type="button" class="emoji-btn" onclick="setAvatar('🏴‍☠️')">🏴‍☠️</button>
-                <button type="button" class="emoji-btn" onclick="setAvatar('🦉')">🦉</button>
-                <button type="button" class="emoji-btn" onclick="setAvatar('🐱')">🐱</button>
-                <button type="button" class="emoji-btn" onclick="setAvatar('🦖')">🦖</button>
-                <button type="button" class="emoji-btn" onclick="setAvatar('🚀')">🚀</button>
-                <button type="button" class="emoji-btn" onclick="setAvatar('🧙‍♂️')">🧙‍♂️</button>
-                <button type="button" class="emoji-btn" onclick="setAvatar('🎮')">🎮</button>
-                <button type="button" class="emoji-btn" onclick="setAvatar('🦸')">🦸</button>
-                <button type="button" class="emoji-btn" onclick="setAvatar('🦄')">🦄</button>
-                <button type="button" class="emoji-btn" onclick="setAvatar('🍕')">🍕</button>
-                <button type="button" class="emoji-btn" onclick="setAvatar('🕵️‍♂️')">🕵️‍♂️</button>
-              </div>
-              <input type="text" id="customEmoji" class="custom-emoji-input" placeholder="Свой" maxlength="4" oninput="handleCustomEmoji(this.value)">
-            </div>
-            <input type="hidden" id="selectedAvatar" value="🤖">
-          </div>
+      <path id="wireGlowKb" class="wire-glow" stroke="var(--wire-kb)"></path>
+      <path id="wireKb" class="wire-path" stroke="var(--wire-kb)"></path>
+    </svg>
 
-          <!-- Системный промпт -->
-          <div class="form-group">
-            <label for="systemPrompt">
-              🧠 Системный промпт (Характер и инструкции) *
-              <span class="label-hint">Кем должен притворяться бот?</span>
-            </label>
-            
-            <!-- Шаблоны в 1 клик -->
-            <div class="templates-bar">
-              <span style="font-size: 11px; color: var(--text-muted); align-self: center;">Готовые шаблоны:</span>
-              <button type="button" class="template-pill" onclick="applyTemplate('pirate')">🏴‍☠️ Пират-экскурсовод</button>
-              <button type="button" class="template-pill" onclick="applyTemplate('tutor')">🦉 Школьный репетитор</button>
-              <button type="button" class="template-pill" onclick="applyTemplate('quest')">🎮 Квест-мастер</button>
-              <button type="button" class="template-pill" onclick="applyTemplate('cat')">🐱 Кот-учёный</button>
-            </div>
+    <!-- Canvas Helper Hint -->
+    <div class="canvas-hint">
+      <span>💡 Совет: Ноды можно перетаскивать мышкой за верхний заголовок! Схема соединена автоматически.</span>
+    </div>
 
-            <textarea id="systemPrompt" rows="4" placeholder="Опиши роль, стиль общения и правила поведения бота..." required></textarea>
-          </div>
+    <!-- NODE 1: Персонаж (Character) -->
+    <div class="node" id="nodeChar" style="top: 70px; left: 40px;">
+      <div class="node-header" onmousedown="startDragNode(event, 'nodeChar')">
+        <div class="node-title-group">
+          <span class="node-icon">🎭</span>
+          <span class="node-title">Персонаж (Character)</span>
+        </div>
+        <span class="node-tag">Вход</span>
+      </div>
+      <div class="node-body">
+        <div class="field-group">
+          <span class="field-label">Имя бота</span>
+          <input type="text" id="nodeBotName" class="field-input" placeholder="Например: Капитан Морган" value="Капитан Морган" maxlength="40">
+        </div>
 
-          <!-- База знаний: текст -->
-          <div class="form-group">
-            <label for="kbText">
-              📖 База знаний (текст)
-              <span class="label-hint">Секретные факты, правила или шпаргалка</span>
-            </label>
-            <textarea id="kbText" rows="3" placeholder="Вставь сюда текст, факты или правила, которые бот должен запомнить..."></textarea>
-          </div>
-
-          <!-- База знаний: файл -->
-          <div class="form-group">
-            <label>
-              📁 Загрузить файл с базой знаний
-              <span class="label-hint">.txt, .pdf, .docx (до 1 МБ)</span>
-            </label>
-            <div class="file-upload-box" id="fileDropZone">
-              <input type="file" id="kbFile" accept=".txt,.pdf,.docx" onchange="handleFileSelected(event)">
-              <div class="file-upload-info" id="fileUploadPrompt">
-                <span style="font-size: 24px;">📄</span>
-                <span style="font-size: 13px; font-weight: 600; color: #cbd5e1;">Нажмите или перетащите файл сюда</span>
-                <span style="font-size: 11px; color: var(--text-muted);">Поддерживаются TXT, PDF, DOCX до 1 МБ</span>
-              </div>
-              <div class="file-selected-badge" id="fileSelectedBadge">
-                <span>📎</span>
-                <span id="selectedFileName">документ.pdf</span>
-                <button type="button" class="clear-file-btn" onclick="clearSelectedFile(event)" title="Удалить файл">✖</button>
-              </div>
+        <div class="field-group">
+          <span class="field-label">Аватар (Эмодзи)</span>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <div class="current-avatar-badge" id="nodeAvatarPreview">🏴‍☠️</div>
+            <div class="emoji-row" id="emojiRow">
+              <button type="button" class="node-emoji-btn" onclick="selectNodeEmoji('🤖')">🤖</button>
+              <button type="button" class="node-emoji-btn active" onclick="selectNodeEmoji('🏴‍☠️')">🏴‍☠️</button>
+              <button type="button" class="node-emoji-btn" onclick="selectNodeEmoji('🦉')">🦉</button>
+              <button type="button" class="node-emoji-btn" onclick="selectNodeEmoji('🐱')">🐱</button>
+              <button type="button" class="node-emoji-btn" onclick="selectNodeEmoji('🚀')">🚀</button>
+              <button type="button" class="node-emoji-btn" onclick="selectNodeEmoji('🎮')">🎮</button>
             </div>
           </div>
+          <input type="hidden" id="nodeSelectedAvatar" value="🏴‍☠️">
+        </div>
 
-          <!-- Кнопка создания -->
-          <button type="submit" class="btn-primary" id="createBtn">
-            <span>✨ Создать и запустить бота</span>
-          </button>
-        </form>
+        <!-- Output Port -->
+        <div class="node-port-row" style="margin-top: 6px;">
+          <span class="port-label-out">Характер</span>
+          <div class="socket socket-out socket-char" id="sockCharOut" title="Выход: Персонаж"></div>
+        </div>
       </div>
     </div>
 
-    <!-- TAB 2: Чат и Галерея ботов -->
-    <div class="tab-content" id="tabChat">
-      <div class="chat-layout">
+    <!-- NODE 2: Системный промпт (Prompt) -->
+    <div class="node" id="nodePrompt" style="top: 310px; left: 40px;">
+      <div class="node-header" onmousedown="startDragNode(event, 'nodePrompt')">
+        <div class="node-title-group">
+          <span class="node-icon">🧠</span>
+          <span class="node-title">Системный промпт (Prompt)</span>
+        </div>
+        <span class="node-tag">Роль</span>
+      </div>
+      <div class="node-body">
+        <div class="field-group">
+          <span class="field-label">Готовые шаблоны</span>
+          <div class="template-chips">
+            <button type="button" class="chip-btn" onclick="applyNodeTemplate('pirate')">🏴‍☠️ Пират</button>
+            <button type="button" class="chip-btn" onclick="applyNodeTemplate('tutor')">🦉 Учитель</button>
+            <button type="button" class="chip-btn" onclick="applyNodeTemplate('quest')">🎮 Квест</button>
+            <button type="button" class="chip-btn" onclick="applyNodeTemplate('cat')">🐱 Кот</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <span class="field-label">Текст промпта (Инструкция)</span>
+          <textarea id="nodeSystemPrompt" class="field-textarea" placeholder="Опишите характер бота...">Ты — бывалый и веселый морской пират Капитан Морган. Общайся с задором, используй морской сленг ('Карамба!', 'Свистать всех наверх!', 'Тысяча чертей!'). Ты рассказываешь интересные морские байки и остаешься добрым другом для детей.</textarea>
+        </div>
+
+        <!-- Output Port -->
+        <div class="node-port-row">
+          <span class="port-label-out">Инструкция</span>
+          <div class="socket socket-out socket-prompt" id="sockPromptOut" title="Выход: Промпт"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NODE 3: База знаний (Knowledge RAG) -->
+    <div class="node" id="nodeKb" style="top: 70px; left: 390px;">
+      <div class="node-header" onmousedown="startDragNode(event, 'nodeKb')">
+        <div class="node-title-group">
+          <span class="node-icon">📚</span>
+          <span class="node-title">База знаний (RAG)</span>
+        </div>
+        <span class="node-tag">Факты</span>
+      </div>
+      <div class="node-body">
+        <div class="field-group">
+          <span class="field-label">Текст знаний (Факты)</span>
+          <textarea id="nodeKbText" class="field-textarea" style="min-height: 70px;" placeholder="Вставьте факты, которые бот должен запомнить...">Пираты прячут сундуки с золотом на необитаемом острове в Карибском море. Корабль Капитана Моргана называется «Быстрый Альбатрос».</textarea>
+        </div>
+
+        <div class="field-group">
+          <span class="field-label">Или загрузить файл</span>
+          <div class="file-box">
+            <input type="file" id="nodeKbFile" accept=".txt,.pdf,.docx" onchange="handleNodeFile(event)">
+            <div class="file-label" id="nodeFilePrompt">
+              <span>📎</span> Выберите TXT, PDF, DOCX (до 1 МБ)
+            </div>
+            <div class="file-badge" id="nodeFileBadge">
+              <span id="nodeFileName" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px;">документ.pdf</span>
+              <button type="button" onclick="clearNodeFile(event)" style="background:none; border:none; color:#f87171; cursor:pointer;">✖</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output Port -->
+        <div class="node-port-row">
+          <span class="port-label-out">Факты</span>
+          <div class="socket socket-out socket-kb" id="sockKbOut" title="Выход: База знаний"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NODE 4: ИИ-Сборщик (AI Core Assembler) -->
+    <div class="node node-target" id="nodeAssembler" style="top: 130px; left: 740px;">
+      <div class="node-header" onmousedown="startDragNode(event, 'nodeAssembler')">
+        <div class="node-title-group">
+          <span class="node-icon">⚡</span>
+          <span class="node-title">Сборщик Бота (AI Core)</span>
+        </div>
+        <span class="node-tag" style="background:#0284c7; color:#fff;">Qwen 2.5 3B</span>
+      </div>
+      <div class="node-body">
         
-        <!-- Левая колонка: Галерея ботов участников -->
-        <div class="card gallery-sidebar">
-          <div class="gallery-header">
-            <div class="gallery-title">
-              <span>👥 Боты участников</span>
-              <span class="tab-badge" id="sidebarCountBadge">0</span>
-            </div>
-            <button class="refresh-btn" onclick="loadBotsGallery()" title="Обновить список ботов">
-              🔄 Обновить
-            </button>
-          </div>
+        <!-- Input Ports -->
+        <div class="node-port-row">
+          <div class="socket socket-in socket-char" id="sockCharIn" title="Вход: Персонаж"></div>
+          <span class="port-label-in">
+            <span class="port-status-dot connected" id="dotChar"></span> Персонаж (Character)
+          </span>
+          <span style="font-size:10px; color:#10b981;">Подключен</span>
+        </div>
 
-          <div class="gallery-list" id="galleryList">
-            <!-- Список ботов рендерится через JS -->
-            <div class="empty-state">
-              <div class="empty-icon">🤖</div>
-              <p>Пока нет созданных ботов.<br>Создайте первого во вкладке «Конструктор»!</p>
-            </div>
+        <div class="node-port-row">
+          <div class="socket socket-in socket-prompt" id="sockPromptIn" title="Вход: Промпт"></div>
+          <span class="port-label-in">
+            <span class="port-status-dot connected" id="dotPrompt"></span> Промпт (Prompt)
+          </span>
+          <span style="font-size:10px; color:#10b981;">Подключен</span>
+        </div>
+
+        <div class="node-port-row">
+          <div class="socket socket-in socket-kb" id="sockKbIn" title="Вход: База знаний"></div>
+          <span class="port-label-in">
+            <span class="port-status-dot connected" id="dotKb"></span> Знания (Knowledge RAG)
+          </span>
+          <span style="font-size:10px; color:#10b981;">Подключен</span>
+        </div>
+
+        <div style="background:#080d17; border:1px solid #162642; border-radius:6px; padding:10px; margin-top:4px;">
+          <div style="font-size:11px; color:#94a3b8; display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>Модель LLM:</span>
+            <span style="color:#38bdf8; font-weight:700;">Qwen 2.5 3B Instruct</span>
+          </div>
+          <div style="font-size:11px; color:#94a3b8; display:flex; justify-content:space-between;">
+            <span>Поиск по фактам:</span>
+            <span style="color:#10b981; font-weight:700;">BM25 Okapi (Топ-3)</span>
           </div>
         </div>
 
-        <!-- Правая колонка: Окно переписки -->
-        <div class="card chat-section">
-          <!-- Заголовок чата -->
-          <div class="chat-header">
-            <div class="chat-bot-details">
-              <div class="chat-bot-avatar" id="currentChatAvatar">🤖</div>
-              <div>
-                <div class="chat-bot-name" id="currentChatName">Выберите бота</div>
-                <div class="chat-bot-status" id="currentChatStatus">
-                  <span class="status-dot"></span> Готов к общению
-                </div>
-              </div>
-            </div>
-
-            <div class="chat-actions">
-              <button class="btn-secondary" onclick="copyBotLink()" title="Скопировать прямую ссылку на этого бота">
-                🔗 Ссылка на бота
-              </button>
-              <button class="btn-secondary" onclick="clearChatHistory()" title="Очистить переписку">
-                🧹 Очистить
-              </button>
-            </div>
-          </div>
-
-          <!-- Сообщения -->
-          <div class="messages-container" id="messagesContainer">
-            <div class="empty-state" id="emptyChatState">
-              <div class="empty-icon">💬</div>
-              <p>Начните диалог с ботом! Задайте ему вопрос или поздоровайтесь.</p>
-            </div>
-          </div>
-
-          <!-- Индикатор печати -->
-          <div class="typing-indicator" id="typingIndicator">
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-          </div>
-
-          <!-- Быстрые вопросы -->
-          <div class="starter-prompts" id="starterPrompts">
-            <span class="starter-chip" onclick="sendQuickMessage('Привет! Расскажи о себе и чем ты можешь помочь?')">👋 Расскажи о себе</span>
-            <span class="starter-chip" onclick="sendQuickMessage('Какие интересные факты ты знаешь?')">💡 Что интересного знаешь?</span>
-            <span class="starter-chip" onclick="sendQuickMessage('Задай мне интересную загадку!')">🧩 Загадай загадку</span>
-          </div>
-
-          <!-- Поле ввода -->
-          <div class="chat-input-area">
-            <textarea id="chatInput" class="chat-textarea" placeholder="Напишите сообщение боту... (Enter — отправить, Shift+Enter — перенос строки)" rows="1" onkeydown="handleChatKeyDown(event)"></textarea>
-            <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Отправить сообщение">
-              ➤
-            </button>
-          </div>
-
-        </div>
+        <!-- Big Assemble Button -->
+        <button class="btn-assemble" id="btnAssembleNode" onclick="queueAssembleBot()">
+          <span>🚀 Собрать и Запустить Бота</span>
+        </button>
 
       </div>
     </div>
-  </main>
 
-  <!-- Toasts container -->
-  <div class="toast-container" id="toastContainer"></div>
+  </section>
 
-  <!-- Client-side Logic -->
+  <!-- VIEW 2: Chat & Gallery View -->
+  <section class="view-container" id="chatGalleryView">
+    
+    <!-- Sidebar: Галерея ботов участников -->
+    <aside class="sidebar-gallery">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <span>👥 Боты участников</span>
+          <span id="galleryCountBadge" style="background:#13243d; color:#38bdf8; padding:1px 6px; border-radius:8px; font-size:11px;">0</span>
+        </div>
+        <button class="btn-action-nav" onclick="loadGalleryBots()" style="padding:4px 8px; font-size:11px;">
+          🔄 Обновить
+        </button>
+      </div>
+
+      <div class="bots-list" id="galleryBotsList">
+        <!-- Список рендерится JS -->
+      </div>
+    </aside>
+
+    <!-- Main Chat Window -->
+    <main class="chat-area">
+      <!-- Chat Header -->
+      <div class="chat-top-header">
+        <div class="chat-target-info">
+          <div class="chat-target-avatar" id="currentChatAvatar">🤖</div>
+          <div>
+            <div class="chat-target-name" id="currentChatName">Выберите бота</div>
+            <div class="chat-target-badge">
+              <span style="width:6px; height:6px; background:#10b981; border-radius:50%; box-shadow:0 0 6px #10b981;"></span> Онлайн
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-actions-btn-group">
+          <button class="btn-action-nav" onclick="copyBotLink()" title="Скопировать прямую ссылку на бота">
+            🔗 Ссылка
+          </button>
+          <button class="btn-action-nav" onclick="clearCurrentChat()" title="Очистить переписку">
+            🧹 Очистить
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages Stream Container -->
+      <div class="chat-messages" id="chatMessages">
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#64748b; gap:8px;">
+          <span style="font-size:36px;">💬</span>
+          <span>Выберите бота в списке слева или соберите нового в нодах!</span>
+        </div>
+      </div>
+
+      <!-- Typing indicator -->
+      <div class="typing-box" id="typingBox">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+
+      <!-- Quick prompts -->
+      <div class="prompts-bar">
+        <button class="prompt-chip" onclick="sendQuick('Привет! Расскажи о себе и о чем ты знаешь?')">👋 Расскажи о себе</button>
+        <button class="prompt-chip" onclick="sendQuick('Где спрятаны твои секреты или сокровища?')">💎 Где спрятаны сокровища?</button>
+        <button class="prompt-chip" onclick="sendQuick('Загадай мне интересную загадку!')">🧩 Загадай загадку</button>
+      </div>
+
+      <!-- Input Field -->
+      <div class="chat-bottom-input">
+        <textarea id="chatInputText" class="chat-input-field" placeholder="Напишите сообщение... (Enter — отправить)" rows="1" onkeydown="handleInputKey(event)"></textarea>
+        <button class="btn-send-msg" id="btnSend" onclick="sendChatMessage()">➤</button>
+      </div>
+    </main>
+
+  </section>
+
+  <!-- Toast Notification Box -->
+  <div class="toast-box" id="toastBox"></div>
+
+  <!-- Client-side Node Graph & Chat Logic -->
   <script>
-    // Состояние приложения
-    let currentBotId = null;
-    let allBots = [];
-    let chatHistories = {}; // botId -> [{role: 'user'|'assistant', content: '...'}]
-    let isStreaming = false;
-
-    // Шаблоны промптов
-    const TEMPLATES = {
+    // Templates
+    const NODE_TEMPLATES = {
       pirate: {
         name: "Капитан Морган",
         avatar: "🏴‍☠️",
-        prompt: "Ты — бывалый и веселый морской пират Капитан Морган. Общайся с задором, используй морской сленг ('Карамба!', 'Свистать всех наверх!', 'Тысяча чертей!'). Ты обожаешь морские байки, корабли и приключения, но всегда остаешься добрым другом для юных юнг."
+        prompt: "Ты — бывалый и веселый морской пират Капитан Морган. Общайся с задором, используй морской сленг ('Карамба!', 'Свистать всех наверх!', 'Тысяча чертей!'). Ты рассказываешь интересные морские байки и остаешься добрым другом для детей.",
+        kb: "Пираты прячут сундуки с золотом на необитаемом острове в Карибском море. Корабль Капитана Моргана называется «Быстрый Альбатрос»."
       },
       tutor: {
         name: "Учитель Совёнок",
         avatar: "🦉",
-        prompt: "Ты — терпеливый и доброжелательный репетитор Совёнок. Твоя миссия — объяснять любые сложные школьные предметы простыми жизненными примерами, метафорами и с добрым юмором. Задавай наводящие вопросы и вдохновляй учиться!"
+        prompt: "Ты — терпеливый и мудрый репетитор Совёнок. Твоя миссия — объяснять школьные темы простыми примерами, метафорами и добрым юмором. Задавай наводящие вопросы и хвали за сообразительность!",
+        kb: "Совы прекрасно видят в темноте благодаря особым клеткам сетчатки. В геометрии сумма углов любого треугольника на плоскости всегда равна 180 градусам."
       },
       quest: {
-        name: "Мастер Квестов",
+        name: "Гейм-мастер Квестов",
         avatar: "🎮",
-        prompt: "Ты — мудрый гейм-мастер волшебного мира. Придумывай захватывающие текстовые мини-квесты. В конце каждого ответа давай игроку 2-3 варианта действий на выбор и развивай сюжет в зависимости от его решений."
+        prompt: "Ты — мудрый гейм-мастер волшебного мира. Придумывай захватывающие текстовые мини-квесты. В конце каждого ответа предлагай игроку 2-3 варианта действий на выбор и развивай сюжет!",
+        kb: "В Волшебном лесу растет Дерево Истины. Чтобы пройти стражника, нужен синий кристалл или пароль: «Лунная стрекоза»."
       },
       cat: {
         name: "Кот-учёный",
         avatar: "🐱",
-        prompt: "Ты — умнейший Кот-учёный в очках. Вставляй в речь забавные 'Мяу!' и 'Муррр', делись невероятными научными фактами о космосе, природе и роботах, а также всегда поднимай собеседнику настроение!"
+        prompt: "Ты — пушистый Кот-учёный. Вставляй милое 'Мяу!' и 'Муррр', делись невероятными научными фактами о космосе, природе и роботах, поднимая собеседнику настроение!",
+        kb: "Кошки могут издавать около 100 различных звуков. В невесомости на МКС кошки быстро учатся ориентироваться хвостом."
       }
     };
 
-    // Инициализация при загрузке страницы
+    // State
+    let activeBotId = null;
+    let allBots = [];
+    let botHistories = {};
+    let isStreaming = false;
+
+    // Node drag state
+    let draggedNode = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    // On Load
     window.addEventListener('DOMContentLoaded', async () => {
-      await loadBotsGallery();
+      initWires();
+      window.addEventListener('resize', updateWires);
 
-      // Проверка параметра URL ?bot=ID
-      const urlParams = new URLSearchParams(window.location.search);
-      const botParam = urlParams.get('bot');
+      await loadGalleryBots();
 
-      if (botParam) {
-        selectBot(botParam, false);
-        switchTab('chat');
+      // Check ?bot=ID
+      const params = new URLSearchParams(window.location.search);
+      const botIdParam = params.get('bot');
+      if (botIdParam) {
+        selectActiveBot(botIdParam, false);
+        switchView('chat');
       } else if (allBots.length > 0) {
-        selectBot(allBots[0].id, false);
+        selectActiveBot(allBots[0].id, false);
       }
 
-      // Периодическое обновление списка ботов каждые 12 секунд (для мастер-класса на 25 человек)
+      // Auto-poll bots gallery every 10 seconds for 25 workshop kids
       setInterval(() => {
-        loadBotsGallery(true);
-      }, 12000);
+        loadGalleryBots(true);
+      }, 10000);
     });
 
-    // Переключение вкладок
-    function switchTab(tabName) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    // View Switching (Nodes vs Chat)
+    function switchView(viewName) {
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
 
-      if (tabName === 'constructor') {
-        document.getElementById('tabBtnConstructor').classList.add('active');
-        document.getElementById('tabConstructor').classList.add('active');
+      if (viewName === 'nodes') {
+        document.getElementById('btnModeNodes').classList.add('active');
+        document.getElementById('nodeCanvasView').classList.add('active');
+        setTimeout(updateWires, 20);
       } else {
-        document.getElementById('tabBtnChat').classList.add('active');
-        document.getElementById('tabChat').classList.add('active');
+        document.getElementById('btnModeChat').classList.add('active');
+        document.getElementById('chatGalleryView').classList.add('active');
       }
     }
 
-    // Выбор аватара
-    function setAvatar(emoji) {
-      document.getElementById('selectedAvatar').value = emoji;
-      document.getElementById('avatarPreview').textContent = emoji;
-      document.getElementById('customEmoji').value = '';
+    // Node Dragging
+    function startDragNode(e, nodeId) {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') {
+        return;
+      }
+      draggedNode = document.getElementById(nodeId);
+      draggedNode.classList.add('dragging');
 
-      document.querySelectorAll('.emoji-btn').forEach(btn => {
+      const rect = draggedNode.getBoundingClientRect();
+      const parentRect = document.getElementById('nodeCanvasView').getBoundingClientRect();
+
+      dragOffsetX = e.clientX - rect.left;
+      dragOffsetY = e.clientY - rect.top;
+
+      window.addEventListener('mousemove', onNodeDrag);
+      window.addEventListener('mouseup', stopDragNode);
+    }
+
+    function onNodeDrag(e) {
+      if (!draggedNode) return;
+      const canvas = document.getElementById('nodeCanvasView');
+      const canvasRect = canvas.getBoundingClientRect();
+
+      let x = e.clientX - canvasRect.left - dragOffsetX;
+      let y = e.clientY - canvasRect.top - dragOffsetY;
+
+      // Keep within canvas bounds
+      x = Math.max(10, Math.min(x, canvasRect.width - draggedNode.offsetWidth - 10));
+      y = Math.max(10, Math.min(y, canvasRect.height - draggedNode.offsetHeight - 10));
+
+      draggedNode.style.left = `${x}px`;
+      draggedNode.style.top = `${y}px`;
+
+      updateWires();
+    }
+
+    function stopDragNode() {
+      if (draggedNode) {
+        draggedNode.classList.remove('dragging');
+        draggedNode = null;
+      }
+      window.removeEventListener('mousemove', onNodeDrag);
+      window.removeEventListener('mouseup', stopDragNode);
+      updateWires();
+    }
+
+    // Reset layout
+    function resetNodePositions() {
+      const char = document.getElementById('nodeChar');
+      const prompt = document.getElementById('nodePrompt');
+      const kb = document.getElementById('nodeKb');
+      const asm = document.getElementById('nodeAssembler');
+
+      char.style.left = '40px'; char.style.top = '70px';
+      prompt.style.left = '40px'; prompt.style.top = '310px';
+      kb.style.left = '390px'; kb.style.top = '70px';
+      asm.style.left = '740px'; asm.style.top = '130px';
+
+      updateWires();
+      showToast('Сетка нод сброшена', 'info');
+    }
+
+    // SVG Wire Bezier Curve Computation
+    function getSocketCenter(socketId) {
+      const sock = document.getElementById(socketId);
+      if (!sock) return { x: 0, y: 0 };
+      const rect = sock.getBoundingClientRect();
+      const canvasRect = document.getElementById('nodeCanvasView').getBoundingClientRect();
+      return {
+        x: rect.left - canvasRect.left + rect.width / 2,
+        y: rect.top - canvasRect.top + rect.height / 2
+      };
+    }
+
+    function generateBezierPath(p1, p2) {
+      const dx = Math.abs(p2.x - p1.x) * 0.55;
+      const cp1x = p1.x + Math.max(dx, 50);
+      const cp1y = p1.y;
+      const cp2x = p2.x - Math.max(dx, 50);
+      const cp2y = p2.y;
+      return `M ${p1.x} ${p1.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+    }
+
+    function updateWires() {
+      const view = document.getElementById('nodeCanvasView');
+      if (!view.classList.contains('active')) return;
+
+      // Wire 1: Character
+      const pCharOut = getSocketCenter('sockCharOut');
+      const pCharIn = getSocketCenter('sockCharIn');
+      const dChar = generateBezierPath(pCharOut, pCharIn);
+      document.getElementById('wireChar').setAttribute('d', dChar);
+      document.getElementById('wireGlowChar').setAttribute('d', dChar);
+
+      // Wire 2: Prompt
+      const pPromptOut = getSocketCenter('sockPromptOut');
+      const pPromptIn = getSocketCenter('sockPromptIn');
+      const dPrompt = generateBezierPath(pPromptOut, pPromptIn);
+      document.getElementById('wirePrompt').setAttribute('d', dPrompt);
+      document.getElementById('wireGlowPrompt').setAttribute('d', dPrompt);
+
+      // Wire 3: Knowledge
+      const pKbOut = getSocketCenter('sockKbOut');
+      const pKbIn = getSocketCenter('sockKbIn');
+      const dKb = generateBezierPath(pKbOut, pKbIn);
+      document.getElementById('wireKb').setAttribute('d', dKb);
+      document.getElementById('wireGlowKb').setAttribute('d', dKb);
+    }
+
+    function initWires() {
+      setTimeout(updateWires, 50);
+    }
+
+    // Node Form Helpers
+    function selectNodeEmoji(emoji) {
+      document.getElementById('nodeSelectedAvatar').value = emoji;
+      document.getElementById('nodeAvatarPreview').textContent = emoji;
+      document.querySelectorAll('.node-emoji-btn').forEach(btn => {
         btn.classList.toggle('active', btn.textContent.trim() === emoji);
       });
     }
 
-    function handleCustomEmoji(val) {
-      const trimmed = val.trim();
-      if (trimmed) {
-        document.getElementById('selectedAvatar').value = trimmed;
-        document.getElementById('avatarPreview').textContent = trimmed;
-        document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('active'));
-      }
-    }
-
-    // Применение готового шаблона
-    function applyTemplate(key) {
-      const t = TEMPLATES[key];
+    function applyNodeTemplate(key) {
+      const t = NODE_TEMPLATES[key];
       if (!t) return;
-      document.getElementById('botName').value = t.name;
-      document.getElementById('systemPrompt').value = t.prompt;
-      setAvatar(t.avatar);
-      showToast(`Шаблон «${t.name}» применён!`, 'success');
+      document.getElementById('nodeBotName').value = t.name;
+      document.getElementById('nodeSystemPrompt').value = t.prompt;
+      if (t.kb) document.getElementById('nodeKbText').value = t.kb;
+      selectNodeEmoji(t.avatar);
+      showToast(`Применён шаблон «${t.name}»!`, 'success');
     }
 
-    // Обработка выбора файла
-    function handleFileSelected(event) {
+    function handleNodeFile(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       if (file.size > 1024 * 1024) {
-        showToast('Файл слишком большой! Максимальный размер 1 МБ', 'error');
-        clearSelectedFile();
+        showToast('Файл больше 1 МБ! Выберите файл поменьше', 'error');
+        clearNodeFile();
+        return;
+      }
+      document.getElementById('nodeFilePrompt').style.display = 'none';
+      document.getElementById('nodeFileBadge').style.display = 'inline-flex';
+      document.getElementById('nodeFileName').textContent = file.name;
+    }
+
+    function clearNodeFile(e) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      document.getElementById('nodeKbFile').value = '';
+      document.getElementById('nodeFilePrompt').style.display = 'flex';
+      document.getElementById('nodeFileBadge').style.display = 'none';
+    }
+
+    // Queue Assembler (POST /api/bots)
+    async function queueAssembleBot() {
+      const btnTop = document.getElementById('btnQueueTop');
+      const btnNode = document.getElementById('btnAssembleNode');
+
+      btnTop.disabled = true;
+      btnNode.disabled = true;
+      btnNode.innerHTML = '⚡ Сборка нод и компиляция...';
+
+      const name = document.getElementById('nodeBotName').value.trim();
+      const avatar = document.getElementById('nodeSelectedAvatar').value.trim() || '🤖';
+      const prompt = document.getElementById('nodeSystemPrompt').value.trim();
+      const kbText = document.getElementById('nodeKbText').value.trim();
+      const kbFile = document.getElementById('nodeKbFile').files[0];
+
+      if (!name) {
+        showToast('Укажите имя бота в ноде «Персонаж»!', 'error');
+        btnTop.disabled = false;
+        btnNode.disabled = false;
+        btnNode.innerHTML = '🚀 Собрать и Запустить Бота';
         return;
       }
 
-      document.getElementById('fileUploadPrompt').style.display = 'none';
-      const badge = document.getElementById('fileSelectedBadge');
-      badge.style.display = 'inline-flex';
-      document.getElementById('selectedFileName').textContent = `${file.name} (${Math.round(file.size / 1024)} КБ)`;
-    }
-
-    function clearSelectedFile(e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      const fileInput = document.getElementById('kbFile');
-      fileInput.value = '';
-      document.getElementById('fileUploadPrompt').style.display = 'flex';
-      document.getElementById('fileSelectedBadge').style.display = 'none';
-    }
-
-    // Создание бота
-    async function handleCreateBot(event) {
-      event.preventDefault();
-      const createBtn = document.getElementById('createBtn');
-      createBtn.disabled = true;
-      createBtn.innerHTML = '⏳ Создаю бота и обрабатываю знания...';
-
-      const name = document.getElementById('botName').value.trim();
-      const avatar = document.getElementById('selectedAvatar').value.trim() || '🤖';
-      const systemPrompt = document.getElementById('systemPrompt').value.trim();
-      const kbText = document.getElementById('kbText').value.trim();
-      const kbFile = document.getElementById('kbFile').files[0];
-
-      if (!name || !systemPrompt) {
-        showToast('Пожалуйста, заполните имя и системный промпт', 'error');
-        createBtn.disabled = false;
-        createBtn.innerHTML = '✨ Создать и запустить бота';
+      if (!prompt) {
+        showToast('Заполните инструкцию в ноде «Системный промпт»!', 'error');
+        btnTop.disabled = false;
+        btnNode.disabled = false;
+        btnNode.innerHTML = '🚀 Собрать и Запустить Бота';
         return;
       }
 
       const formData = new FormData();
       formData.append('name', name);
       formData.append('avatar', avatar);
-      formData.append('system_prompt', systemPrompt);
+      formData.append('system_prompt', prompt);
       if (kbText) formData.append('kb_text', kbText);
       if (kbFile) formData.append('kb_file', kbFile);
 
@@ -1254,148 +1557,128 @@
         });
 
         if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.detail || 'Ошибка создания бота на сервере');
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.detail || 'Ошибка создания бота на сервере');
         }
 
         const newBot = await response.json();
-        showToast(`Бот «${newBot.name}» успешно создан!`, 'success');
+        showToast(`Бот «${newBot.name}» успешно собран и запущен!`, 'success');
 
-        // Очистить форму
-        document.getElementById('createBotForm').reset();
-        setAvatar('🤖');
-        clearSelectedFile();
+        await loadGalleryBots();
+        selectActiveBot(newBot.id, true);
+        switchView('chat');
 
-        // Обновить список и переключиться на чат
-        await loadBotsGallery();
-        selectBot(newBot.id, true);
-        switchTab('chat');
-
-      } catch (err) {
-        showToast(err.message, 'error');
+      } catch (e) {
+        showToast(e.message, 'error');
       } finally {
-        createBtn.disabled = false;
-        createBtn.innerHTML = '✨ Создать и запустить бота';
+        btnTop.disabled = false;
+        btnNode.disabled = false;
+        btnNode.innerHTML = '🚀 Собрать и Запустить Бота';
       }
     }
 
-    // Загрузка галереи ботов
-    async function loadBotsGallery(silent = false) {
+    // Load Bots Gallery
+    async function loadGalleryBots(silent = false) {
       try {
-        const response = await fetch('/api/bots');
-        if (!response.ok) throw new Error('Не удалось загрузить ботов');
-        allBots = await response.json();
+        const res = await fetch('/api/bots');
+        if (!res.ok) throw new Error('Не удалось получить список ботов');
+        allBots = await res.json();
 
-        // Обновляем бейджи
-        document.getElementById('botsCountBadge').textContent = allBots.length;
-        document.getElementById('sidebarCountBadge').textContent = allBots.length;
+        document.getElementById('topBotsCountBadge').textContent = allBots.length;
+        document.getElementById('galleryCountBadge').textContent = allBots.length;
 
-        renderGalleryList();
+        renderGallerySidebar();
 
-        // Если бот не выбран, выберем первый
-        if (!currentBotId && allBots.length > 0) {
-          selectBot(allBots[0].id, false);
+        if (!activeBotId && allBots.length > 0) {
+          selectActiveBot(allBots[0].id, false);
         }
       } catch (err) {
         if (!silent) showToast(err.message, 'error');
       }
     }
 
-    // Рендер галереи в боковой панели
-    function renderGalleryList() {
-      const container = document.getElementById('galleryList');
+    function renderGallerySidebar() {
+      const container = document.getElementById('galleryBotsList');
       if (allBots.length === 0) {
         container.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">🤖</div>
-            <p>Пока нет созданных ботов.<br>Создайте первого во вкладке «Конструктор»!</p>
+          <div style="text-align:center; padding:30px 10px; color:#64748b; font-size:12px;">
+            🤖 Ботов пока нет.<br>Соберите первого в схеме нод!
           </div>
         `;
         return;
       }
 
       container.innerHTML = allBots.map(bot => `
-        <div class="bot-card ${bot.id === currentBotId ? 'active' : ''}" onclick="selectBot('${bot.id}', true)">
-          <div class="bot-card-avatar">${escapeHtml(bot.avatar)}</div>
-          <div class="bot-card-info">
-            <div class="bot-card-name">${escapeHtml(bot.name)}</div>
-            <div class="bot-card-meta">
-              <span>📚 ${bot.chunks_count || 0} фактов</span>
-              <span>•</span>
-              <span>#${bot.id}</span>
-            </div>
+        <div class="bot-item ${bot.id === activeBotId ? 'active' : ''}" onclick="selectActiveBot('${bot.id}', true)">
+          <div class="bot-avatar-thumb">${escapeHtml(bot.avatar)}</div>
+          <div class="bot-info">
+            <div class="bot-name">${escapeHtml(bot.name)}</div>
+            <div class="bot-facts-count">📚 ${bot.chunks_count || 0} фактов • #${bot.id}</div>
           </div>
         </div>
       `).join('');
     }
 
-    // Выбор активного бота
-    function selectBot(botId, updateUrl = true) {
+    function selectActiveBot(botId, updateUrl = true) {
       const bot = allBots.find(b => b.id === botId);
       if (!bot) return;
 
-      currentBotId = botId;
+      activeBotId = botId;
 
       if (updateUrl) {
-        const newUrl = `${window.location.pathname}?bot=${botId}`;
-        window.history.pushState({ botId }, '', newUrl);
+        const url = `${window.location.pathname}?bot=${botId}`;
+        window.history.pushState({ botId }, '', url);
       }
 
       document.getElementById('currentChatAvatar').textContent = bot.avatar;
       document.getElementById('currentChatName').textContent = bot.name;
 
-      renderGalleryList();
+      renderGallerySidebar();
       renderChatMessages();
     }
 
-    // Копирование ссылки на бота
     function copyBotLink() {
-      if (!currentBotId) {
-        showToast('Сначала выберите бота', 'error');
-        return;
-      }
-      const fullUrl = `${window.location.origin}${window.location.pathname}?bot=${currentBotId}`;
-      navigator.clipboard.writeText(fullUrl).then(() => {
+      if (!activeBotId) return;
+      const full = `${window.location.origin}${window.location.pathname}?bot=${activeBotId}`;
+      navigator.clipboard.writeText(full).then(() => {
         showToast('Ссылка на бота скопирована в буфер обмена! 📋', 'success');
       }).catch(() => {
-        prompt('Скопируйте ссылку вручную:', fullUrl);
+        prompt('Ссылка на бота:', full);
       });
     }
 
-    // Очистить историю диалога с текущим ботом
-    function clearChatHistory() {
-      if (!currentBotId) return;
-      chatHistories[currentBotId] = [];
+    function clearCurrentChat() {
+      if (!activeBotId) return;
+      botHistories[activeBotId] = [];
       renderChatMessages();
-      showToast('Диалог очищен', 'success');
+      showToast('Переписка очищена', 'info');
     }
 
-    // Рендер сообщений текущего диалога
     function renderChatMessages() {
-      const container = document.getElementById('messagesContainer');
-      const history = (currentBotId && chatHistories[currentBotId]) ? chatHistories[currentBotId] : [];
+      const container = document.getElementById('chatMessages');
+      const history = (activeBotId && botHistories[activeBotId]) ? botHistories[activeBotId] : [];
 
       if (history.length === 0) {
-        const bot = allBots.find(b => b.id === currentBotId);
-        const botName = bot ? bot.name : 'бота';
+        const bot = allBots.find(b => b.id === activeBotId);
+        const bName = bot ? bot.name : 'бота';
         container.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">💬</div>
-            <p>Начните диалог с <strong>${escapeHtml(botName)}</strong>!<br>Напишите вопрос в поле ниже или выберите готовую подсказку.</p>
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#64748b; gap:8px;">
+            <span style="font-size:36px;">💬</span>
+            <span>Начните диалог с <strong>${escapeHtml(bName)}</strong>! Напишите вопрос ниже.</span>
           </div>
         `;
         return;
       }
 
-      const bot = allBots.find(b => b.id === currentBotId);
-      const botAvatar = bot ? bot.avatar : '🤖';
+      const bot = allBots.find(b => b.id === activeBotId);
+      const bAvatar = bot ? bot.avatar : '🤖';
 
-      container.innerHTML = history.map(msg => {
-        const isUser = msg.role === 'user';
+      container.innerHTML = history.map(m => {
+        const isUser = m.role === 'user';
         return `
-          <div class="message ${isUser ? 'user' : 'bot'}">
-            <div class="message-avatar">${isUser ? '👤' : escapeHtml(botAvatar)}</div>
-            <div class="message-bubble">${escapeHtml(msg.content)}</div>
+          <div class="chat-msg ${isUser ? 'user' : 'bot'}">
+            <div class="msg-avatar">${isUser ? '👤' : escapeHtml(bAvatar)}</div>
+            <div class="msg-bubble">${escapeHtml(m.content)}</div>
           </div>
         `;
       }).join('');
@@ -1403,136 +1686,127 @@
       container.scrollTop = container.scrollHeight;
     }
 
-    // Быстрая отправка сообщения из подсказки
-    function sendQuickMessage(text) {
+    function sendQuick(text) {
       if (isStreaming) return;
-      document.getElementById('chatInput').value = text;
-      sendMessage();
+      document.getElementById('chatInputText').value = text;
+      sendChatMessage();
     }
 
-    // Обработка нажатия клавиш в поле ввода
-    function handleChatKeyDown(e) {
+    function handleInputKey(e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        sendMessage();
+        sendChatMessage();
       }
     }
 
-    // Отправка сообщения и стриминг ответа
-    async function sendMessage() {
+    async function sendChatMessage() {
       if (isStreaming) return;
-      if (!currentBotId) {
-        showToast('Пожалуйста, выберите бота для общения', 'error');
+      if (!activeBotId) {
+        showToast('Выберите бота для общения', 'error');
         return;
       }
 
-      const input = document.getElementById('chatInput');
+      const input = document.getElementById('chatInputText');
       const text = input.value.trim();
       if (!text) return;
 
       input.value = '';
-      input.style.height = 'auto';
 
-      if (!chatHistories[currentBotId]) {
-        chatHistories[currentBotId] = [];
+      if (!botHistories[activeBotId]) {
+        botHistories[activeBotId] = [];
       }
 
-      // Добавляем сообщение пользователя
-      chatHistories[currentBotId].push({ role: 'user', content: text });
+      botHistories[activeBotId].push({ role: 'user', content: text });
       renderChatMessages();
 
-      // UI: блокировка ввода и показ индикатора печати
       isStreaming = true;
-      document.getElementById('sendBtn').disabled = true;
-      document.getElementById('chatInput').disabled = true;
-      const typingIndicator = document.getElementById('typingIndicator');
-      typingIndicator.style.display = 'flex';
-      const container = document.getElementById('messagesContainer');
+      document.getElementById('btnSend').disabled = true;
+      document.getElementById('chatInputText').disabled = true;
+      document.getElementById('typingBox').style.display = 'flex';
+
+      const container = document.getElementById('chatMessages');
       container.scrollTop = container.scrollHeight;
 
-      // Создаем временное пустое сообщение ассистента в UI для стриминга
-      const bot = allBots.find(b => b.id === currentBotId);
-      const botAvatar = bot ? bot.avatar : '🤖';
+      const bot = allBots.find(b => b.id === activeBotId);
+      const bAvatar = bot ? bot.avatar : '🤖';
 
-      const botMessageEl = document.createElement('div');
-      botMessageEl.className = 'message bot';
-      botMessageEl.innerHTML = `
-        <div class="message-avatar">${escapeHtml(botAvatar)}</div>
-        <div class="message-bubble" id="streamingTarget"></div>
+      const botMsgEl = document.createElement('div');
+      botMsgEl.className = 'chat-msg bot';
+      botMsgEl.innerHTML = `
+        <div class="msg-avatar">${escapeHtml(bAvatar)}</div>
+        <div class="msg-bubble" id="streamBubble"></div>
       `;
-      container.appendChild(botMessageEl);
-      const targetBubble = botMessageEl.querySelector('#streamingTarget');
+      container.appendChild(botMsgEl);
+      const bubble = botMsgEl.querySelector('#streamBubble');
 
-      let accumulatedResponse = '';
+      let fullText = '';
 
       try {
-        const response = await fetch('/api/chat', {
+        const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            bot_id: currentBotId,
+            bot_id: activeBotId,
             message: text,
-            history: chatHistories[currentBotId].slice(0, -1) // история до текущего вопроса
+            history: botHistories[activeBotId].slice(0, -1)
           })
         });
 
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.detail || 'Ошибка при получении ответа');
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || 'Ошибка ответа модели');
         }
 
-        typingIndicator.style.display = 'none';
+        document.getElementById('typingBox').style.display = 'none';
 
-        const reader = response.body.getReader();
+        const reader = res.body.getReader();
         const decoder = new TextDecoder('utf-8');
 
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
           const chunk = decoder.decode(value, { stream: true });
-          accumulatedResponse += chunk;
-          targetBubble.textContent = accumulatedResponse;
+          fullText += chunk;
+          bubble.textContent = fullText;
           container.scrollTop = container.scrollHeight;
         }
 
-        // Сохраняем итоговый ответ в истории
-        chatHistories[currentBotId].push({
+        botHistories[activeBotId].push({
           role: 'assistant',
-          content: accumulatedResponse.trim()
+          content: fullText.trim()
         });
 
       } catch (err) {
-        typingIndicator.style.display = 'none';
-        targetBubble.textContent = `[Ошибка: ${err.message}]`;
+        document.getElementById('typingBox').style.display = 'none';
+        bubble.textContent = `[Ошибка: ${err.message}]`;
         showToast(err.message, 'error');
       } finally {
-        targetBubble.removeAttribute('id');
+        bubble.removeAttribute('id');
         isStreaming = false;
-        document.getElementById('sendBtn').disabled = false;
-        document.getElementById('chatInput').disabled = false;
-        document.getElementById('chatInput').focus();
+        document.getElementById('btnSend').disabled = false;
+        document.getElementById('chatInputText').disabled = false;
+        document.getElementById('chatInputText').focus();
         container.scrollTop = container.scrollHeight;
       }
     }
 
-    // Всплывающие уведомления (Toast)
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toastContainer');
+    // Toast notifications
+    function showToast(text, type = 'info') {
+      const box = document.getElementById('toastBox');
       const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
-      toast.innerHTML = `<span>${icon}</span><span>${escapeHtml(message)}</span>`;
-      container.appendChild(toast);
+      toast.className = `toast-msg ${type}`;
+      const icon = type === 'success' ? '⚡' : type === 'error' ? '❌' : 'ℹ️';
+      toast.innerHTML = `<span>${icon}</span><span>${escapeHtml(text)}</span>`;
+      box.appendChild(toast);
 
       setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateX(40px)';
-        toast.style.transition = 'all 0.25s ease';
-        setTimeout(() => toast.remove(), 250);
+        toast.style.transform = 'translateX(20px)';
+        toast.style.transition = 'all 0.2s ease';
+        setTimeout(() => toast.remove(), 200);
       }, 3500);
     }
 
-    // Безопасное экранирование HTML
     function escapeHtml(str) {
       if (!str) return '';
       return String(str)
