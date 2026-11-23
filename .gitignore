@@ -1,0 +1,12 @@
+venv/
+test_env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+bots.db
+.DS_Store
+*.log
+.idea/
+.vscode/

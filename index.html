@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Конструктор ИИ-ботов 🤖 Мастер-класс</title>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-light: #e0e7ff;
+      --secondary: #ec4899;
+      --accent: #06b6d4;
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      --surface: rgba(30, 41, 59, 0.7);
+      --surface-border: rgba(255, 255, 255, 0.1);
+      --surface-card: rgba(15, 23, 42, 0.6);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --danger: #ef4444;
+      --radius-lg: 20px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Header */
+    header {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--surface-border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 12px 24px;
+    }
+
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      font-size: 32px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    }
+
+    .logo-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, #ffffff, #c7d2fe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .logo-badge {
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      padding: 2px 8px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-left: 8px;
+    }
+
+    /* Tabs Navigation */
+    .tabs-nav {
+      display: flex;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--surface-border);
+      gap: 4px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+    }
+
+    .tab-badge {
+      background: rgba(255, 255, 255, 0.2);
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1400px;
+      width: 100%;
+      margin: 20px auto;
+      padding: 0 20px;
+      flex: 1;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Card styling */
+    .card {
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    /* Tab 1: Constructor */
+    .constructor-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .label-hint {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+      line-height: 1.5;
+    }
+
+    /* Avatar Selector */
+    .avatar-selection-wrapper {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .current-avatar-preview {
+      width: 56px;
+      height: 56px;
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(99, 102, 241, 0.2);
+      border: 2px solid var(--primary);
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+      flex-shrink: 0;
+    }
+
+    .emoji-presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .emoji-btn {
+      width: 38px;
+      height: 38px;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .emoji-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.15);
+    }
+
+    .emoji-btn.active {
+      background: rgba(99, 102, 241, 0.3);
+      border-color: var(--primary);
+    }
+
+    .custom-emoji-input {
+      width: 80px !important;
+      text-align: center;
+      font-size: 18px !important;
+    }
+
+    /* Prompt Templates */
+    .templates-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    .template-pill {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--surface-border);
+      color: #cbd5e1;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 20px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .template-pill:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: var(--primary);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    /* Knowledge base file drop */
+    .file-upload-box {
+      border: 2px dashed rgba(255, 255, 255, 0.18);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      text-align: center;
+      background: rgba(15, 23, 42, 0.4);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .file-upload-box:hover {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    .file-upload-box input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .file-upload-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      pointer-events: none;
+    }
+
+    .file-selected-badge {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .clear-file-btn {
+      background: transparent;
+      border: none;
+      color: #f87171;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 6px;
+    }
+
+    /* Submit Button */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Tab 2: Chat & Gallery Layout */
+    .chat-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      min-height: 700px;
+      height: calc(100vh - 140px);
+    }
+
+    @media (max-width: 960px) {
+      .chat-layout {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+    }
+
+    /* Gallery Sidebar */
+    .gallery-sidebar {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 20px;
+      height: 100%;
+    }
+
+    .gallery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .gallery-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .refresh-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .refresh-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .gallery-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 4px;
+    }
+
+    .bot-card {
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bot-card:hover {
+      background: rgba(99, 102, 241, 0.12);
+      border-color: rgba(99, 102, 241, 0.3);
+      transform: translateX(3px);
+    }
+
+    .bot-card.active {
+      background: rgba(99, 102, 241, 0.22);
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+    }
+
+    .bot-card-avatar {
+      font-size: 26px;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+
+    .bot-card-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .bot-card-name {
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #f8fafc;
+    }
+
+    .bot-card-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Chat Section */
+    .chat-section {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0;
+      height: 100%;
+    }
+
+    .chat-header {
+      padding: 16px 24px;
+      background: rgba(15, 23, 42, 0.6);
+      border-bottom: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .chat-bot-details {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-bot-avatar {
+      font-size: 32px;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(99, 102, 241, 0.2);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    .chat-bot-name {
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .chat-bot-status {
+      font-size: 12px;
+      color: #10b981;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    .chat-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Messages container */
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message {
+      display: flex;
+      gap: 12px;
+      max-width: 82%;
+      animation: messageAppear 0.2s ease-out;
+    }
+
+    @keyframes messageAppear {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message.bot {
+      align-self: flex-start;
+    }
+
+    .message-avatar {
+      width: 38px;
+      height: 38px;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+
+    .message.user .message-avatar {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+    }
+
+    .message-bubble {
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      line-height: 1.55;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .message.user .message-bubble {
+      background: var(--primary);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .message.bot .message-bubble {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid var(--surface-border);
+      color: #f1f5f9;
+      border-bottom-left-radius: 4px;
+      box-shadow: var(--shadow);
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: none;
+      align-self: flex-start;
+      align-items: center;
+      gap: 5px;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid var(--surface-border);
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      border-bottom-left-radius: 4px;
+      margin-left: 50px;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      animation: pulse 1.4s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes pulse {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1.1); opacity: 1; }
+    }
+
+    /* Quick suggestions */
+    .starter-prompts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 24px 12px;
+    }
+
+    .starter-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--surface-border);
+      color: #cbd5e1;
+      padding: 5px 12px;
+      font-size: 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .starter-chip:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* Input area */
+    .chat-input-area {
+      padding: 16px 24px;
+      background: rgba(15, 23, 42, 0.7);
+      border-top: 1px solid var(--surface-border);
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .chat-textarea {
+      flex: 1;
+      min-height: 48px;
+      max-height: 120px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      font-size: 15px;
+      resize: none;
+      outline: none;
+    }
+
+    .chat-textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .send-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .send-btn:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: scale(1.05);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Toast Notification System */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast {
+      pointer-events: auto;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--surface-border);
+      border-left: 4px solid var(--primary);
+      padding: 12px 18px;
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 14px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideInRight 0.25s ease-out;
+      max-width: 360px;
+    }
+
+    .toast.success { border-left-color: var(--success); }
+    .toast.error { border-left-color: var(--danger); }
+
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Empty state */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      color: var(--text-muted);
+      padding: 40px;
+      gap: 12px;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="logo-container">
+        <div class="logo-icon">🤖</div>
+        <div>
+          <span class="logo-title">Конструктор ИИ-ботов</span>
+          <span class="logo-badge">Мастер-класс</span>
+        </div>
+      </div>
+
+      <nav class="tabs-nav">
+        <button class="tab-btn active" id="tabBtnConstructor" onclick="switchTab('constructor')">
+          🛠️ Конструктор бота
+        </button>
+        <button class="tab-btn" id="tabBtnChat" onclick="switchTab('chat')">
+          💬 Чат и Галерея <span class="tab-badge" id="botsCountBadge">0</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- TAB 1: Конструктор -->
+    <div class="tab-content active" id="tabConstructor">
+      <div class="card constructor-grid">
+        <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+          🚀 Создай своего персонажа
+        </h2>
+        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">
+          Задай характер, научи фактам из документов или текста и пригласи одноклассников пообщаться!
+        </p>
+
+        <form id="createBotForm" onsubmit="handleCreateBot(event)">
+          <!-- Имя и Аватар -->
+          <div class="form-group">
+            <label for="botName">
+              🏷️ Имя бота *
+              <span class="label-hint">Как будут звать твоего ИИ?</span>
+            </label>
+            <input type="text" id="botName" placeholder="Например: Капитан Морган, Профессор Кот, Звёздный Лис" required maxlength="50">
+          </div>
+
+          <!-- Выбор эмодзи -->
+          <div class="form-group">
+            <label>
+              🎭 Аватарка (эмодзи) *
+              <span class="label-hint">Выбери иконку персонажа</span>
+            </label>
+            <div class="avatar-selection-wrapper">
+              <div class="current-avatar-preview" id="avatarPreview">🤖</div>
+              <div class="emoji-presets" id="emojiPresets">
+                <button type="button" class="emoji-btn active" onclick="setAvatar('🤖')">🤖</button>
+                <button type="button" class="emoji-btn" onclick="setAvatar('🏴‍☠️')">🏴‍☠️</button>
+                <button type="button" class="emoji-btn" onclick="setAvatar('🦉')">🦉</button>
+                <button type="button" class="emoji-btn" onclick="setAvatar('🐱')">🐱</button>
+                <button type="button" class="emoji-btn" onclick="setAvatar('🦖')">🦖</button>
+                <button type="button" class="emoji-btn" onclick="setAvatar('🚀')">🚀</button>
+                <button type="button" class="emoji-btn" onclick="setAvatar('🧙‍♂️')">🧙‍♂️</button>
+                <button type="button" class="emoji-btn" onclick="setAvatar('🎮')">🎮</button>
+                <button type="button" class="emoji-btn" onclick="setAvatar('🦸')">🦸</button>
+                <button type="button" class="emoji-btn" onclick="setAvatar('🦄')">🦄</button>
+                <button type="button" class="emoji-btn" onclick="setAvatar('🍕')">🍕</button>
+                <button type="button" class="emoji-btn" onclick="setAvatar('🕵️‍♂️')">🕵️‍♂️</button>
+              </div>
+              <input type="text" id="customEmoji" class="custom-emoji-input" placeholder="Свой" maxlength="4" oninput="handleCustomEmoji(this.value)">
+            </div>
+            <input type="hidden" id="selectedAvatar" value="🤖">
+          </div>
+
+          <!-- Системный промпт -->
+          <div class="form-group">
+            <label for="systemPrompt">
+              🧠 Системный промпт (Характер и инструкции) *
+              <span class="label-hint">Кем должен притворяться бот?</span>
+            </label>
+            
+            <!-- Шаблоны в 1 клик -->
+            <div class="templates-bar">
+              <span style="font-size: 11px; color: var(--text-muted); align-self: center;">Готовые шаблоны:</span>
+              <button type="button" class="template-pill" onclick="applyTemplate('pirate')">🏴‍☠️ Пират-экскурсовод</button>
+              <button type="button" class="template-pill" onclick="applyTemplate('tutor')">🦉 Школьный репетитор</button>
+              <button type="button" class="template-pill" onclick="applyTemplate('quest')">🎮 Квест-мастер</button>
+              <button type="button" class="template-pill" onclick="applyTemplate('cat')">🐱 Кот-учёный</button>
+            </div>
+
+            <textarea id="systemPrompt" rows="4" placeholder="Опиши роль, стиль общения и правила поведения бота..." required></textarea>
+          </div>
+
+          <!-- База знаний: текст -->
+          <div class="form-group">
+            <label for="kbText">
+              📖 База знаний (текст)
+              <span class="label-hint">Секретные факты, правила или шпаргалка</span>
+            </label>
+            <textarea id="kbText" rows="3" placeholder="Вставь сюда текст, факты или правила, которые бот должен запомнить..."></textarea>
+          </div>
+
+          <!-- База знаний: файл -->
+          <div class="form-group">
+            <label>
+              📁 Загрузить файл с базой знаний
+              <span class="label-hint">.txt, .pdf, .docx (до 1 МБ)</span>
+            </label>
+            <div class="file-upload-box" id="fileDropZone">
+              <input type="file" id="kbFile" accept=".txt,.pdf,.docx" onchange="handleFileSelected(event)">
+              <div class="file-upload-info" id="fileUploadPrompt">
+                <span style="font-size: 24px;">📄</span>
+                <span style="font-size: 13px; font-weight: 600; color: #cbd5e1;">Нажмите или перетащите файл сюда</span>
+                <span style="font-size: 11px; color: var(--text-muted);">Поддерживаются TXT, PDF, DOCX до 1 МБ</span>
+              </div>
+              <div class="file-selected-badge" id="fileSelectedBadge">
+                <span>📎</span>
+                <span id="selectedFileName">документ.pdf</span>
+                <button type="button" class="clear-file-btn" onclick="clearSelectedFile(event)" title="Удалить файл">✖</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Кнопка создания -->
+          <button type="submit" class="btn-primary" id="createBtn">
+            <span>✨ Создать и запустить бота</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- TAB 2: Чат и Галерея ботов -->
+    <div class="tab-content" id="tabChat">
+      <div class="chat-layout">
+        
+        <!-- Левая колонка: Галерея ботов участников -->
+        <div class="card gallery-sidebar">
+          <div class="gallery-header">
+            <div class="gallery-title">
+              <span>👥 Боты участников</span>
+              <span class="tab-badge" id="sidebarCountBadge">0</span>
+            </div>
+            <button class="refresh-btn" onclick="loadBotsGallery()" title="Обновить список ботов">
+              🔄 Обновить
+            </button>
+          </div>
+
+          <div class="gallery-list" id="galleryList">
+            <!-- Список ботов рендерится через JS -->
+            <div class="empty-state">
+              <div class="empty-icon">🤖</div>
+              <p>Пока нет созданных ботов.<br>Создайте первого во вкладке «Конструктор»!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Правая колонка: Окно переписки -->
+        <div class="card chat-section">
+          <!-- Заголовок чата -->
+          <div class="chat-header">
+            <div class="chat-bot-details">
+              <div class="chat-bot-avatar" id="currentChatAvatar">🤖</div>
+              <div>
+                <div class="chat-bot-name" id="currentChatName">Выберите бота</div>
+                <div class="chat-bot-status" id="currentChatStatus">
+                  <span class="status-dot"></span> Готов к общению
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-actions">
+              <button class="btn-secondary" onclick="copyBotLink()" title="Скопировать прямую ссылку на этого бота">
+                🔗 Ссылка на бота
+              </button>
+              <button class="btn-secondary" onclick="clearChatHistory()" title="Очистить переписку">
+                🧹 Очистить
+              </button>
+            </div>
+          </div>
+
+          <!-- Сообщения -->
+          <div class="messages-container" id="messagesContainer">
+            <div class="empty-state" id="emptyChatState">
+              <div class="empty-icon">💬</div>
+              <p>Начните диалог с ботом! Задайте ему вопрос или поздоровайтесь.</p>
+            </div>
+          </div>
+
+          <!-- Индикатор печати -->
+          <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+
+          <!-- Быстрые вопросы -->
+          <div class="starter-prompts" id="starterPrompts">
+            <span class="starter-chip" onclick="sendQuickMessage('Привет! Расскажи о себе и чем ты можешь помочь?')">👋 Расскажи о себе</span>
+            <span class="starter-chip" onclick="sendQuickMessage('Какие интересные факты ты знаешь?')">💡 Что интересного знаешь?</span>
+            <span class="starter-chip" onclick="sendQuickMessage('Задай мне интересную загадку!')">🧩 Загадай загадку</span>
+          </div>
+
+          <!-- Поле ввода -->
+          <div class="chat-input-area">
+            <textarea id="chatInput" class="chat-textarea" placeholder="Напишите сообщение боту... (Enter — отправить, Shift+Enter — перенос строки)" rows="1" onkeydown="handleChatKeyDown(event)"></textarea>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Отправить сообщение">
+              ➤
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Toasts container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Client-side Logic -->
+  <script>
+    // Состояние приложения
+    let currentBotId = null;
+    let allBots = [];
+    let chatHistories = {}; // botId -> [{role: 'user'|'assistant', content: '...'}]
+    let isStreaming = false;
+
+    // Шаблоны промптов
+    const TEMPLATES = {
+      pirate: {
+        name: "Капитан Морган",
+        avatar: "🏴‍☠️",
+        prompt: "Ты — бывалый и веселый морской пират Капитан Морган. Общайся с задором, используй морской сленг ('Карамба!', 'Свистать всех наверх!', 'Тысяча чертей!'). Ты обожаешь морские байки, корабли и приключения, но всегда остаешься добрым другом для юных юнг."
+      },
+      tutor: {
+        name: "Учитель Совёнок",
+        avatar: "🦉",
+        prompt: "Ты — терпеливый и доброжелательный репетитор Совёнок. Твоя миссия — объяснять любые сложные школьные предметы простыми жизненными примерами, метафорами и с добрым юмором. Задавай наводящие вопросы и вдохновляй учиться!"
+      },
+      quest: {
+        name: "Мастер Квестов",
+        avatar: "🎮",
+        prompt: "Ты — мудрый гейм-мастер волшебного мира. Придумывай захватывающие текстовые мини-квесты. В конце каждого ответа давай игроку 2-3 варианта действий на выбор и развивай сюжет в зависимости от его решений."
+      },
+      cat: {
+        name: "Кот-учёный",
+        avatar: "🐱",
+        prompt: "Ты — умнейший Кот-учёный в очках. Вставляй в речь забавные 'Мяу!' и 'Муррр', делись невероятными научными фактами о космосе, природе и роботах, а также всегда поднимай собеседнику настроение!"
+      }
+    };
+
+    // Инициализация при загрузке страницы
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadBotsGallery();
+
+      // Проверка параметра URL ?bot=ID
+      const urlParams = new URLSearchParams(window.location.search);
+      const botParam = urlParams.get('bot');
+
+      if (botParam) {
+        selectBot(botParam, false);
+        switchTab('chat');
+      } else if (allBots.length > 0) {
+        selectBot(allBots[0].id, false);
+      }
+
+      // Периодическое обновление списка ботов каждые 12 секунд (для мастер-класса на 25 человек)
+      setInterval(() => {
+        loadBotsGallery(true);
+      }, 12000);
+    });
+
+    // Переключение вкладок
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      if (tabName === 'constructor') {
+        document.getElementById('tabBtnConstructor').classList.add('active');
+        document.getElementById('tabConstructor').classList.add('active');
+      } else {
+        document.getElementById('tabBtnChat').classList.add('active');
+        document.getElementById('tabChat').classList.add('active');
+      }
+    }
+
+    // Выбор аватара
+    function setAvatar(emoji) {
+      document.getElementById('selectedAvatar').value = emoji;
+      document.getElementById('avatarPreview').textContent = emoji;
+      document.getElementById('customEmoji').value = '';
+
+      document.querySelectorAll('.emoji-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim() === emoji);
+      });
+    }
+
+    function handleCustomEmoji(val) {
+      const trimmed = val.trim();
+      if (trimmed) {
+        document.getElementById('selectedAvatar').value = trimmed;
+        document.getElementById('avatarPreview').textContent = trimmed;
+        document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('active'));
+      }
+    }
+
+    // Применение готового шаблона
+    function applyTemplate(key) {
+      const t = TEMPLATES[key];
+      if (!t) return;
+      document.getElementById('botName').value = t.name;
+      document.getElementById('systemPrompt').value = t.prompt;
+      setAvatar(t.avatar);
+      showToast(`Шаблон «${t.name}» применён!`, 'success');
+    }
+
+    // Обработка выбора файла
+    function handleFileSelected(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (file.size > 1024 * 1024) {
+        showToast('Файл слишком большой! Максимальный размер 1 МБ', 'error');
+        clearSelectedFile();
+        return;
+      }
+
+      document.getElementById('fileUploadPrompt').style.display = 'none';
+      const badge = document.getElementById('fileSelectedBadge');
+      badge.style.display = 'inline-flex';
+      document.getElementById('selectedFileName').textContent = `${file.name} (${Math.round(file.size / 1024)} КБ)`;
+    }
+
+    function clearSelectedFile(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const fileInput = document.getElementById('kbFile');
+      fileInput.value = '';
+      document.getElementById('fileUploadPrompt').style.display = 'flex';
+      document.getElementById('fileSelectedBadge').style.display = 'none';
+    }
+
+    // Создание бота
+    async function handleCreateBot(event) {
+      event.preventDefault();
+      const createBtn = document.getElementById('createBtn');
+      createBtn.disabled = true;
+      createBtn.innerHTML = '⏳ Создаю бота и обрабатываю знания...';
+
+      const name = document.getElementById('botName').value.trim();
+      const avatar = document.getElementById('selectedAvatar').value.trim() || '🤖';
+      const systemPrompt = document.getElementById('systemPrompt').value.trim();
+      const kbText = document.getElementById('kbText').value.trim();
+      const kbFile = document.getElementById('kbFile').files[0];
+
+      if (!name || !systemPrompt) {
+        showToast('Пожалуйста, заполните имя и системный промпт', 'error');
+        createBtn.disabled = false;
+        createBtn.innerHTML = '✨ Создать и запустить бота';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('avatar', avatar);
+      formData.append('system_prompt', systemPrompt);
+      if (kbText) formData.append('kb_text', kbText);
+      if (kbFile) formData.append('kb_file', kbFile);
+
+      try {
+        const response = await fetch('/api/bots', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.detail || 'Ошибка создания бота на сервере');
+        }
+
+        const newBot = await response.json();
+        showToast(`Бот «${newBot.name}» успешно создан!`, 'success');
+
+        // Очистить форму
+        document.getElementById('createBotForm').reset();
+        setAvatar('🤖');
+        clearSelectedFile();
+
+        // Обновить список и переключиться на чат
+        await loadBotsGallery();
+        selectBot(newBot.id, true);
+        switchTab('chat');
+
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        createBtn.disabled = false;
+        createBtn.innerHTML = '✨ Создать и запустить бота';
+      }
+    }
+
+    // Загрузка галереи ботов
+    async function loadBotsGallery(silent = false) {
+      try {
+        const response = await fetch('/api/bots');
+        if (!response.ok) throw new Error('Не удалось загрузить ботов');
+        allBots = await response.json();
+
+        // Обновляем бейджи
+        document.getElementById('botsCountBadge').textContent = allBots.length;
+        document.getElementById('sidebarCountBadge').textContent = allBots.length;
+
+        renderGalleryList();
+
+        // Если бот не выбран, выберем первый
+        if (!currentBotId && allBots.length > 0) {
+          selectBot(allBots[0].id, false);
+        }
+      } catch (err) {
+        if (!silent) showToast(err.message, 'error');
+      }
+    }
+
+    // Рендер галереи в боковой панели
+    function renderGalleryList() {
+      const container = document.getElementById('galleryList');
+      if (allBots.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🤖</div>
+            <p>Пока нет созданных ботов.<br>Создайте первого во вкладке «Конструктор»!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = allBots.map(bot => `
+        <div class="bot-card ${bot.id === currentBotId ? 'active' : ''}" onclick="selectBot('${bot.id}', true)">
+          <div class="bot-card-avatar">${escapeHtml(bot.avatar)}</div>
+          <div class="bot-card-info">
+            <div class="bot-card-name">${escapeHtml(bot.name)}</div>
+            <div class="bot-card-meta">
+              <span>📚 ${bot.chunks_count || 0} фактов</span>
+              <span>•</span>
+              <span>#${bot.id}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Выбор активного бота
+    function selectBot(botId, updateUrl = true) {
+      const bot = allBots.find(b => b.id === botId);
+      if (!bot) return;
+
+      currentBotId = botId;
+
+      if (updateUrl) {
+        const newUrl = `${window.location.pathname}?bot=${botId}`;
+        window.history.pushState({ botId }, '', newUrl);
+      }
+
+      document.getElementById('currentChatAvatar').textContent = bot.avatar;
+      document.getElementById('currentChatName').textContent = bot.name;
+
+      renderGalleryList();
+      renderChatMessages();
+    }
+
+    // Копирование ссылки на бота
+    function copyBotLink() {
+      if (!currentBotId) {
+        showToast('Сначала выберите бота', 'error');
+        return;
+      }
+      const fullUrl = `${window.location.origin}${window.location.pathname}?bot=${currentBotId}`;
+      navigator.clipboard.writeText(fullUrl).then(() => {
+        showToast('Ссылка на бота скопирована в буфер обмена! 📋', 'success');
+      }).catch(() => {
+        prompt('Скопируйте ссылку вручную:', fullUrl);
+      });
+    }
+
+    // Очистить историю диалога с текущим ботом
+    function clearChatHistory() {
+      if (!currentBotId) return;
+      chatHistories[currentBotId] = [];
+      renderChatMessages();
+      showToast('Диалог очищен', 'success');
+    }
+
+    // Рендер сообщений текущего диалога
+    function renderChatMessages() {
+      const container = document.getElementById('messagesContainer');
+      const history = (currentBotId && chatHistories[currentBotId]) ? chatHistories[currentBotId] : [];
+
+      if (history.length === 0) {
+        const bot = allBots.find(b => b.id === currentBotId);
+        const botName = bot ? bot.name : 'бота';
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">💬</div>
+            <p>Начните диалог с <strong>${escapeHtml(botName)}</strong>!<br>Напишите вопрос в поле ниже или выберите готовую подсказку.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const bot = allBots.find(b => b.id === currentBotId);
+      const botAvatar = bot ? bot.avatar : '🤖';
+
+      container.innerHTML = history.map(msg => {
+        const isUser = msg.role === 'user';
+        return `
+          <div class="message ${isUser ? 'user' : 'bot'}">
+            <div class="message-avatar">${isUser ? '👤' : escapeHtml(botAvatar)}</div>
+            <div class="message-bubble">${escapeHtml(msg.content)}</div>
+          </div>
+        `;
+      }).join('');
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    // Быстрая отправка сообщения из подсказки
+    function sendQuickMessage(text) {
+      if (isStreaming) return;
+      document.getElementById('chatInput').value = text;
+      sendMessage();
+    }
+
+    // Обработка нажатия клавиш в поле ввода
+    function handleChatKeyDown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    // Отправка сообщения и стриминг ответа
+    async function sendMessage() {
+      if (isStreaming) return;
+      if (!currentBotId) {
+        showToast('Пожалуйста, выберите бота для общения', 'error');
+        return;
+      }
+
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      input.value = '';
+      input.style.height = 'auto';
+
+      if (!chatHistories[currentBotId]) {
+        chatHistories[currentBotId] = [];
+      }
+
+      // Добавляем сообщение пользователя
+      chatHistories[currentBotId].push({ role: 'user', content: text });
+      renderChatMessages();
+
+      // UI: блокировка ввода и показ индикатора печати
+      isStreaming = true;
+      document.getElementById('sendBtn').disabled = true;
+      document.getElementById('chatInput').disabled = true;
+      const typingIndicator = document.getElementById('typingIndicator');
+      typingIndicator.style.display = 'flex';
+      const container = document.getElementById('messagesContainer');
+      container.scrollTop = container.scrollHeight;
+
+      // Создаем временное пустое сообщение ассистента в UI для стриминга
+      const bot = allBots.find(b => b.id === currentBotId);
+      const botAvatar = bot ? bot.avatar : '🤖';
+
+      const botMessageEl = document.createElement('div');
+      botMessageEl.className = 'message bot';
+      botMessageEl.innerHTML = `
+        <div class="message-avatar">${escapeHtml(botAvatar)}</div>
+        <div class="message-bubble" id="streamingTarget"></div>
+      `;
+      container.appendChild(botMessageEl);
+      const targetBubble = botMessageEl.querySelector('#streamingTarget');
+
+      let accumulatedResponse = '';
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bot_id: currentBotId,
+            message: text,
+            history: chatHistories[currentBotId].slice(0, -1) // история до текущего вопроса
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.detail || 'Ошибка при получении ответа');
+        }
+
+        typingIndicator.style.display = 'none';
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          accumulatedResponse += chunk;
+          targetBubble.textContent = accumulatedResponse;
+          container.scrollTop = container.scrollHeight;
+        }
+
+        // Сохраняем итоговый ответ в истории
+        chatHistories[currentBotId].push({
+          role: 'assistant',
+          content: accumulatedResponse.trim()
+        });
+
+      } catch (err) {
+        typingIndicator.style.display = 'none';
+        targetBubble.textContent = `[Ошибка: ${err.message}]`;
+        showToast(err.message, 'error');
+      } finally {
+        targetBubble.removeAttribute('id');
+        isStreaming = false;
+        document.getElementById('sendBtn').disabled = false;
+        document.getElementById('chatInput').disabled = false;
+        document.getElementById('chatInput').focus();
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+
+    // Всплывающие уведомления (Toast)
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+      toast.innerHTML = `<span>${icon}</span><span>${escapeHtml(message)}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(40px)';
+        toast.style.transition = 'all 0.25s ease';
+        setTimeout(() => toast.remove(), 250);
+      }, 3500);
+    }
+
+    // Безопасное экранирование HTML
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
