@@ -3,40 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Конструктор ИИ-ботов ⚡ Comfy Node Studio</title>
+  <title>Конструктор ИИ-ботов</title>
   <style>
     :root {
-      --bg-dark: #070b14;
-      --bg-canvas: #090e1a;
-      --node-bg: rgba(12, 21, 39, 0.95);
-      --node-border: #1c2e4f;
-      --node-border-active: #38bdf8;
-      --node-header: #11203b;
-      --node-header-text: #f1f5f9;
-      --text-main: #e2e8f0;
-      --text-muted: #8496b3;
+      --bg-base: #090e17;
+      --bg-panel: #0d1524;
+      --bg-node: #0f192b;
+      --bg-node-header: #142239;
+      --border-node: #1d3152;
+      --border-node-active: #38bdf8;
+      --border-subtle: #162642;
+      --text: #e2e8f0;
+      --text-muted: #7c8ea8;
       --accent-cyan: #38bdf8;
+      --accent-blue: #2563eb;
       --accent-green: #10b981;
       --accent-amber: #f59e0b;
-      --accent-blue: #3b82f6;
       --danger: #ef4444;
       --wire-char: #38bdf8;
-      --wire-prompt: #818cf8;
+      --wire-prompt: #60a5fa;
       --wire-kb: #34d399;
-      --radius-node: 12px;
-      --radius-sm: 6px;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     body {
-      background: var(--bg-dark);
-      color: var(--text-main);
+      background: var(--bg-base);
+      color: var(--text);
       height: 100vh;
       overflow: hidden;
       display: flex;
@@ -44,73 +42,58 @@
       user-select: none;
     }
 
-    /* Top Bar (ComfyUI Style) */
+    /* Top Bar */
     .top-bar {
-      height: 52px;
-      background: #0b1324;
-      border-bottom: 1px solid #162642;
+      height: 48px;
+      background: #0b1322;
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 18px;
+      padding: 0 16px;
       z-index: 100;
       flex-shrink: 0;
     }
 
-    .brand-section {
+    .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
-    }
-
-    .brand-logo {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, #1e3a8a, #0284c7);
-      border: 1px solid #38bdf8;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+      gap: 10px;
     }
 
     .brand-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
-      letter-spacing: -0.3px;
-      color: #f8fafc;
+      letter-spacing: -0.2px;
+      color: #f1f5f9;
     }
 
-    .brand-tag {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      background: #1e293b;
-      color: #38bdf8;
-      border: 1px solid #22426f;
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: #132035;
       padding: 2px 6px;
       border-radius: 4px;
+      font-family: monospace;
     }
 
-    .mode-switch {
+    .nav-tabs {
       display: flex;
-      background: #060a12;
-      border: 1px solid #162642;
-      border-radius: 8px;
-      padding: 3px;
-      gap: 4px;
+      background: #070b13;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 2px;
     }
 
-    .mode-btn {
+    .nav-btn {
       background: transparent;
       border: none;
       color: var(--text-muted);
-      padding: 6px 14px;
-      font-size: 13px;
+      padding: 5px 12px;
+      font-size: 12px;
       font-weight: 600;
-      border-radius: 6px;
+      border-radius: 4px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -118,44 +101,39 @@
       transition: all 0.15s ease;
     }
 
-    .mode-btn:hover {
+    .nav-btn:hover {
       color: #fff;
-      background: #111d33;
     }
 
-    .mode-btn.active {
-      background: #1a365d;
-      color: #38bdf8;
-      border: 1px solid #2b538c;
-      box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+    .nav-btn.active {
+      background: #172844;
+      color: #f8fafc;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     }
 
-    .queue-bar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn-queue {
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-      color: white;
-      border: 1px solid #38bdf8;
-      padding: 7px 18px;
-      font-size: 13px;
-      font-weight: 700;
-      border-radius: 6px;
-      cursor: pointer;
+    .top-actions {
       display: flex;
       align-items: center;
       gap: 8px;
-      box-shadow: 0 0 12px rgba(2, 132, 199, 0.4);
+    }
+
+    .btn-queue {
+      background: #0284c7;
+      color: white;
+      border: 1px solid #38bdf8;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 5px;
+      cursor: pointer;
       transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .btn-queue:hover:not(:disabled) {
-      background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
-      transform: translateY(-1px);
-      box-shadow: 0 0 16px rgba(56, 189, 248, 0.5);
+      background: #0369a1;
     }
 
     .btn-queue:disabled {
@@ -163,109 +141,107 @@
       cursor: not-allowed;
     }
 
-    .btn-reset-view {
-      background: #111d33;
-      border: 1px solid #1e3357;
-      color: var(--text-muted);
-      padding: 6px 12px;
-      font-size: 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .btn-reset-view:hover {
-      color: #fff;
-      background: #1a2c4e;
-    }
-
-    /* Views container */
-    .view-container {
+    /* Views */
+    .view-panel {
       flex: 1;
       position: relative;
       overflow: hidden;
       display: none;
     }
 
-    .view-container.active {
+    .view-panel.active {
       display: block;
     }
 
-    /* Node Canvas (ComfyUI Graph) */
-    #nodeCanvasView {
+    /* Node Canvas Viewport (Infinite Zoom/Pan) */
+    #viewport {
       width: 100%;
       height: 100%;
-      background-color: var(--bg-canvas);
-      background-image: 
-        radial-gradient(#16243d 1.2px, transparent 1.2px),
-        linear-gradient(to right, rgba(22, 36, 61, 0.15) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(22, 36, 61, 0.15) 1px, transparent 1px);
-      background-size: 24px 24px, 120px 120px, 120px 120px;
       position: relative;
       overflow: hidden;
+      cursor: default;
+      background-color: var(--bg-base);
+      background-image: radial-gradient(#17253d 1.1px, transparent 1.1px);
+      background-size: 20px 20px;
     }
 
-    #canvasSvg {
+    #viewport.panning {
+      cursor: grabbing;
+    }
+
+    #world {
       position: absolute;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      width: 0;
+      height: 0;
+      transform-origin: 0 0;
       pointer-events: none;
-      z-index: 10;
     }
 
-    .wire-path {
-      stroke-width: 3.5;
+    #world > * {
+      pointer-events: auto;
+    }
+
+    /* SVG Canvas for Wires */
+    #wiresSvg {
+      position: absolute;
+      top: -5000px;
+      left: -5000px;
+      width: 10000px;
+      height: 10000px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .wire {
+      stroke-width: 3;
       fill: none;
-      filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.6));
       stroke-linecap: round;
-      transition: stroke-width 0.15s ease;
     }
 
-    .wire-glow {
-      stroke-width: 8;
+    .wire-shadow {
+      stroke-width: 6;
+      stroke: rgba(0, 0, 0, 0.4);
       fill: none;
-      opacity: 0.25;
       stroke-linecap: round;
     }
 
-    /* Node Element */
+    /* Nodes */
     .node {
       position: absolute;
-      background: var(--node-bg);
-      border: 1px solid var(--node-border);
-      border-radius: var(--radius-node);
-      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.5), 0 0 1px rgba(56, 189, 248, 0.2);
-      width: 290px;
-      z-index: 20;
+      background: var(--bg-node);
+      border: 1px solid var(--border-node);
+      border-radius: 8px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+      width: 280px;
+      z-index: 10;
       user-select: none;
-      backdrop-filter: blur(8px);
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      font-size: 13px;
     }
 
     .node:hover {
-      border-color: #274775;
-      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6), 0 0 10px rgba(56, 189, 248, 0.15);
+      border-color: #274370;
     }
 
+    .node.selected,
     .node.dragging {
-      border-color: var(--node-border-active);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 16px rgba(56, 189, 248, 0.35);
-      z-index: 30;
+      border-color: var(--border-node-active);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border-node-active);
+      z-index: 20;
     }
 
-    .node.node-target {
-      width: 340px;
-      border-color: #22426f;
+    .node.assembler-node {
+      width: 320px;
+      border-color: #223c66;
     }
 
     .node-header {
-      padding: 10px 14px;
-      background: var(--node-header);
-      border-top-left-radius: var(--radius-node);
-      border-top-right-radius: var(--radius-node);
-      border-bottom: 1px solid #162642;
+      padding: 8px 12px;
+      background: var(--bg-node-header);
+      border-top-left-radius: 7px;
+      border-top-right-radius: 7px;
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -276,170 +252,146 @@
       cursor: grabbing;
     }
 
-    .node-title-group {
+    .node-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #f1f5f9;
+      letter-spacing: -0.1px;
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-
-    .node-icon {
-      font-size: 16px;
-    }
-
-    .node-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--node-header-text);
-      letter-spacing: -0.2px;
-    }
-
-    .node-tag {
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: rgba(0, 0, 0, 0.3);
-      color: #94a3b8;
-    }
-
-    .node-body {
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      user-select: text;
-    }
-
-    /* Form inputs inside nodes */
-    .field-group {
-      display: flex;
-      flex-direction: column;
       gap: 6px;
     }
 
-    .field-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: #94a3b8;
+    .node-type-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: monospace;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+    }
+
+    .node-body {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      user-select: text;
+    }
+
+    .control-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
       display: flex;
       justify-content: space-between;
+      user-select: none;
     }
 
-    .field-input,
-    .field-textarea {
-      background: #080d17;
-      border: 1px solid #192a47;
-      border-radius: var(--radius-sm);
-      color: #f1f5f9;
-      font-size: 13px;
-      padding: 8px 10px;
-      outline: none;
-      transition: all 0.15s ease;
+    .control-input,
+    .control-textarea {
       width: 100%;
+      background: #090e17;
+      border: 1px solid #1a2a44;
+      border-radius: 4px;
+      color: #f1f5f9;
+      font-size: 12px;
+      padding: 6px 8px;
+      outline: none;
+      transition: border-color 0.15s ease;
     }
 
-    .field-input:focus,
-    .field-textarea:focus {
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
-      background: #0a1120;
+    .control-input:focus,
+    .control-textarea:focus {
+      border-color: var(--accent-cyan);
     }
 
-    .field-textarea {
+    .control-textarea {
       resize: vertical;
-      min-height: 85px;
+      min-height: 75px;
       line-height: 1.4;
     }
 
-    /* Node Emojis */
-    .emoji-row {
-      display: flex;
-      gap: 5px;
-      flex-wrap: wrap;
-    }
-
-    .node-emoji-btn {
-      width: 32px;
-      height: 32px;
-      font-size: 17px;
-      background: #080d17;
-      border: 1px solid #192a47;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s ease;
-    }
-
-    .node-emoji-btn:hover {
-      background: #14223d;
-      transform: scale(1.1);
-    }
-
-    .node-emoji-btn.active {
-      background: #163056;
-      border-color: #38bdf8;
-      box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
-    }
-
-    .current-avatar-badge {
-      width: 36px;
-      height: 36px;
-      font-size: 22px;
-      background: #0f1c33;
-      border: 1px solid #38bdf8;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    /* Template pills in node */
-    .template-chips {
+    /* Template buttons */
+    .template-bar {
       display: flex;
       flex-wrap: wrap;
-      gap: 5px;
+      gap: 4px;
+      user-select: none;
     }
 
-    .chip-btn {
-      background: #091222;
-      border: 1px solid #1a2f52;
+    .btn-template {
+      background: #0c1422;
+      border: 1px solid #1a2a44;
       color: #94a3b8;
-      padding: 4px 8px;
+      padding: 3px 7px;
       font-size: 11px;
-      font-weight: 600;
       border-radius: 4px;
       cursor: pointer;
       transition: all 0.15s ease;
     }
 
-    .chip-btn:hover {
+    .btn-template:hover {
+      border-color: var(--accent-cyan);
       color: #fff;
-      border-color: #38bdf8;
-      background: #11223f;
     }
 
-    /* File drop area */
-    .file-box {
-      border: 1px dashed #203860;
-      border-radius: 6px;
-      padding: 10px;
-      background: #070c17;
-      text-align: center;
+    /* Avatar selector */
+    .avatar-row {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .avatar-preview {
+      width: 32px;
+      height: 32px;
+      background: #090e17;
+      border: 1px solid var(--accent-cyan);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .btn-emoji {
+      width: 28px;
+      height: 28px;
+      background: #090e17;
+      border: 1px solid #1a2a44;
+      border-radius: 4px;
       cursor: pointer;
-      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
       transition: all 0.15s ease;
     }
 
-    .file-box:hover {
-      border-color: #38bdf8;
-      background: #0b1527;
+    .btn-emoji:hover {
+      background: #142239;
     }
 
-    .file-box input[type="file"] {
+    .btn-emoji.active {
+      border-color: var(--accent-cyan);
+      background: #12233f;
+    }
+
+    /* File drop */
+    .file-input-wrapper {
+      border: 1px dashed #203557;
+      border-radius: 4px;
+      padding: 8px;
+      background: #080d17;
+      text-align: center;
+      position: relative;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .file-input-wrapper input[type="file"] {
       position: absolute;
       top: 0;
       left: 0;
@@ -449,183 +401,185 @@
       cursor: pointer;
     }
 
-    .file-label {
-      font-size: 11px;
-      color: #94a3b8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      pointer-events: none;
-    }
-
-    .file-badge {
+    .file-tag {
       display: none;
       align-items: center;
       justify-content: space-between;
-      background: #092019;
+      background: #081a17;
       border: 1px solid #10b981;
       color: #6ee7b7;
-      padding: 5px 8px;
-      border-radius: 4px;
+      padding: 4px 6px;
+      border-radius: 3px;
       font-size: 11px;
-      margin-top: 6px;
+      margin-top: 4px;
     }
 
     /* Sockets (Ports) */
-    .socket {
-      width: 13px;
-      height: 13px;
-      border-radius: 50%;
-      border: 2px solid #000;
-      position: absolute;
-      cursor: pointer;
-      z-index: 25;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .socket:hover {
-      transform: scale(1.35);
-      box-shadow: 0 0 8px currentColor;
-    }
-
-    .socket.socket-out {
-      right: -7px;
-    }
-
-    .socket.socket-in {
-      left: -7px;
-    }
-
-    .socket-char { background: var(--wire-char); color: var(--wire-char); }
-    .socket-prompt { background: var(--wire-prompt); color: var(--wire-prompt); }
-    .socket-kb { background: var(--wire-kb); color: var(--wire-kb); }
-
-    .node-port-row {
+    .port-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: relative;
       font-size: 11px;
-      color: #94a3b8;
-      font-weight: 600;
-      padding: 4px 0;
+      color: var(--text-muted);
+      padding: 3px 0;
+      user-select: none;
     }
 
-    .port-label-in {
+    .port-name {
       display: flex;
       align-items: center;
       gap: 6px;
-      margin-left: 2px;
+      font-family: monospace;
     }
 
-    .port-label-out {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-right: 2px;
-      margin-left: auto;
-    }
-
-    .port-status-dot {
-      width: 6px;
-      height: 6px;
+    .port-circle {
+      width: 11px;
+      height: 11px;
       border-radius: 50%;
-      background: #334155;
+      border: 2px solid #070b13;
+      position: absolute;
+      cursor: pointer;
     }
 
-    .port-status-dot.connected {
-      background: #10b981;
-      box-shadow: 0 0 6px #10b981;
-    }
+    .port-circle.out { right: -6px; }
+    .port-circle.in { left: -6px; }
 
-    /* Assembler Action button */
-    .btn-assemble {
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-      color: white;
+    .port-circle.type-char { background: var(--wire-char); }
+    .port-circle.type-prompt { background: var(--wire-prompt); }
+    .port-circle.type-kb { background: var(--wire-kb); }
+
+    .btn-assemble-node {
+      background: #0284c7;
+      color: #fff;
       border: 1px solid #38bdf8;
-      padding: 12px;
-      font-size: 14px;
+      border-radius: 5px;
+      padding: 9px;
+      font-size: 12px;
       font-weight: 700;
-      border-radius: 8px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      margin-top: 6px;
-      box-shadow: 0 0 16px rgba(2, 132, 199, 0.4);
+      gap: 6px;
+      margin-top: 4px;
       transition: all 0.15s ease;
     }
 
-    .btn-assemble:hover:not(:disabled) {
-      background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
-      transform: translateY(-1px);
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+    .btn-assemble-node:hover:not(:disabled) {
+      background: #0369a1;
     }
 
-    .btn-assemble:disabled {
-      opacity: 0.6;
+    .btn-assemble-node:disabled {
+      opacity: 0.5;
       cursor: not-allowed;
     }
 
-    /* VIEW 2: Chat & Gallery (Dark Navy Palette) */
+    /* Zoom & Pan Overlay Controls */
+    .viewport-controls {
+      position: absolute;
+      bottom: 14px;
+      right: 14px;
+      background: #0c1422;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      z-index: 50;
+      user-select: none;
+    }
+
+    .btn-zoom {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .btn-zoom:hover {
+      background: #172744;
+      color: #fff;
+    }
+
+    .zoom-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      min-width: 40px;
+      text-align: center;
+      font-family: monospace;
+    }
+
+    .canvas-hint {
+      position: absolute;
+      bottom: 14px;
+      left: 14px;
+      font-size: 11px;
+      color: #556987;
+      pointer-events: none;
+      z-index: 50;
+      background: rgba(11, 19, 34, 0.85);
+      border: 1px solid #162642;
+      border-radius: 4px;
+      padding: 4px 8px;
+    }
+
+    /* VIEW 2: Chat & Gallery */
     #chatGalleryView {
       width: 100%;
       height: 100%;
       display: grid;
-      grid-template-columns: 320px 1fr;
-      background: #070b14;
+      grid-template-columns: 290px 1fr;
+      background: var(--bg-base);
     }
 
-    @media (max-width: 900px) {
-      #chatGalleryView {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .sidebar-gallery {
-      background: #090e1a;
-      border-right: 1px solid #142138;
+    .gallery-pane {
+      background: #0a101b;
+      border-right: 1px solid var(--border-subtle);
       display: flex;
       flex-direction: column;
-      height: 100%;
       overflow: hidden;
     }
 
-    .sidebar-header {
-      padding: 16px;
-      border-bottom: 1px solid #142138;
+    .gallery-head {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .sidebar-title {
-      font-size: 13px;
+    .gallery-title {
+      font-size: 12px;
       font-weight: 700;
-      color: #cbd5e1;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
 
-    .bots-list {
+    .gallery-list {
       flex: 1;
       overflow-y: auto;
-      padding: 12px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
-    .bot-item {
-      background: #0d1527;
-      border: 1px solid #182845;
-      border-radius: 8px;
-      padding: 10px 12px;
+    .bot-card {
+      background: #0e1726;
+      border: 1px solid #1a2a44;
+      border-radius: 6px;
+      padding: 8px 10px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -633,658 +587,560 @@
       transition: all 0.15s ease;
     }
 
-    .bot-item:hover {
-      background: #111d36;
-      border-color: #274775;
-      transform: translateX(2px);
+    .bot-card:hover {
+      background: #132035;
+      border-color: #26436e;
     }
 
-    .bot-item.active {
-      background: #142647;
-      border-color: #38bdf8;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    .bot-card.active {
+      background: #13243d;
+      border-color: var(--accent-cyan);
     }
 
-    .bot-avatar-thumb {
-      width: 36px;
-      height: 36px;
-      background: #080d17;
-      border: 1px solid #1e3357;
-      border-radius: 6px;
+    .bot-avatar {
+      font-size: 20px;
+      width: 32px;
+      height: 32px;
+      background: #090e17;
+      border: 1px solid #1a2a44;
+      border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
       flex-shrink: 0;
     }
 
-    .bot-info {
+    .bot-details {
       flex: 1;
       overflow: hidden;
     }
 
-    .bot-name {
+    .bot-card-title {
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 600;
       color: #f1f5f9;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    .bot-facts-count {
-      font-size: 11px;
-      color: #64748b;
+    .bot-card-meta {
+      font-size: 10px;
+      color: var(--text-muted);
       margin-top: 2px;
+      font-family: monospace;
     }
 
-    /* Main chat window */
-    .chat-area {
+    /* Chat Area */
+    .chat-pane {
       display: flex;
       flex-direction: column;
       height: 100%;
       background: #080d17;
     }
 
-    .chat-top-header {
-      padding: 14px 20px;
+    .chat-head {
+      padding: 10px 16px;
       background: #0a1120;
-      border-bottom: 1px solid #142138;
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
-    .chat-target-info {
+    .chat-head-info {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
-    .chat-target-avatar {
-      font-size: 26px;
-      width: 42px;
-      height: 42px;
-      background: #0f1c33;
-      border: 1px solid #233e6b;
-      border-radius: 8px;
+    .chat-head-avatar {
+      font-size: 20px;
+      width: 34px;
+      height: 34px;
+      background: #0e1728;
+      border: 1px solid #1d3356;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .chat-target-name {
-      font-size: 16px;
-      font-weight: 800;
+    .chat-head-name {
+      font-size: 14px;
+      font-weight: 700;
       color: #f8fafc;
     }
 
-    .chat-target-badge {
+    .chat-head-status {
       font-size: 11px;
       color: #10b981;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
     }
 
-    .chat-actions-btn-group {
-      display: flex;
-      gap: 8px;
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      background: #10b981;
+      border-radius: 50%;
     }
 
-    .btn-action-nav {
-      background: #111d33;
-      border: 1px solid #1e3357;
-      color: #cbd5e1;
-      padding: 6px 12px;
-      font-size: 12px;
-      font-weight: 600;
-      border-radius: 6px;
-      cursor: pointer;
+    .chat-head-actions {
       display: flex;
-      align-items: center;
       gap: 6px;
-      transition: all 0.15s ease;
     }
 
-    .btn-action-nav:hover {
-      background: #1a2c4e;
-      border-color: #38bdf8;
+    .btn-sm-action {
+      background: #0e1728;
+      border: 1px solid #1c2e4f;
+      color: var(--text-muted);
+      padding: 4px 10px;
+      font-size: 11px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-sm-action:hover {
       color: #fff;
+      border-color: var(--accent-cyan);
     }
 
-    .chat-messages {
+    .chat-stream-box {
       flex: 1;
       overflow-y: auto;
-      padding: 20px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
     }
 
-    .chat-msg {
+    .msg-row {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       max-width: 80%;
-      animation: msgFadeIn 0.2s ease-out;
     }
 
-    @keyframes msgFadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .chat-msg.user {
+    .msg-row.user {
       align-self: flex-end;
       flex-direction: row-reverse;
     }
 
-    .chat-msg.bot {
+    .msg-row.bot {
       align-self: flex-start;
     }
 
-    .msg-avatar {
-      width: 34px;
-      height: 34px;
-      font-size: 18px;
-      border-radius: 6px;
-      background: #0f1c33;
-      border: 1px solid #1e3357;
+    .msg-icon {
+      width: 28px;
+      height: 28px;
+      font-size: 15px;
+      background: #0f1c30;
+      border: 1px solid #1c3154;
+      border-radius: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
 
-    .chat-msg.user .msg-avatar {
+    .msg-row.user .msg-icon {
       background: #0284c7;
       border-color: #38bdf8;
     }
 
-    .msg-bubble {
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 14px;
+    .msg-text {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
       line-height: 1.5;
       word-break: break-word;
       white-space: pre-wrap;
     }
 
-    .chat-msg.user .msg-bubble {
+    .msg-row.user .msg-text {
       background: #0284c7;
       color: #fff;
-      border-bottom-right-radius: 2px;
     }
 
-    .chat-msg.bot .msg-bubble {
-      background: #0e172a;
+    .msg-row.bot .msg-text {
+      background: #0d1627;
       border: 1px solid #182845;
       color: #f1f5f9;
-      border-bottom-left-radius: 2px;
     }
 
-    /* Typing dots */
-    .typing-box {
+    .typing-indicator {
       display: none;
       align-self: flex-start;
+      margin-left: 36px;
       gap: 4px;
-      background: #0e172a;
+      background: #0d1627;
       border: 1px solid #182845;
-      padding: 8px 14px;
-      border-radius: 8px;
-      margin-left: 44px;
+      padding: 6px 10px;
+      border-radius: 4px;
     }
 
-    .dot {
-      width: 6px;
-      height: 6px;
+    .typing-dot {
+      width: 5px;
+      height: 5px;
       background: #38bdf8;
       border-radius: 50%;
-      animation: wave 1.2s infinite ease-in-out;
+      animation: pulseDot 1.2s infinite ease-in-out;
     }
-    .dot:nth-child(2) { animation-delay: 0.2s; }
-    .dot:nth-child(3) { animation-delay: 0.4s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
-    @keyframes wave {
+    @keyframes pulseDot {
       0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
       40% { transform: scale(1.1); opacity: 1; }
     }
 
-    /* Quick suggestions */
-    .prompts-bar {
+    .quick-chips {
       display: flex;
       gap: 6px;
-      padding: 0 20px 10px;
+      padding: 0 16px 8px;
       flex-wrap: wrap;
     }
 
-    .prompt-chip {
-      background: #091222;
-      border: 1px solid #182a47;
-      color: #94a3b8;
-      padding: 4px 10px;
-      font-size: 12px;
-      border-radius: 14px;
+    .btn-chip {
+      background: #09101d;
+      border: 1px solid #182845;
+      color: var(--text-muted);
+      padding: 3px 8px;
+      font-size: 11px;
+      border-radius: 12px;
       cursor: pointer;
-      transition: all 0.15s ease;
     }
 
-    .prompt-chip:hover {
-      background: #11223f;
-      border-color: #38bdf8;
+    .btn-chip:hover {
       color: #fff;
+      border-color: var(--accent-cyan);
     }
 
-    /* Chat input */
-    .chat-bottom-input {
-      padding: 14px 20px;
+    .chat-input-bar {
+      padding: 10px 16px;
       background: #0a1120;
-      border-top: 1px solid #142138;
+      border-top: 1px solid var(--border-subtle);
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .chat-input-field {
+    .input-field {
       flex: 1;
       background: #070c17;
       border: 1px solid #192a47;
-      border-radius: 6px;
+      border-radius: 4px;
       color: #f8fafc;
-      padding: 10px 14px;
-      font-size: 14px;
+      padding: 8px 10px;
+      font-size: 13px;
       outline: none;
       resize: none;
-      height: 44px;
+      height: 38px;
     }
 
-    .chat-input-field:focus {
-      border-color: #38bdf8;
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    .input-field:focus {
+      border-color: var(--accent-cyan);
     }
 
-    .btn-send-msg {
-      width: 44px;
-      height: 44px;
+    .btn-send {
+      width: 38px;
+      height: 38px;
       background: #0284c7;
       border: 1px solid #38bdf8;
-      border-radius: 6px;
-      color: white;
-      font-size: 16px;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      flex-shrink: 0;
     }
 
-    .btn-send-msg:hover:not(:disabled) {
+    .btn-send:hover:not(:disabled) {
       background: #0369a1;
-      transform: scale(1.05);
     }
 
-    .btn-send-msg:disabled {
+    .btn-send:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
 
     /* Toast */
-    .toast-box {
+    .toast-tray {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
+      bottom: 16px;
+      right: 16px;
       z-index: 1000;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       pointer-events: none;
     }
 
-    .toast-msg {
+    .toast {
       pointer-events: auto;
-      background: #0b1527;
-      border: 1px solid #203860;
-      border-left: 4px solid #38bdf8;
+      background: #0e1729;
+      border: 1px solid #1d3356;
+      border-left: 3px solid var(--accent-cyan);
       color: #f1f5f9;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 4px;
+      font-size: 12px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-      animation: toastIn 0.2s ease-out;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     }
 
-    .toast-msg.success { border-left-color: #10b981; }
-    .toast-msg.error { border-left-color: #ef4444; }
-
-    @keyframes toastIn {
-      from { opacity: 0; transform: translateX(30px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    /* Helper info bar */
-    .canvas-hint {
-      position: absolute;
-      bottom: 16px;
-      left: 18px;
-      background: rgba(11, 19, 36, 0.85);
-      border: 1px solid #162642;
-      border-radius: 6px;
-      padding: 6px 12px;
-      font-size: 11px;
-      color: #64748b;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      z-index: 15;
-      pointer-events: none;
-    }
+    .toast.success { border-left-color: var(--accent-green); }
+    .toast.error { border-left-color: var(--danger); }
   </style>
 </head>
 <body>
 
-  <!-- Top Bar (ComfyUI Workflow Header) -->
+  <!-- Top Bar -->
   <header class="top-bar">
-    <div class="brand-section">
-      <div class="brand-logo">⚡</div>
-      <div>
-        <span class="brand-title">ComfyBot Studio</span>
-        <span class="brand-tag">v2.5 Node Flow</span>
-      </div>
+    <div class="brand">
+      <span class="brand-title">Конструктор ИИ-ботов</span>
+      <span class="brand-sub">Comfy Flow</span>
     </div>
 
-    <!-- Mode Switcher -->
-    <div class="mode-switch">
-      <button class="mode-btn active" id="btnModeNodes" onclick="switchView('nodes')">
-        🎛️ Схема нод
+    <!-- Mode Tabs -->
+    <div class="nav-tabs">
+      <button class="nav-btn active" id="tabBtnNodes" onclick="switchTab('nodes')">
+        Схема нод
       </button>
-      <button class="mode-btn" id="btnModeChat" onclick="switchView('chat')">
-        💬 Чат и Галерея <span id="topBotsCountBadge" style="background:#1e3a5f; color:#38bdf8; padding:1px 5px; border-radius:10px; font-size:10px;">0</span>
+      <button class="nav-btn" id="tabBtnChat" onclick="switchTab('chat')">
+        Чат и Галерея <span id="botsBadge" style="background:#142542; color:#38bdf8; padding:1px 5px; border-radius:8px; font-size:10px;">0</span>
       </button>
     </div>
 
-    <!-- Queue & Actions -->
-    <div class="queue-bar">
-      <button class="btn-reset-view" onclick="resetNodePositions()" title="Вернуть ноды в исходное положение">
-        ⟲ Сбросить сетку
-      </button>
-      <button class="btn-queue" id="btnQueueTop" onclick="queueAssembleBot()">
-        <span>▶ Собрать бота (Queue)</span>
+    <div class="top-actions">
+      <button class="btn-queue" id="btnQueue" onclick="queueBotAssembly()">
+        <span>Собрать бота</span>
       </button>
     </div>
   </header>
 
-  <!-- VIEW 1: Interactive Node Canvas (ComfyUI) -->
-  <section class="view-container active" id="nodeCanvasView">
-    
-    <!-- SVG Wires Container -->
-    <svg id="canvasSvg">
-      <!-- Glow & Main Wire Paths -->
-      <path id="wireGlowChar" class="wire-glow" stroke="var(--wire-char)"></path>
-      <path id="wireChar" class="wire-path" stroke="var(--wire-char)"></path>
+  <!-- VIEW 1: Infinite Canvas Viewport (Zoomable & Pannable) -->
+  <div class="view-panel active" id="canvasView">
+    <div id="viewport">
+      <div id="world">
+        <!-- SVG Wires Layer -->
+        <svg id="wiresSvg">
+          <path id="shadowChar" class="wire-shadow"></path>
+          <path id="wireChar" class="wire" stroke="var(--wire-char)"></path>
 
-      <path id="wireGlowPrompt" class="wire-glow" stroke="var(--wire-prompt)"></path>
-      <path id="wirePrompt" class="wire-path" stroke="var(--wire-prompt)"></path>
+          <path id="shadowPrompt" class="wire-shadow"></path>
+          <path id="wirePrompt" class="wire" stroke="var(--wire-prompt)"></path>
 
-      <path id="wireGlowKb" class="wire-glow" stroke="var(--wire-kb)"></path>
-      <path id="wireKb" class="wire-path" stroke="var(--wire-kb)"></path>
-    </svg>
+          <path id="shadowKb" class="wire-shadow"></path>
+          <path id="wireKb" class="wire" stroke="var(--wire-kb)"></path>
+        </svg>
 
-    <!-- Canvas Helper Hint -->
+        <!-- Node 1: Персонаж -->
+        <div class="node" id="nodeChar" style="top: 80px; left: 60px;">
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, 'nodeChar')">
+            <span class="node-title">🎭 Персонаж</span>
+            <span class="node-type-label">Input</span>
+          </div>
+          <div class="node-body">
+            <div>
+              <div class="control-label"><span>Имя</span></div>
+              <input type="text" id="charName" class="control-input" value="Капитан Морган" maxlength="35">
+            </div>
+
+            <div>
+              <div class="control-label"><span>Аватар</span></div>
+              <div class="avatar-row">
+                <div class="avatar-preview" id="avatarPreview">🏴‍☠️</div>
+                <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                  <button type="button" class="btn-emoji" onclick="setAvatar('🤖')">🤖</button>
+                  <button type="button" class="btn-emoji active" onclick="setAvatar('🏴‍☠️')">🏴‍☠️</button>
+                  <button type="button" class="btn-emoji" onclick="setAvatar('🦉')">🦉</button>
+                  <button type="button" class="btn-emoji" onclick="setAvatar('🐱')">🐱</button>
+                  <button type="button" class="btn-emoji" onclick="setAvatar('🚀')">🚀</button>
+                  <button type="button" class="btn-emoji" onclick="setAvatar('🎮')">🎮</button>
+                </div>
+              </div>
+              <input type="hidden" id="charAvatar" value="🏴‍☠️">
+            </div>
+
+            <div class="port-row">
+              <span class="port-name" style="margin-left:auto;">Характер</span>
+              <div class="port-circle out type-char" id="sockCharOut" title="Выход: Характер"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Node 2: Системный промпт -->
+        <div class="node" id="nodePrompt" style="top: 320px; left: 60px;">
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, 'nodePrompt')">
+            <span class="node-title">🧠 Инструкция (Prompt)</span>
+            <span class="node-type-label">Config</span>
+          </div>
+          <div class="node-body">
+            <div>
+              <div class="control-label"><span>Готовые шаблоны</span></div>
+              <div class="template-bar">
+                <button type="button" class="btn-template" onclick="loadTemplate('pirate')">Пират</button>
+                <button type="button" class="btn-template" onclick="loadTemplate('tutor')">Репетитор</button>
+                <button type="button" class="btn-template" onclick="loadTemplate('quest')">Квест</button>
+                <button type="button" class="btn-template" onclick="loadTemplate('cat')">Кот</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="control-label"><span>Системный промпт</span></div>
+              <textarea id="promptText" class="control-textarea">Ты — бывалый и веселый морской пират Капитан Морган. Общайся с задором, используй морской сленг ('Карамба!', 'Свистать всех наверх!', 'Тысяча чертей!'). Ты рассказываешь интересные морские байки и остаешься добрым другом для детей.</textarea>
+            </div>
+
+            <div class="port-row">
+              <span class="port-name" style="margin-left:auto;">Промпт</span>
+              <div class="port-circle out type-prompt" id="sockPromptOut" title="Выход: Промпт"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Node 3: База знаний (RAG) -->
+        <div class="node" id="nodeKb" style="top: 80px; left: 400px;">
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, 'nodeKb')">
+            <span class="node-title">📚 База знаний (RAG)</span>
+            <span class="node-type-label">Docs</span>
+          </div>
+          <div class="node-body">
+            <div>
+              <div class="control-label"><span>Факты (текст)</span></div>
+              <textarea id="kbText" class="control-textarea" style="min-height:65px;">Пираты прячут сундуки с золотом на необитаемом острове в Карибском море. Корабль Капитана Моргана называется «Быстрый Альбатрос».</textarea>
+            </div>
+
+            <div>
+              <div class="control-label"><span>Или файл (.txt, .pdf, .docx до 1 МБ)</span></div>
+              <div class="file-input-wrapper">
+                <input type="file" id="kbFile" accept=".txt,.pdf,.docx" onchange="onFileSelected(event)">
+                <span id="filePrompt">Нажмите для выбора файла</span>
+                <div class="file-tag" id="fileTag">
+                  <span id="fileName">документ.pdf</span>
+                  <button type="button" onclick="clearFile(event)" style="background:none; border:none; color:#f87171; cursor:pointer;">✕</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="port-row">
+              <span class="port-name" style="margin-left:auto;">Знания</span>
+              <div class="port-circle out type-kb" id="sockKbOut" title="Выход: База знаний"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Node 4: Сборщик Бота -->
+        <div class="node assembler-node" id="nodeAssembler" style="top: 140px; left: 740px;">
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, 'nodeAssembler')">
+            <span class="node-title">⚡ Сборщик Бота</span>
+            <span class="node-type-label" style="color:#38bdf8;">Qwen 2.5 3B</span>
+          </div>
+          <div class="node-body">
+            <div class="port-row">
+              <div class="port-circle in type-char" id="sockCharIn"></div>
+              <span class="port-name" style="margin-left:6px;">Персонаж</span>
+              <span style="font-size:10px; color:#10b981; font-family:monospace;">CONNECT</span>
+            </div>
+
+            <div class="port-row">
+              <div class="port-circle in type-prompt" id="sockPromptIn"></div>
+              <span class="port-name" style="margin-left:6px;">Промпт</span>
+              <span style="font-size:10px; color:#10b981; font-family:monospace;">CONNECT</span>
+            </div>
+
+            <div class="port-row">
+              <div class="port-circle in type-kb" id="sockKbIn"></div>
+              <span class="port-name" style="margin-left:6px;">База знаний</span>
+              <span style="font-size:10px; color:#10b981; font-family:monospace;">CONNECT</span>
+            </div>
+
+            <div style="background:#090f19; border:1px solid #142239; border-radius:4px; padding:8px; font-size:11px; color:var(--text-muted);">
+              <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                <span>Движок:</span> <span style="color:#f1f5f9; font-family:monospace;">llama-server (8000)</span>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span>Ранжирование:</span> <span style="color:#f1f5f9; font-family:monospace;">BM25Okapi</span>
+              </div>
+            </div>
+
+            <button class="btn-assemble-node" id="btnAssembleNode" onclick="queueBotAssembly()">
+              Собрать и Запустить
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Zoom & Pan Controls in Bottom Corner -->
+    <div class="viewport-controls">
+      <button class="btn-zoom" onclick="zoomBy(0.85)" title="Уменьшить">−</button>
+      <span class="zoom-label" id="zoomPercent">100%</span>
+      <button class="btn-zoom" onclick="zoomBy(1.15)" title="Увеличить">+</button>
+      <button class="btn-zoom" onclick="resetZoom()" title="Сбросить масштаб">⟲</button>
+    </div>
+
     <div class="canvas-hint">
-      <span>💡 Совет: Ноды можно перетаскивать мышкой за верхний заголовок! Схема соединена автоматически.</span>
+      Колёсико мыши: масштаб. Зажмите левую кнопку на фоне: перемещение холста.
     </div>
-
-    <!-- NODE 1: Персонаж (Character) -->
-    <div class="node" id="nodeChar" style="top: 70px; left: 40px;">
-      <div class="node-header" onmousedown="startDragNode(event, 'nodeChar')">
-        <div class="node-title-group">
-          <span class="node-icon">🎭</span>
-          <span class="node-title">Персонаж (Character)</span>
-        </div>
-        <span class="node-tag">Вход</span>
-      </div>
-      <div class="node-body">
-        <div class="field-group">
-          <span class="field-label">Имя бота</span>
-          <input type="text" id="nodeBotName" class="field-input" placeholder="Например: Капитан Морган" value="Капитан Морган" maxlength="40">
-        </div>
-
-        <div class="field-group">
-          <span class="field-label">Аватар (Эмодзи)</span>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <div class="current-avatar-badge" id="nodeAvatarPreview">🏴‍☠️</div>
-            <div class="emoji-row" id="emojiRow">
-              <button type="button" class="node-emoji-btn" onclick="selectNodeEmoji('🤖')">🤖</button>
-              <button type="button" class="node-emoji-btn active" onclick="selectNodeEmoji('🏴‍☠️')">🏴‍☠️</button>
-              <button type="button" class="node-emoji-btn" onclick="selectNodeEmoji('🦉')">🦉</button>
-              <button type="button" class="node-emoji-btn" onclick="selectNodeEmoji('🐱')">🐱</button>
-              <button type="button" class="node-emoji-btn" onclick="selectNodeEmoji('🚀')">🚀</button>
-              <button type="button" class="node-emoji-btn" onclick="selectNodeEmoji('🎮')">🎮</button>
-            </div>
-          </div>
-          <input type="hidden" id="nodeSelectedAvatar" value="🏴‍☠️">
-        </div>
-
-        <!-- Output Port -->
-        <div class="node-port-row" style="margin-top: 6px;">
-          <span class="port-label-out">Характер</span>
-          <div class="socket socket-out socket-char" id="sockCharOut" title="Выход: Персонаж"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- NODE 2: Системный промпт (Prompt) -->
-    <div class="node" id="nodePrompt" style="top: 310px; left: 40px;">
-      <div class="node-header" onmousedown="startDragNode(event, 'nodePrompt')">
-        <div class="node-title-group">
-          <span class="node-icon">🧠</span>
-          <span class="node-title">Системный промпт (Prompt)</span>
-        </div>
-        <span class="node-tag">Роль</span>
-      </div>
-      <div class="node-body">
-        <div class="field-group">
-          <span class="field-label">Готовые шаблоны</span>
-          <div class="template-chips">
-            <button type="button" class="chip-btn" onclick="applyNodeTemplate('pirate')">🏴‍☠️ Пират</button>
-            <button type="button" class="chip-btn" onclick="applyNodeTemplate('tutor')">🦉 Учитель</button>
-            <button type="button" class="chip-btn" onclick="applyNodeTemplate('quest')">🎮 Квест</button>
-            <button type="button" class="chip-btn" onclick="applyNodeTemplate('cat')">🐱 Кот</button>
-          </div>
-        </div>
-
-        <div class="field-group">
-          <span class="field-label">Текст промпта (Инструкция)</span>
-          <textarea id="nodeSystemPrompt" class="field-textarea" placeholder="Опишите характер бота...">Ты — бывалый и веселый морской пират Капитан Морган. Общайся с задором, используй морской сленг ('Карамба!', 'Свистать всех наверх!', 'Тысяча чертей!'). Ты рассказываешь интересные морские байки и остаешься добрым другом для детей.</textarea>
-        </div>
-
-        <!-- Output Port -->
-        <div class="node-port-row">
-          <span class="port-label-out">Инструкция</span>
-          <div class="socket socket-out socket-prompt" id="sockPromptOut" title="Выход: Промпт"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- NODE 3: База знаний (Knowledge RAG) -->
-    <div class="node" id="nodeKb" style="top: 70px; left: 390px;">
-      <div class="node-header" onmousedown="startDragNode(event, 'nodeKb')">
-        <div class="node-title-group">
-          <span class="node-icon">📚</span>
-          <span class="node-title">База знаний (RAG)</span>
-        </div>
-        <span class="node-tag">Факты</span>
-      </div>
-      <div class="node-body">
-        <div class="field-group">
-          <span class="field-label">Текст знаний (Факты)</span>
-          <textarea id="nodeKbText" class="field-textarea" style="min-height: 70px;" placeholder="Вставьте факты, которые бот должен запомнить...">Пираты прячут сундуки с золотом на необитаемом острове в Карибском море. Корабль Капитана Моргана называется «Быстрый Альбатрос».</textarea>
-        </div>
-
-        <div class="field-group">
-          <span class="field-label">Или загрузить файл</span>
-          <div class="file-box">
-            <input type="file" id="nodeKbFile" accept=".txt,.pdf,.docx" onchange="handleNodeFile(event)">
-            <div class="file-label" id="nodeFilePrompt">
-              <span>📎</span> Выберите TXT, PDF, DOCX (до 1 МБ)
-            </div>
-            <div class="file-badge" id="nodeFileBadge">
-              <span id="nodeFileName" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px;">документ.pdf</span>
-              <button type="button" onclick="clearNodeFile(event)" style="background:none; border:none; color:#f87171; cursor:pointer;">✖</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Output Port -->
-        <div class="node-port-row">
-          <span class="port-label-out">Факты</span>
-          <div class="socket socket-out socket-kb" id="sockKbOut" title="Выход: База знаний"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- NODE 4: ИИ-Сборщик (AI Core Assembler) -->
-    <div class="node node-target" id="nodeAssembler" style="top: 130px; left: 740px;">
-      <div class="node-header" onmousedown="startDragNode(event, 'nodeAssembler')">
-        <div class="node-title-group">
-          <span class="node-icon">⚡</span>
-          <span class="node-title">Сборщик Бота (AI Core)</span>
-        </div>
-        <span class="node-tag" style="background:#0284c7; color:#fff;">Qwen 2.5 3B</span>
-      </div>
-      <div class="node-body">
-        
-        <!-- Input Ports -->
-        <div class="node-port-row">
-          <div class="socket socket-in socket-char" id="sockCharIn" title="Вход: Персонаж"></div>
-          <span class="port-label-in">
-            <span class="port-status-dot connected" id="dotChar"></span> Персонаж (Character)
-          </span>
-          <span style="font-size:10px; color:#10b981;">Подключен</span>
-        </div>
-
-        <div class="node-port-row">
-          <div class="socket socket-in socket-prompt" id="sockPromptIn" title="Вход: Промпт"></div>
-          <span class="port-label-in">
-            <span class="port-status-dot connected" id="dotPrompt"></span> Промпт (Prompt)
-          </span>
-          <span style="font-size:10px; color:#10b981;">Подключен</span>
-        </div>
-
-        <div class="node-port-row">
-          <div class="socket socket-in socket-kb" id="sockKbIn" title="Вход: База знаний"></div>
-          <span class="port-label-in">
-            <span class="port-status-dot connected" id="dotKb"></span> Знания (Knowledge RAG)
-          </span>
-          <span style="font-size:10px; color:#10b981;">Подключен</span>
-        </div>
-
-        <div style="background:#080d17; border:1px solid #162642; border-radius:6px; padding:10px; margin-top:4px;">
-          <div style="font-size:11px; color:#94a3b8; display:flex; justify-content:space-between; margin-bottom:4px;">
-            <span>Модель LLM:</span>
-            <span style="color:#38bdf8; font-weight:700;">Qwen 2.5 3B Instruct</span>
-          </div>
-          <div style="font-size:11px; color:#94a3b8; display:flex; justify-content:space-between;">
-            <span>Поиск по фактам:</span>
-            <span style="color:#10b981; font-weight:700;">BM25 Okapi (Топ-3)</span>
-          </div>
-        </div>
-
-        <!-- Big Assemble Button -->
-        <button class="btn-assemble" id="btnAssembleNode" onclick="queueAssembleBot()">
-          <span>🚀 Собрать и Запустить Бота</span>
-        </button>
-
-      </div>
-    </div>
-
-  </section>
+  </div>
 
   <!-- VIEW 2: Chat & Gallery View -->
-  <section class="view-container" id="chatGalleryView">
-    
-    <!-- Sidebar: Галерея ботов участников -->
-    <aside class="sidebar-gallery">
-      <div class="sidebar-header">
-        <div class="sidebar-title">
-          <span>👥 Боты участников</span>
-          <span id="galleryCountBadge" style="background:#13243d; color:#38bdf8; padding:1px 6px; border-radius:8px; font-size:11px;">0</span>
-        </div>
-        <button class="btn-action-nav" onclick="loadGalleryBots()" style="padding:4px 8px; font-size:11px;">
-          🔄 Обновить
-        </button>
+  <div class="view-panel" id="chatGalleryView">
+    <div class="gallery-pane">
+      <div class="gallery-head">
+        <span class="gallery-title">Галерея ботов</span>
+        <button class="btn-sm-action" onclick="fetchBotsList()">Обновить</button>
       </div>
+      <div class="gallery-list" id="galleryList"></div>
+    </div>
 
-      <div class="bots-list" id="galleryBotsList">
-        <!-- Список рендерится JS -->
-      </div>
-    </aside>
-
-    <!-- Main Chat Window -->
-    <main class="chat-area">
-      <!-- Chat Header -->
-      <div class="chat-top-header">
-        <div class="chat-target-info">
-          <div class="chat-target-avatar" id="currentChatAvatar">🤖</div>
+    <div class="chat-pane">
+      <div class="chat-head">
+        <div class="chat-head-info">
+          <div class="chat-head-avatar" id="currentAvatar">🤖</div>
           <div>
-            <div class="chat-target-name" id="currentChatName">Выберите бота</div>
-            <div class="chat-target-badge">
-              <span style="width:6px; height:6px; background:#10b981; border-radius:50%; box-shadow:0 0 6px #10b981;"></span> Онлайн
-            </div>
+            <div class="chat-head-name" id="currentName">Выберите бота</div>
+            <div class="chat-head-status"><span class="status-dot"></span> Готов к общению</div>
           </div>
         </div>
 
-        <div class="chat-actions-btn-group">
-          <button class="btn-action-nav" onclick="copyBotLink()" title="Скопировать прямую ссылку на бота">
-            🔗 Ссылка
-          </button>
-          <button class="btn-action-nav" onclick="clearCurrentChat()" title="Очистить переписку">
-            🧹 Очистить
-          </button>
+        <div class="chat-head-actions">
+          <button class="btn-sm-action" onclick="copyBotLink()">Ссылка на бота</button>
+          <button class="btn-sm-action" onclick="clearCurrentChat()">Очистить чат</button>
         </div>
       </div>
 
-      <!-- Messages Stream Container -->
-      <div class="chat-messages" id="chatMessages">
-        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#64748b; gap:8px;">
-          <span style="font-size:36px;">💬</span>
-          <span>Выберите бота в списке слева или соберите нового в нодах!</span>
-        </div>
+      <div class="chat-stream-box" id="chatMessages"></div>
+
+      <div class="typing-indicator" id="typingIndicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
       </div>
 
-      <!-- Typing indicator -->
-      <div class="typing-box" id="typingBox">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
+      <div class="quick-chips">
+        <button class="btn-chip" onclick="quickSend('Привет! Расскажи о себе и чем ты можешь помочь?')">Расскажи о себе</button>
+        <button class="btn-chip" onclick="quickSend('Какие интересные факты ты знаешь?')">Что ты знаешь?</button>
+        <button class="btn-chip" onclick="quickSend('Загадай мне интересную загадку!')">Загадай загадку</button>
       </div>
 
-      <!-- Quick prompts -->
-      <div class="prompts-bar">
-        <button class="prompt-chip" onclick="sendQuick('Привет! Расскажи о себе и о чем ты знаешь?')">👋 Расскажи о себе</button>
-        <button class="prompt-chip" onclick="sendQuick('Где спрятаны твои секреты или сокровища?')">💎 Где спрятаны сокровища?</button>
-        <button class="prompt-chip" onclick="sendQuick('Загадай мне интересную загадку!')">🧩 Загадай загадку</button>
+      <div class="chat-input-bar">
+        <textarea id="chatInput" class="input-field" placeholder="Напишите сообщение... (Enter — отправить)" rows="1" onkeydown="onChatInputKeyDown(event)"></textarea>
+        <button class="btn-send" id="btnSend" onclick="sendUserMessage()">➤</button>
       </div>
+    </div>
+  </div>
 
-      <!-- Input Field -->
-      <div class="chat-bottom-input">
-        <textarea id="chatInputText" class="chat-input-field" placeholder="Напишите сообщение... (Enter — отправить)" rows="1" onkeydown="handleInputKey(event)"></textarea>
-        <button class="btn-send-msg" id="btnSend" onclick="sendChatMessage()">➤</button>
-      </div>
-    </main>
+  <div class="toast-tray" id="toastTray"></div>
 
-  </section>
-
-  <!-- Toast Notification Box -->
-  <div class="toast-box" id="toastBox"></div>
-
-  <!-- Client-side Node Graph & Chat Logic -->
+  <!-- Interactive Logic -->
   <script>
-    // Templates
-    const NODE_TEMPLATES = {
+    const TEMPLATES = {
       pirate: {
         name: "Капитан Морган",
         avatar: "🏴‍☠️",
@@ -1298,7 +1154,7 @@
         kb: "Совы прекрасно видят в темноте благодаря особым клеткам сетчатки. В геометрии сумма углов любого треугольника на плоскости всегда равна 180 градусам."
       },
       quest: {
-        name: "Гейм-мастер Квестов",
+        name: "Мастер Квестов",
         avatar: "🎮",
         prompt: "Ты — мудрый гейм-мастер волшебного мира. Придумывай захватывающие текстовые мини-квесты. В конце каждого ответа предлагай игроку 2-3 варианта действий на выбор и развивай сюжет!",
         kb: "В Волшебном лесу растет Дерево Истины. Чтобы пройти стражника, нужен синий кристалл или пароль: «Лунная стрекоза»."
@@ -1312,373 +1168,397 @@
     };
 
     // State
-    let activeBotId = null;
+    let scale = 1.0;
+    let panX = 0;
+    let panY = 0;
+
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+
+    let draggedNode = null;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let nodeStartX = 0;
+    let nodeStartY = 0;
+
     let allBots = [];
-    let botHistories = {};
+    let currentBotId = null;
+    let chatHistories = {};
     let isStreaming = false;
 
-    // Node drag state
-    let draggedNode = null;
-    let dragOffsetX = 0;
-    let dragOffsetY = 0;
+    // Elements
+    const viewport = document.getElementById('viewport');
+    const world = document.getElementById('world');
 
-    // On Load
+    // Init
     window.addEventListener('DOMContentLoaded', async () => {
-      initWires();
-      window.addEventListener('resize', updateWires);
+      setupViewport();
+      updateWires();
+      await fetchBotsList();
 
-      await loadGalleryBots();
-
-      // Check ?bot=ID
       const params = new URLSearchParams(window.location.search);
-      const botIdParam = params.get('bot');
-      if (botIdParam) {
-        selectActiveBot(botIdParam, false);
-        switchView('chat');
+      const botParam = params.get('bot');
+      if (botParam) {
+        selectBot(botParam, false);
+        switchTab('chat');
       } else if (allBots.length > 0) {
-        selectActiveBot(allBots[0].id, false);
+        selectBot(allBots[0].id, false);
       }
 
-      // Auto-poll bots gallery every 10 seconds for 25 workshop kids
-      setInterval(() => {
-        loadGalleryBots(true);
-      }, 10000);
+      setInterval(() => fetchBotsList(true), 10000);
     });
 
-    // View Switching (Nodes vs Chat)
-    function switchView(viewName) {
-      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+    // Viewport Pan & Zoom Implementation
+    function setupViewport() {
+      applyTransform();
 
-      if (viewName === 'nodes') {
-        document.getElementById('btnModeNodes').classList.add('active');
-        document.getElementById('nodeCanvasView').classList.add('active');
-        setTimeout(updateWires, 20);
-      } else {
-        document.getElementById('btnModeChat').classList.add('active');
-        document.getElementById('chatGalleryView').classList.add('active');
-      }
+      // Mouse Wheel Zoom
+      viewport.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.12 : 0.88;
+        const newScale = Math.min(Math.max(0.35, scale * factor), 2.2);
+
+        const rect = viewport.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        // Keep mouse target position fixed under zoom
+        panX = mouseX - (mouseX - panX) * (newScale / scale);
+        panY = mouseY - (mouseY - panY) * (newScale / scale);
+        scale = newScale;
+
+        applyTransform();
+        updateWires();
+      }, { passive: false });
+
+      // Pan Canvas Background
+      viewport.addEventListener('mousedown', (e) => {
+        // Only pan if clicked on viewport background directly
+        if (e.target === viewport || e.target === world || e.target.id === 'wiresSvg') {
+          isPanning = true;
+          panStartX = e.clientX - panX;
+          panStartY = e.clientY - panY;
+          viewport.classList.add('panning');
+        }
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (isPanning) {
+          panX = e.clientX - panStartX;
+          panY = e.clientY - panStartY;
+          applyTransform();
+        } else if (draggedNode) {
+          const dx = (e.clientX - dragStartX) / scale;
+          const dy = (e.clientY - dragStartY) / scale;
+
+          draggedNode.style.left = `${nodeStartX + dx}px`;
+          draggedNode.style.top = `${nodeStartY + dy}px`;
+          updateWires();
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isPanning) {
+          isPanning = false;
+          viewport.classList.remove('panning');
+        }
+        if (draggedNode) {
+          draggedNode.classList.remove('dragging');
+          draggedNode = null;
+        }
+      });
+
+      window.addEventListener('resize', updateWires);
+    }
+
+    function applyTransform() {
+      world.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+      viewport.style.backgroundPosition = `${panX}px ${panY}px`;
+      viewport.style.backgroundSize = `${20 * scale}px ${20 * scale}px`;
+      document.getElementById('zoomPercent').textContent = `${Math.round(scale * 100)}%`;
+    }
+
+    function zoomBy(multiplier) {
+      const rect = viewport.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const newScale = Math.min(Math.max(0.35, scale * multiplier), 2.2);
+      panX = centerX - (centerX - panX) * (newScale / scale);
+      panY = centerY - (centerY - panY) * (newScale / scale);
+      scale = newScale;
+
+      applyTransform();
+      updateWires();
+    }
+
+    function resetZoom() {
+      scale = 1.0;
+      panX = 0;
+      panY = 0;
+      applyTransform();
+      updateWires();
     }
 
     // Node Dragging
-    function startDragNode(e, nodeId) {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') {
-        return;
-      }
+    function onNodeHeaderMouseDown(e, nodeId) {
+      if (e.button !== 0) return;
       draggedNode = document.getElementById(nodeId);
       draggedNode.classList.add('dragging');
 
-      const rect = draggedNode.getBoundingClientRect();
-      const parentRect = document.getElementById('nodeCanvasView').getBoundingClientRect();
-
-      dragOffsetX = e.clientX - rect.left;
-      dragOffsetY = e.clientY - rect.top;
-
-      window.addEventListener('mousemove', onNodeDrag);
-      window.addEventListener('mouseup', stopDragNode);
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      nodeStartX = parseFloat(draggedNode.style.left) || 0;
+      nodeStartY = parseFloat(draggedNode.style.top) || 0;
     }
 
-    function onNodeDrag(e) {
-      if (!draggedNode) return;
-      const canvas = document.getElementById('nodeCanvasView');
-      const canvasRect = canvas.getBoundingClientRect();
-
-      let x = e.clientX - canvasRect.left - dragOffsetX;
-      let y = e.clientY - canvasRect.top - dragOffsetY;
-
-      // Keep within canvas bounds
-      x = Math.max(10, Math.min(x, canvasRect.width - draggedNode.offsetWidth - 10));
-      y = Math.max(10, Math.min(y, canvasRect.height - draggedNode.offsetHeight - 10));
-
-      draggedNode.style.left = `${x}px`;
-      draggedNode.style.top = `${y}px`;
-
-      updateWires();
-    }
-
-    function stopDragNode() {
-      if (draggedNode) {
-        draggedNode.classList.remove('dragging');
-        draggedNode = null;
-      }
-      window.removeEventListener('mousemove', onNodeDrag);
-      window.removeEventListener('mouseup', stopDragNode);
-      updateWires();
-    }
-
-    // Reset layout
-    function resetNodePositions() {
-      const char = document.getElementById('nodeChar');
-      const prompt = document.getElementById('nodePrompt');
-      const kb = document.getElementById('nodeKb');
-      const asm = document.getElementById('nodeAssembler');
-
-      char.style.left = '40px'; char.style.top = '70px';
-      prompt.style.left = '40px'; prompt.style.top = '310px';
-      kb.style.left = '390px'; kb.style.top = '70px';
-      asm.style.left = '740px'; asm.style.top = '130px';
-
-      updateWires();
-      showToast('Сетка нод сброшена', 'info');
-    }
-
-    // SVG Wire Bezier Curve Computation
-    function getSocketCenter(socketId) {
-      const sock = document.getElementById(socketId);
+    // Wires (Bezier Curves in World Space)
+    function getSocketWorldCoord(sockId) {
+      const sock = document.getElementById(sockId);
       if (!sock) return { x: 0, y: 0 };
-      const rect = sock.getBoundingClientRect();
-      const canvasRect = document.getElementById('nodeCanvasView').getBoundingClientRect();
+      const sockRect = sock.getBoundingClientRect();
+      const viewRect = viewport.getBoundingClientRect();
+
+      // Convert from screen space to world space
+      const screenCenterX = sockRect.left + sockRect.width / 2 - viewRect.left;
+      const screenCenterY = sockRect.top + sockRect.height / 2 - viewRect.top;
+
       return {
-        x: rect.left - canvasRect.left + rect.width / 2,
-        y: rect.top - canvasRect.top + rect.height / 2
+        x: (screenCenterX - panX) / scale,
+        y: (screenCenterY - panY) / scale
       };
     }
 
-    function generateBezierPath(p1, p2) {
+    function buildWirePath(p1, p2) {
       const dx = Math.abs(p2.x - p1.x) * 0.55;
-      const cp1x = p1.x + Math.max(dx, 50);
+      const cp1x = p1.x + Math.max(dx, 40);
       const cp1y = p1.y;
-      const cp2x = p2.x - Math.max(dx, 50);
+      const cp2x = p2.x - Math.max(dx, 40);
       const cp2y = p2.y;
       return `M ${p1.x} ${p1.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
     }
 
     function updateWires() {
-      const view = document.getElementById('nodeCanvasView');
-      if (!view.classList.contains('active')) return;
-
-      // Wire 1: Character
-      const pCharOut = getSocketCenter('sockCharOut');
-      const pCharIn = getSocketCenter('sockCharIn');
-      const dChar = generateBezierPath(pCharOut, pCharIn);
+      const pCharOut = getSocketWorldCoord('sockCharOut');
+      const pCharIn = getSocketWorldCoord('sockCharIn');
+      const dChar = buildWirePath(pCharOut, pCharIn);
       document.getElementById('wireChar').setAttribute('d', dChar);
-      document.getElementById('wireGlowChar').setAttribute('d', dChar);
+      document.getElementById('shadowChar').setAttribute('d', dChar);
 
-      // Wire 2: Prompt
-      const pPromptOut = getSocketCenter('sockPromptOut');
-      const pPromptIn = getSocketCenter('sockPromptIn');
-      const dPrompt = generateBezierPath(pPromptOut, pPromptIn);
+      const pPromptOut = getSocketWorldCoord('sockPromptOut');
+      const pPromptIn = getSocketWorldCoord('sockPromptIn');
+      const dPrompt = buildWirePath(pPromptOut, pPromptIn);
       document.getElementById('wirePrompt').setAttribute('d', dPrompt);
-      document.getElementById('wireGlowPrompt').setAttribute('d', dPrompt);
+      document.getElementById('shadowPrompt').setAttribute('d', dPrompt);
 
-      // Wire 3: Knowledge
-      const pKbOut = getSocketCenter('sockKbOut');
-      const pKbIn = getSocketCenter('sockKbIn');
-      const dKb = generateBezierPath(pKbOut, pKbIn);
+      const pKbOut = getSocketWorldCoord('sockKbOut');
+      const pKbIn = getSocketWorldCoord('sockKbIn');
+      const dKb = buildWirePath(pKbOut, pKbIn);
       document.getElementById('wireKb').setAttribute('d', dKb);
-      document.getElementById('wireGlowKb').setAttribute('d', dKb);
+      document.getElementById('shadowKb').setAttribute('d', dKb);
     }
 
-    function initWires() {
-      setTimeout(updateWires, 50);
+    // Tab Switching
+    function switchTab(name) {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
+
+      if (name === 'nodes') {
+        document.getElementById('tabBtnNodes').classList.add('active');
+        document.getElementById('canvasView').classList.add('active');
+        setTimeout(updateWires, 20);
+      } else {
+        document.getElementById('tabBtnChat').classList.add('active');
+        document.getElementById('chatGalleryView').classList.add('active');
+      }
     }
 
-    // Node Form Helpers
-    function selectNodeEmoji(emoji) {
-      document.getElementById('nodeSelectedAvatar').value = emoji;
-      document.getElementById('nodeAvatarPreview').textContent = emoji;
-      document.querySelectorAll('.node-emoji-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.textContent.trim() === emoji);
+    // Node Form Handlers
+    function setAvatar(emoji) {
+      document.getElementById('charAvatar').value = emoji;
+      document.getElementById('avatarPreview').textContent = emoji;
+      document.querySelectorAll('.btn-emoji').forEach(b => {
+        b.classList.toggle('active', b.textContent.trim() === emoji);
       });
     }
 
-    function applyNodeTemplate(key) {
-      const t = NODE_TEMPLATES[key];
+    function loadTemplate(key) {
+      const t = TEMPLATES[key];
       if (!t) return;
-      document.getElementById('nodeBotName').value = t.name;
-      document.getElementById('nodeSystemPrompt').value = t.prompt;
-      if (t.kb) document.getElementById('nodeKbText').value = t.kb;
-      selectNodeEmoji(t.avatar);
-      showToast(`Применён шаблон «${t.name}»!`, 'success');
+      document.getElementById('charName').value = t.name;
+      document.getElementById('promptText').value = t.prompt;
+      if (t.kb) document.getElementById('kbText').value = t.kb;
+      setAvatar(t.avatar);
+      showToast(`Шаблон «${t.name}» загружен`, 'success');
     }
 
-    function handleNodeFile(event) {
-      const file = event.target.files[0];
+    function onFileSelected(e) {
+      const file = e.target.files[0];
       if (!file) return;
       if (file.size > 1024 * 1024) {
-        showToast('Файл больше 1 МБ! Выберите файл поменьше', 'error');
-        clearNodeFile();
+        showToast('Файл больше 1 МБ', 'error');
+        clearFile();
         return;
       }
-      document.getElementById('nodeFilePrompt').style.display = 'none';
-      document.getElementById('nodeFileBadge').style.display = 'inline-flex';
-      document.getElementById('nodeFileName').textContent = file.name;
+      document.getElementById('filePrompt').style.display = 'none';
+      const tag = document.getElementById('fileTag');
+      tag.style.display = 'inline-flex';
+      document.getElementById('fileName').textContent = file.name;
     }
 
-    function clearNodeFile(e) {
+    function clearFile(e) {
       if (e) { e.preventDefault(); e.stopPropagation(); }
-      document.getElementById('nodeKbFile').value = '';
-      document.getElementById('nodeFilePrompt').style.display = 'flex';
-      document.getElementById('nodeFileBadge').style.display = 'none';
+      document.getElementById('kbFile').value = '';
+      document.getElementById('filePrompt').style.display = 'block';
+      document.getElementById('fileTag').style.display = 'none';
     }
 
-    // Queue Assembler (POST /api/bots)
-    async function queueAssembleBot() {
-      const btnTop = document.getElementById('btnQueueTop');
+    // Bot Creation (Queue Assembly)
+    async function queueBotAssembly() {
+      const btnQueue = document.getElementById('btnQueue');
       const btnNode = document.getElementById('btnAssembleNode');
 
-      btnTop.disabled = true;
+      btnQueue.disabled = true;
       btnNode.disabled = true;
-      btnNode.innerHTML = '⚡ Сборка нод и компиляция...';
+      btnNode.textContent = 'Сборка бота...';
 
-      const name = document.getElementById('nodeBotName').value.trim();
-      const avatar = document.getElementById('nodeSelectedAvatar').value.trim() || '🤖';
-      const prompt = document.getElementById('nodeSystemPrompt').value.trim();
-      const kbText = document.getElementById('nodeKbText').value.trim();
-      const kbFile = document.getElementById('nodeKbFile').files[0];
+      const name = document.getElementById('charName').value.trim();
+      const avatar = document.getElementById('charAvatar').value.trim() || '🤖';
+      const prompt = document.getElementById('promptText').value.trim();
+      const kbText = document.getElementById('kbText').value.trim();
+      const kbFile = document.getElementById('kbFile').files[0];
 
-      if (!name) {
-        showToast('Укажите имя бота в ноде «Персонаж»!', 'error');
-        btnTop.disabled = false;
+      if (!name || !prompt) {
+        showToast('Заполните имя и системный промпт', 'error');
+        btnQueue.disabled = false;
         btnNode.disabled = false;
-        btnNode.innerHTML = '🚀 Собрать и Запустить Бота';
+        btnNode.textContent = 'Собрать и Запустить';
         return;
       }
 
-      if (!prompt) {
-        showToast('Заполните инструкцию в ноде «Системный промпт»!', 'error');
-        btnTop.disabled = false;
-        btnNode.disabled = false;
-        btnNode.innerHTML = '🚀 Собрать и Запустить Бота';
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('name', name);
-      formData.append('avatar', avatar);
-      formData.append('system_prompt', prompt);
-      if (kbText) formData.append('kb_text', kbText);
-      if (kbFile) formData.append('kb_file', kbFile);
+      const fd = new FormData();
+      fd.append('name', name);
+      fd.append('avatar', avatar);
+      fd.append('system_prompt', prompt);
+      if (kbText) fd.append('kb_text', kbText);
+      if (kbFile) fd.append('kb_file', kbFile);
 
       try {
-        const response = await fetch('/api/bots', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!response.ok) {
-          const err = await response.json().catch(() => ({}));
-          throw new Error(err.detail || 'Ошибка создания бота на сервере');
+        const res = await fetch('/api/bots', { method: 'POST', body: fd });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || 'Ошибка создания бота');
         }
 
-        const newBot = await response.json();
-        showToast(`Бот «${newBot.name}» успешно собран и запущен!`, 'success');
+        const newBot = await res.json();
+        showToast(`Бот «${newBot.name}» создан`, 'success');
 
-        await loadGalleryBots();
-        selectActiveBot(newBot.id, true);
-        switchView('chat');
+        await fetchBotsList();
+        selectBot(newBot.id, true);
+        switchTab('chat');
 
-      } catch (e) {
-        showToast(e.message, 'error');
+      } catch (err) {
+        showToast(err.message, 'error');
       } finally {
-        btnTop.disabled = false;
+        btnQueue.disabled = false;
         btnNode.disabled = false;
-        btnNode.innerHTML = '🚀 Собрать и Запустить Бота';
+        btnNode.textContent = 'Собрать и Запустить';
       }
     }
 
-    // Load Bots Gallery
-    async function loadGalleryBots(silent = false) {
+    // Gallery & Chat
+    async function fetchBotsList(silent = false) {
       try {
         const res = await fetch('/api/bots');
-        if (!res.ok) throw new Error('Не удалось получить список ботов');
+        if (!res.ok) throw new Error('Ошибка загрузки ботов');
         allBots = await res.json();
 
-        document.getElementById('topBotsCountBadge').textContent = allBots.length;
-        document.getElementById('galleryCountBadge').textContent = allBots.length;
+        document.getElementById('botsBadge').textContent = allBots.length;
+        renderGallery();
 
-        renderGallerySidebar();
-
-        if (!activeBotId && allBots.length > 0) {
-          selectActiveBot(allBots[0].id, false);
+        if (!currentBotId && allBots.length > 0) {
+          selectBot(allBots[0].id, false);
         }
-      } catch (err) {
-        if (!silent) showToast(err.message, 'error');
+      } catch (e) {
+        if (!silent) showToast(e.message, 'error');
       }
     }
 
-    function renderGallerySidebar() {
-      const container = document.getElementById('galleryBotsList');
+    function renderGallery() {
+      const container = document.getElementById('galleryList');
       if (allBots.length === 0) {
-        container.innerHTML = `
-          <div style="text-align:center; padding:30px 10px; color:#64748b; font-size:12px;">
-            🤖 Ботов пока нет.<br>Соберите первого в схеме нод!
-          </div>
-        `;
+        container.innerHTML = `<div style="text-align:center; padding:24px 8px; color:#556987; font-size:12px;">Ботов пока нет</div>`;
         return;
       }
 
-      container.innerHTML = allBots.map(bot => `
-        <div class="bot-item ${bot.id === activeBotId ? 'active' : ''}" onclick="selectActiveBot('${bot.id}', true)">
-          <div class="bot-avatar-thumb">${escapeHtml(bot.avatar)}</div>
-          <div class="bot-info">
-            <div class="bot-name">${escapeHtml(bot.name)}</div>
-            <div class="bot-facts-count">📚 ${bot.chunks_count || 0} фактов • #${bot.id}</div>
+      container.innerHTML = allBots.map(b => `
+        <div class="bot-card ${b.id === currentBotId ? 'active' : ''}" onclick="selectBot('${b.id}', true)">
+          <div class="bot-avatar">${escapeHtml(b.avatar)}</div>
+          <div class="bot-details">
+            <div class="bot-card-title">${escapeHtml(b.name)}</div>
+            <div class="bot-card-meta">${b.chunks_count || 0} фактов • #${b.id}</div>
           </div>
         </div>
       `).join('');
     }
 
-    function selectActiveBot(botId, updateUrl = true) {
-      const bot = allBots.find(b => b.id === botId);
+    function selectBot(id, updateUrl = true) {
+      const bot = allBots.find(b => b.id === id);
       if (!bot) return;
 
-      activeBotId = botId;
+      currentBotId = id;
 
       if (updateUrl) {
-        const url = `${window.location.pathname}?bot=${botId}`;
-        window.history.pushState({ botId }, '', url);
+        window.history.pushState({ id }, '', `${window.location.pathname}?bot=${id}`);
       }
 
-      document.getElementById('currentChatAvatar').textContent = bot.avatar;
-      document.getElementById('currentChatName').textContent = bot.name;
+      document.getElementById('currentAvatar').textContent = bot.avatar;
+      document.getElementById('currentName').textContent = bot.name;
 
-      renderGallerySidebar();
-      renderChatMessages();
+      renderGallery();
+      renderMessages();
     }
 
     function copyBotLink() {
-      if (!activeBotId) return;
-      const full = `${window.location.origin}${window.location.pathname}?bot=${activeBotId}`;
-      navigator.clipboard.writeText(full).then(() => {
-        showToast('Ссылка на бота скопирована в буфер обмена! 📋', 'success');
-      }).catch(() => {
-        prompt('Ссылка на бота:', full);
-      });
+      if (!currentBotId) return;
+      const url = `${window.location.origin}${window.location.pathname}?bot=${currentBotId}`;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Ссылка скопирована', 'success');
+      }).catch(() => prompt('Ссылка:', url));
     }
 
     function clearCurrentChat() {
-      if (!activeBotId) return;
-      botHistories[activeBotId] = [];
-      renderChatMessages();
-      showToast('Переписка очищена', 'info');
+      if (!currentBotId) return;
+      chatHistories[currentBotId] = [];
+      renderMessages();
+      showToast('Диалог очищен', 'info');
     }
 
-    function renderChatMessages() {
+    function renderMessages() {
       const container = document.getElementById('chatMessages');
-      const history = (activeBotId && botHistories[activeBotId]) ? botHistories[activeBotId] : [];
+      const history = (currentBotId && chatHistories[currentBotId]) ? chatHistories[currentBotId] : [];
 
       if (history.length === 0) {
-        const bot = allBots.find(b => b.id === activeBotId);
-        const bName = bot ? bot.name : 'бота';
+        const bot = allBots.find(b => b.id === currentBotId);
+        const name = bot ? bot.name : 'бота';
         container.innerHTML = `
-          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#64748b; gap:8px;">
-            <span style="font-size:36px;">💬</span>
-            <span>Начните диалог с <strong>${escapeHtml(bName)}</strong>! Напишите вопрос ниже.</span>
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#556987; gap:6px; font-size:13px;">
+            <span>Начните диалог с <strong>${escapeHtml(name)}</strong></span>
           </div>
         `;
         return;
       }
 
-      const bot = allBots.find(b => b.id === activeBotId);
-      const bAvatar = bot ? bot.avatar : '🤖';
+      const bot = allBots.find(b => b.id === currentBotId);
+      const avatar = bot ? bot.avatar : '🤖';
 
       container.innerHTML = history.map(m => {
         const isUser = m.role === 'user';
         return `
-          <div class="chat-msg ${isUser ? 'user' : 'bot'}">
-            <div class="msg-avatar">${isUser ? '👤' : escapeHtml(bAvatar)}</div>
-            <div class="msg-bubble">${escapeHtml(m.content)}</div>
+          <div class="msg-row ${isUser ? 'user' : 'bot'}">
+            <div class="msg-icon">${isUser ? '👤' : escapeHtml(avatar)}</div>
+            <div class="msg-text">${escapeHtml(m.content)}</div>
           </div>
         `;
       }).join('');
@@ -1686,78 +1566,74 @@
       container.scrollTop = container.scrollHeight;
     }
 
-    function sendQuick(text) {
+    function quickSend(txt) {
       if (isStreaming) return;
-      document.getElementById('chatInputText').value = text;
-      sendChatMessage();
+      document.getElementById('chatInput').value = txt;
+      sendUserMessage();
     }
 
-    function handleInputKey(e) {
+    function onChatInputKeyDown(e) {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        sendChatMessage();
+        sendUserMessage();
       }
     }
 
-    async function sendChatMessage() {
+    async function sendUserMessage() {
       if (isStreaming) return;
-      if (!activeBotId) {
-        showToast('Выберите бота для общения', 'error');
+      if (!currentBotId) {
+        showToast('Выберите бота', 'error');
         return;
       }
 
-      const input = document.getElementById('chatInputText');
+      const input = document.getElementById('chatInput');
       const text = input.value.trim();
       if (!text) return;
-
       input.value = '';
 
-      if (!botHistories[activeBotId]) {
-        botHistories[activeBotId] = [];
-      }
-
-      botHistories[activeBotId].push({ role: 'user', content: text });
-      renderChatMessages();
+      if (!chatHistories[currentBotId]) chatHistories[currentBotId] = [];
+      chatHistories[currentBotId].push({ role: 'user', content: text });
+      renderMessages();
 
       isStreaming = true;
       document.getElementById('btnSend').disabled = true;
-      document.getElementById('chatInputText').disabled = true;
-      document.getElementById('typingBox').style.display = 'flex';
+      document.getElementById('chatInput').disabled = true;
+      document.getElementById('typingIndicator').style.display = 'flex';
 
       const container = document.getElementById('chatMessages');
       container.scrollTop = container.scrollHeight;
 
-      const bot = allBots.find(b => b.id === activeBotId);
-      const bAvatar = bot ? bot.avatar : '🤖';
+      const bot = allBots.find(b => b.id === currentBotId);
+      const avatar = bot ? bot.avatar : '🤖';
 
-      const botMsgEl = document.createElement('div');
-      botMsgEl.className = 'chat-msg bot';
-      botMsgEl.innerHTML = `
-        <div class="msg-avatar">${escapeHtml(bAvatar)}</div>
-        <div class="msg-bubble" id="streamBubble"></div>
+      const botRow = document.createElement('div');
+      botRow.className = 'msg-row bot';
+      botRow.innerHTML = `
+        <div class="msg-icon">${escapeHtml(avatar)}</div>
+        <div class="msg-text" id="streamTarget"></div>
       `;
-      container.appendChild(botMsgEl);
-      const bubble = botMsgEl.querySelector('#streamBubble');
+      container.appendChild(botRow);
+      const target = botRow.querySelector('#streamTarget');
 
-      let fullText = '';
+      let responseText = '';
 
       try {
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            bot_id: activeBotId,
+            bot_id: currentBotId,
             message: text,
-            history: botHistories[activeBotId].slice(0, -1)
+            history: chatHistories[currentBotId].slice(0, -1)
           })
         });
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          throw new Error(err.detail || 'Ошибка ответа модели');
+          throw new Error(err.detail || 'Ошибка генерации ответа');
         }
 
-        document.getElementById('typingBox').style.display = 'none';
+        document.getElementById('typingIndicator').style.display = 'none';
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder('utf-8');
@@ -1766,45 +1642,42 @@
           const { value, done } = await reader.read();
           if (done) break;
           const chunk = decoder.decode(value, { stream: true });
-          fullText += chunk;
-          bubble.textContent = fullText;
+          responseText += chunk;
+          target.textContent = responseText;
           container.scrollTop = container.scrollHeight;
         }
 
-        botHistories[activeBotId].push({
+        chatHistories[currentBotId].push({
           role: 'assistant',
-          content: fullText.trim()
+          content: responseText.trim()
         });
 
       } catch (err) {
-        document.getElementById('typingBox').style.display = 'none';
-        bubble.textContent = `[Ошибка: ${err.message}]`;
+        document.getElementById('typingIndicator').style.display = 'none';
+        target.textContent = `[Ошибка: ${err.message}]`;
         showToast(err.message, 'error');
       } finally {
-        bubble.removeAttribute('id');
+        target.removeAttribute('id');
         isStreaming = false;
         document.getElementById('btnSend').disabled = false;
-        document.getElementById('chatInputText').disabled = false;
-        document.getElementById('chatInputText').focus();
+        document.getElementById('chatInput').disabled = false;
+        document.getElementById('chatInput').focus();
         container.scrollTop = container.scrollHeight;
       }
     }
 
-    // Toast notifications
+    // Toast
     function showToast(text, type = 'info') {
-      const box = document.getElementById('toastBox');
+      const tray = document.getElementById('toastTray');
       const toast = document.createElement('div');
-      toast.className = `toast-msg ${type}`;
-      const icon = type === 'success' ? '⚡' : type === 'error' ? '❌' : 'ℹ️';
-      toast.innerHTML = `<span>${icon}</span><span>${escapeHtml(text)}</span>`;
-      box.appendChild(toast);
-
+      toast.className = `toast ${type}`;
+      toast.textContent = text;
+      tray.appendChild(toast);
       setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateX(20px)';
-        toast.style.transition = 'all 0.2s ease';
+        toast.style.transition = 'opacity 0.2s ease';
         setTimeout(() => toast.remove(), 200);
-      }, 3500);
+      }, 3000);
     }
 
     function escapeHtml(str) {
