@@ -181,47 +181,78 @@
       pointer-events: auto;
     }
 
-    /* SVG Canvas for Wires */
+    /* SVG Overlay in Viewport Screen Space for 100% Reliable Wires */
     #wiresSvg {
       position: absolute;
-      top: -10000px;
-      left: -10000px;
-      width: 20000px;
-      height: 20000px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       pointer-events: none;
-      z-index: 5;
+      z-index: 15;
     }
 
-    .wire {
+    .wire-glow {
+      stroke-width: 9;
+      fill: none;
+      opacity: 0.28;
+      stroke-linecap: round;
+      pointer-events: none;
+    }
+
+    .wire-main {
       stroke-width: 3.5;
       fill: none;
       stroke-linecap: round;
       cursor: pointer;
       pointer-events: stroke;
-      transition: stroke-width 0.15s ease, stroke 0.15s ease;
+      transition: stroke-width 0.15s ease;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.7));
     }
 
-    .wire:hover {
-      stroke-width: 5.5;
-      filter: drop-shadow(0 0 4px #fff);
+    .wire-main:hover {
+      stroke-width: 6;
+      filter: drop-shadow(0 0 8px #fff);
     }
 
-    .wire-shadow {
-      stroke-width: 7;
-      stroke: rgba(0, 0, 0, 0.45);
+    .wire-flow {
+      stroke-width: 2;
+      stroke: #ffffff;
       fill: none;
-      stroke-linecap: round;
+      stroke-dasharray: 6 14;
+      animation: wireFlowAnim 0.9s linear infinite;
+      pointer-events: none;
+      opacity: 0.75;
+    }
+
+    @keyframes wireFlowAnim {
+      from { stroke-dashoffset: 20; }
+      to { stroke-dashoffset: 0; }
     }
 
     .wire-temp {
       stroke-width: 3;
       stroke-dasharray: 6 4;
-      animation: dashAnim 0.8s linear infinite;
+      animation: dashAnim 0.7s linear infinite;
       pointer-events: none;
+      fill: none;
     }
 
     @keyframes dashAnim {
       to { stroke-dashoffset: -20; }
+    }
+
+    /* Wire Label Badge */
+    .wire-badge {
+      pointer-events: auto;
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: monospace;
+      letter-spacing: 0.5px;
+      fill: #e2e8f0;
+      text-anchor: middle;
+      dominant-baseline: central;
     }
 
     /* Left Toolbar: Add Node */
@@ -570,16 +601,14 @@
       min-height: 26px;
     }
 
-    /* In-ports have left padding so text never overlaps with left port circle */
     .port-row.port-row-in {
-      padding-left: 18px;
+      padding-left: 20px;
       padding-right: 4px;
       justify-content: space-between;
     }
 
-    /* Out-ports have right padding so text never overlaps with right port circle */
     .port-row.port-row-out {
-      padding-right: 18px;
+      padding-right: 20px;
       padding-left: 4px;
       justify-content: flex-end;
     }
@@ -600,7 +629,7 @@
       border: 2.5px solid #070b13;
       position: absolute;
       cursor: crosshair;
-      z-index: 25;
+      z-index: 30;
       transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
@@ -1161,16 +1190,22 @@
 
     <!-- Viewport Container -->
     <div id="viewport">
-      <div id="world">
-        <!-- SVG Wires Layer -->
-        <svg id="wiresSvg">
-          <!-- Temporary wire during drag connection -->
-          <path id="tempWire" class="wire wire-temp" stroke="#fff" style="display:none;"></path>
-          <!-- Dynamic wires rendered in JS -->
-          <g id="wiresGroup"></g>
-        </svg>
+      <!-- SVG Overlay Placed in Viewport (Always 100% visible on screen) -->
+      <svg id="wiresSvg">
+        <!-- Glow under-layer -->
+        <g id="wiresGlowGroup"></g>
+        <!-- Main thick wires -->
+        <g id="wiresMainGroup"></g>
+        <!-- Animated flow pulses -->
+        <g id="wiresFlowGroup"></g>
+        <!-- Wire labels -->
+        <g id="wiresLabelsGroup"></g>
+        <!-- Temporary dragging wire -->
+        <path id="tempWire" class="wire-temp" stroke="#38bdf8" style="display:none;"></path>
+      </svg>
 
-        <!-- Dynamic Nodes Container -->
+      <!-- Infinite Scalable & Movable World -->
+      <div id="world">
         <div id="nodesContainer"></div>
       </div>
     </div>
@@ -1184,7 +1219,7 @@
     </div>
 
     <div class="canvas-hint">
-      <strong>Перетягивайте порты мышкой</strong> для соединения! Колёсико: зум. Клик по фону: панорамирование.
+      <strong>Перетягивайте кружочки портов</strong> мышкой для соединения! Клик по проводу — отсоединить.
     </div>
   </div>
 
@@ -1284,8 +1319,8 @@
     // Port Dragging & Wiring State
     let isDraggingPort = false;
     let dragPortSource = null; // { nodeId, portId, type, dir }
-    let dragStartWorldPos = { x: 0, y: 0 };
-    let clickPendingSocket = null; // fallback for click-to-connect
+    let dragStartScreenPos = { x: 0, y: 0 };
+    let clickPendingSocket = null;
 
     let nodeCounter = 0;
     let nodes = {}; // id -> { type, element }
@@ -1301,7 +1336,10 @@
     const viewport = document.getElementById('viewport');
     const world = document.getElementById('world');
     const nodesContainer = document.getElementById('nodesContainer');
-    const wiresGroup = document.getElementById('wiresGroup');
+    const wiresGlowGroup = document.getElementById('wiresGlowGroup');
+    const wiresMainGroup = document.getElementById('wiresMainGroup');
+    const wiresFlowGroup = document.getElementById('wiresFlowGroup');
+    const wiresLabelsGroup = document.getElementById('wiresLabelsGroup');
     const tempWire = document.getElementById('tempWire');
 
     window.addEventListener('DOMContentLoaded', async () => {
@@ -1339,7 +1377,7 @@
       connectPorts(nPrompt, 'out', nAsm, 'in-prompt', 'prompt');
       connectPorts(nKb, 'out', nAsm, 'in-kb', 'kb');
 
-      updateAllWires();
+      setTimeout(updateAllWires, 30);
     }
 
     // 2. Add Node Menu
@@ -1376,7 +1414,7 @@
 
       const nodeId = createNodeElement(type, Math.round(worldX), Math.round(worldY));
       showToast('Нода добавлена', 'info');
-      updateAllWires();
+      setTimeout(updateAllWires, 30);
       return nodeId;
     }
 
@@ -1426,7 +1464,7 @@
               <span class="port-name">Характер</span>
               <div class="port-circle out type-char" id="${id}_out" 
                    data-node="${id}" data-port="out" data-type="char" data-dir="out"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'char', 'out')" title="Потяните, чтобы соединить"></div>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'char', 'out')" title="Зажмите и потяните к сборщику"></div>
             </div>
           </div>
         `;
@@ -1457,7 +1495,7 @@
               <span class="port-name">Инструкция</span>
               <div class="port-circle out type-prompt" id="${id}_out" 
                    data-node="${id}" data-port="out" data-type="prompt" data-dir="out"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'prompt', 'out')" title="Потяните, чтобы соединить"></div>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'prompt', 'out')" title="Зажмите и потяните к сборщику"></div>
             </div>
           </div>
         `;
@@ -1490,7 +1528,7 @@
               <span class="port-name">Знания (RAG)</span>
               <div class="port-circle out type-kb" id="${id}_out" 
                    data-node="${id}" data-port="out" data-type="kb" data-dir="out"
-                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'kb', 'out')" title="Потяните, чтобы соединить"></div>
+                   onmousedown="onSocketMouseDown(event, '${id}', 'out', 'kb', 'out')" title="Зажмите и потяните к сборщику"></div>
             </div>
           </div>
         `;
@@ -1604,7 +1642,6 @@
       e.stopPropagation();
       e.preventDefault();
 
-      // If already in click-pending mode and clicked another socket
       if (clickPendingSocket) {
         attemptConnection(clickPendingSocket, { nodeId, portId, type, dir });
         clickPendingSocket = null;
@@ -1614,8 +1651,8 @@
       isDraggingPort = true;
       dragPortSource = { nodeId, portId, type, dir };
 
-      const pWorld = getSocketWorldCoord(nodeId, portId);
-      dragStartWorldPos = pWorld || { x: 0, y: 0 };
+      const pScreen = getSocketScreenCoord(nodeId, portId);
+      dragStartScreenPos = pScreen || { x: 0, y: 0 };
 
       // Highlight compatible sockets across all nodes
       document.querySelectorAll('.port-circle').forEach(sock => {
@@ -1627,11 +1664,10 @@
 
     function attemptConnection(from, to) {
       if (!from || !to) return;
-      if (from.nodeId === to.nodeId) {
-        return;
-      }
+      if (from.nodeId === to.nodeId) return;
+
       if (from.type !== to.type || from.dir === to.dir) {
-        showToast('Несовместимые порты', 'error');
+        showToast('Несовместимые типы портов', 'error');
         return;
       }
 
@@ -1639,11 +1675,10 @@
       const inSock = from.dir === 'in' ? from : to;
 
       connectPorts(outSock.nodeId, outSock.portId, inSock.nodeId, inSock.portId, from.type);
-      showToast('Порты соединены!', 'success');
+      showToast('Провод соединён!', 'success');
     }
 
     function connectPorts(fromNode, fromPort, toNode, toPort, type) {
-      // Avoid duplicate connection
       connections = connections.filter(c => !(c.toNode === toNode && c.toPort === toPort));
       connections.push({ fromNode, fromPort, toNode, toPort, type });
       updateAllWires();
@@ -1652,21 +1687,19 @@
     function disconnectWire(index) {
       connections.splice(index, 1);
       updateAllWires();
-      showToast('Связь удалена', 'info');
+      showToast('Провод отсоединён', 'info');
     }
 
-    function getSocketWorldCoord(nodeId, portId) {
+    // Direct Screen-Space Coordinate for 100% Precision in Wires Overlay
+    function getSocketScreenCoord(nodeId, portId) {
       const sock = document.getElementById(`${nodeId}_${portId}`);
       if (!sock) return null;
       const sockRect = sock.getBoundingClientRect();
       const viewRect = viewport.getBoundingClientRect();
 
-      const screenX = sockRect.left + sockRect.width / 2 - viewRect.left;
-      const screenY = sockRect.top + sockRect.height / 2 - viewRect.top;
-
       return {
-        x: (screenX - panX) / scale,
-        y: (screenY - panY) / scale
+        x: sockRect.left + sockRect.width / 2 - viewRect.left,
+        y: sockRect.top + sockRect.height / 2 - viewRect.top
       };
     }
 
@@ -1680,7 +1713,10 @@
     }
 
     function updateAllWires() {
-      let svgHtml = '';
+      let glowHtml = '';
+      let mainHtml = '';
+      let flowHtml = '';
+      let labelsHtml = '';
 
       // Reset all assembler status badges
       document.querySelectorAll('.status-badge').forEach(b => {
@@ -1689,17 +1725,29 @@
       });
 
       connections.forEach((conn, idx) => {
-        const p1 = getSocketWorldCoord(conn.fromNode, conn.fromPort);
-        const p2 = getSocketWorldCoord(conn.toNode, conn.toPort);
+        const p1 = getSocketScreenCoord(conn.fromNode, conn.fromPort);
+        const p2 = getSocketScreenCoord(conn.toNode, conn.toPort);
 
         if (!p1 || !p2) return;
 
         const pathD = buildWirePath(p1, p2);
         const colorVar = conn.type === 'char' ? 'var(--wire-char)' : conn.type === 'prompt' ? 'var(--wire-prompt)' : 'var(--wire-kb)';
+        const labelText = conn.type === 'char' ? 'Характер' : conn.type === 'prompt' ? 'Промпт' : 'Знания';
 
-        svgHtml += `
-          <path class="wire-shadow" d="${pathD}"></path>
-          <path class="wire" stroke="${colorVar}" d="${pathD}" onclick="disconnectWire(${idx})" title="Кликните, чтобы удалить связь"></path>
+        // Calculate midpoint for floating wire pill
+        const midX = (p1.x + p2.x) / 2;
+        const midY = (p1.y + p2.y) / 2;
+        const badgeWidth = labelText.length * 7 + 16;
+
+        glowHtml += `<path class="wire-glow" stroke="${colorVar}" d="${pathD}"></path>`;
+        mainHtml += `<path class="wire-main" stroke="${colorVar}" d="${pathD}" onclick="disconnectWire(${idx})" title="Кликните, чтобы удалить связь"></path>`;
+        flowHtml += `<path class="wire-flow" d="${pathD}"></path>`;
+
+        labelsHtml += `
+          <g onclick="disconnectWire(${idx})" style="cursor:pointer;" title="Кликните, чтобы отсоединить">
+            <rect x="${midX - badgeWidth / 2}" y="${midY - 9}" width="${badgeWidth}" height="18" rx="4" fill="#0b1322" stroke="${colorVar}" stroke-width="1.2" />
+            <text x="${midX}" y="${midY}" class="wire-badge">${labelText}</text>
+          </g>
         `;
 
         // Update target assembler status badge
@@ -1713,7 +1761,10 @@
         }
       });
 
-      wiresGroup.innerHTML = svgHtml;
+      wiresGlowGroup.innerHTML = glowHtml;
+      wiresMainGroup.innerHTML = mainHtml;
+      wiresFlowGroup.innerHTML = flowHtml;
+      wiresLabelsGroup.innerHTML = labelsHtml;
     }
 
     // 6. Viewport Pan, Zoom & Drag Listeners
@@ -1754,6 +1805,7 @@
           panX = e.clientX - panStartX;
           panY = e.clientY - panStartY;
           applyTransform();
+          updateAllWires();
         } else if (draggedNode) {
           const dx = (e.clientX - dragStartX) / scale;
           const dy = (e.clientY - dragStartY) / scale;
@@ -1761,14 +1813,13 @@
           draggedNode.style.top = `${nodeStartY + dy}px`;
           updateAllWires();
         } else if (isDraggingPort) {
-          // Live temporary wire dragging
           const viewRect = viewport.getBoundingClientRect();
-          const mouseWorld = {
-            x: (e.clientX - viewRect.left - panX) / scale,
-            y: (e.clientY - viewRect.top - panY) / scale
+          const mouseScreen = {
+            x: e.clientX - viewRect.left,
+            y: e.clientY - viewRect.top
           };
-          const pStart = dragPortSource.dir === 'out' ? dragStartWorldPos : mouseWorld;
-          const pEnd = dragPortSource.dir === 'out' ? mouseWorld : dragStartWorldPos;
+          const pStart = dragPortSource.dir === 'out' ? dragStartScreenPos : mouseScreen;
+          const pEnd = dragPortSource.dir === 'out' ? mouseScreen : dragStartScreenPos;
 
           tempWire.setAttribute('d', buildWirePath(pStart, pEnd));
           tempWire.setAttribute('stroke', dragPortSource.type === 'char' ? 'var(--wire-char)' : dragPortSource.type === 'prompt' ? 'var(--wire-prompt)' : 'var(--wire-kb)');
@@ -1789,7 +1840,6 @@
           tempWire.style.display = 'none';
           document.querySelectorAll('.port-circle').forEach(s => s.classList.remove('highlight'));
 
-          // Check if released over another port-circle
           const elem = document.elementFromPoint(e.clientX, e.clientY);
           const targetSock = elem ? elem.closest('.port-circle') : null;
 
@@ -1801,7 +1851,6 @@
 
             attemptConnection(dragPortSource, { nodeId: tNode, portId: tPort, type: tType, dir: tDir });
           } else {
-            // Enable click-to-connect fallback if user didn't drop on socket
             clickPendingSocket = dragPortSource;
           }
 
