@@ -101,9 +101,7 @@
       transition: all 0.15s ease;
     }
 
-    .nav-btn:hover {
-      color: #fff;
-    }
+    .nav-btn:hover { color: #fff; }
 
     .nav-btn.active {
       background: #172844;
@@ -153,7 +151,7 @@
       display: block;
     }
 
-    /* Node Canvas Viewport (Infinite Zoom/Pan) */
+    /* Node Canvas Viewport (Infinite Zoom & Pan) */
     #viewport {
       width: 100%;
       height: 100%;
@@ -186,10 +184,10 @@
     /* SVG Canvas for Wires */
     #wiresSvg {
       position: absolute;
-      top: -5000px;
-      left: -5000px;
-      width: 10000px;
-      height: 10000px;
+      top: -10000px;
+      left: -10000px;
+      width: 20000px;
+      height: 20000px;
       pointer-events: none;
       z-index: 5;
     }
@@ -198,6 +196,14 @@
       stroke-width: 3;
       fill: none;
       stroke-linecap: round;
+      cursor: pointer;
+      pointer-events: stroke;
+      transition: stroke-width 0.15s ease;
+    }
+
+    .wire:hover {
+      stroke-width: 5;
+      filter: drop-shadow(0 0 4px #fff);
     }
 
     .wire-shadow {
@@ -205,6 +211,131 @@
       stroke: rgba(0, 0, 0, 0.4);
       fill: none;
       stroke-linecap: round;
+    }
+
+    .wire-temp {
+      stroke-width: 2.5;
+      stroke-dasharray: 6 4;
+      animation: dash 1s linear infinite;
+    }
+
+    @keyframes dash {
+      to { stroke-dashoffset: -20; }
+    }
+
+    /* Left Floating Add-Node Toolbar */
+    .add-node-bar {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .btn-add-node {
+      width: 40px;
+      height: 40px;
+      background: #0e1728;
+      border: 1px solid var(--border-node);
+      border-radius: 8px;
+      color: #38bdf8;
+      font-size: 22px;
+      font-weight: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      transition: all 0.15s ease;
+    }
+
+    .btn-add-node:hover {
+      background: #142239;
+      border-color: #38bdf8;
+      color: #fff;
+      transform: scale(1.05);
+    }
+
+    .btn-add-node.active {
+      background: #192d4d;
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+    }
+
+    /* Dropdown Menu of Available Nodes */
+    .node-menu {
+      position: absolute;
+      top: 48px;
+      left: 0;
+      background: #0b1322;
+      border: 1px solid var(--border-node);
+      border-radius: 8px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+      width: 240px;
+      padding: 6px;
+      display: none;
+      flex-direction: column;
+      gap: 3px;
+      z-index: 70;
+      animation: menuPop 0.15s ease-out;
+    }
+
+    .node-menu.active {
+      display: flex;
+    }
+
+    @keyframes menuPop {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .menu-header-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      padding: 6px 8px 3px;
+      letter-spacing: 0.5px;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .menu-item:hover {
+      background: #142239;
+    }
+
+    .menu-icon {
+      font-size: 16px;
+      width: 26px;
+      height: 26px;
+      background: #070d17;
+      border: 1px solid #1a2a44;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .menu-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .menu-desc {
+      font-size: 10px;
+      color: var(--text-muted);
     }
 
     /* Nodes */
@@ -262,11 +393,25 @@
       gap: 6px;
     }
 
-    .node-type-label {
-      font-size: 10px;
-      color: var(--text-muted);
-      font-family: monospace;
-      text-transform: uppercase;
+    .node-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-close-node {
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .btn-close-node:hover {
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.15);
     }
 
     .node-body {
@@ -369,9 +514,7 @@
       transition: all 0.15s ease;
     }
 
-    .btn-emoji:hover {
-      background: #142239;
-    }
+    .btn-emoji:hover { background: #142239; }
 
     .btn-emoji.active {
       border-color: var(--accent-cyan);
@@ -422,7 +565,7 @@
       position: relative;
       font-size: 11px;
       color: var(--text-muted);
-      padding: 3px 0;
+      padding: 4px 0;
       user-select: none;
     }
 
@@ -434,12 +577,22 @@
     }
 
     .port-circle {
-      width: 11px;
-      height: 11px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
       border: 2px solid #070b13;
       position: absolute;
       cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .port-circle:hover {
+      transform: scale(1.3);
+    }
+
+    .port-circle.highlight {
+      transform: scale(1.4);
+      box-shadow: 0 0 8px #fff;
     }
 
     .port-circle.out { right: -6px; }
@@ -475,7 +628,7 @@
       cursor: not-allowed;
     }
 
-    /* Zoom & Pan Overlay Controls */
+    /* Zoom Controls */
     .viewport-controls {
       position: absolute;
       bottom: 14px;
@@ -922,157 +1075,61 @@
     </div>
   </header>
 
-  <!-- VIEW 1: Infinite Canvas Viewport (Zoomable & Pannable) -->
+  <!-- VIEW 1: Infinite Canvas Viewport (Zoomable, Pannable, Node Adding) -->
   <div class="view-panel active" id="canvasView">
+    
+    <!-- Left Floating Add Node Toolbar -->
+    <div class="add-node-bar">
+      <button class="btn-add-node" id="btnAddNode" onclick="toggleNodeMenu(event)" title="Добавить новую ноду">
+        +
+      </button>
+      <!-- Dropdown Menu -->
+      <div class="node-menu" id="nodeMenu">
+        <div class="menu-header-label">Добавить ноду</div>
+        <div class="menu-item" onclick="spawnNode('char')">
+          <div class="menu-icon">🎭</div>
+          <div>
+            <div class="menu-title">Персонаж</div>
+            <div class="menu-desc">Имя и эмодзи-аватарка</div>
+          </div>
+        </div>
+        <div class="menu-item" onclick="spawnNode('prompt')">
+          <div class="menu-icon">🧠</div>
+          <div>
+            <div class="menu-title">Инструкция (Промпт)</div>
+            <div class="menu-desc">Роль и системный промпт</div>
+          </div>
+        </div>
+        <div class="menu-item" onclick="spawnNode('kb')">
+          <div class="menu-icon">📚</div>
+          <div>
+            <div class="menu-title">База знаний</div>
+            <div class="menu-desc">Текст или файл (.txt, .pdf, .docx)</div>
+          </div>
+        </div>
+        <div class="menu-item" onclick="spawnNode('assembler')">
+          <div class="menu-icon">⚡</div>
+          <div>
+            <div class="menu-title">Сборщик Бота</div>
+            <div class="menu-desc">Ядро сборки и запуска</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Viewport Container -->
     <div id="viewport">
       <div id="world">
         <!-- SVG Wires Layer -->
         <svg id="wiresSvg">
-          <path id="shadowChar" class="wire-shadow"></path>
-          <path id="wireChar" class="wire" stroke="var(--wire-char)"></path>
-
-          <path id="shadowPrompt" class="wire-shadow"></path>
-          <path id="wirePrompt" class="wire" stroke="var(--wire-prompt)"></path>
-
-          <path id="shadowKb" class="wire-shadow"></path>
-          <path id="wireKb" class="wire" stroke="var(--wire-kb)"></path>
+          <!-- Temporary wire during drag connection -->
+          <path id="tempWire" class="wire wire-temp" stroke="#fff" style="display:none;"></path>
+          <!-- Dynamic wires rendered in JS -->
+          <g id="wiresGroup"></g>
         </svg>
 
-        <!-- Node 1: Персонаж -->
-        <div class="node" id="nodeChar" style="top: 80px; left: 60px;">
-          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, 'nodeChar')">
-            <span class="node-title">🎭 Персонаж</span>
-            <span class="node-type-label">Input</span>
-          </div>
-          <div class="node-body">
-            <div>
-              <div class="control-label"><span>Имя</span></div>
-              <input type="text" id="charName" class="control-input" value="Капитан Морган" maxlength="35">
-            </div>
-
-            <div>
-              <div class="control-label"><span>Аватар</span></div>
-              <div class="avatar-row">
-                <div class="avatar-preview" id="avatarPreview">🏴‍☠️</div>
-                <div style="display:flex; gap:4px; flex-wrap:wrap;">
-                  <button type="button" class="btn-emoji" onclick="setAvatar('🤖')">🤖</button>
-                  <button type="button" class="btn-emoji active" onclick="setAvatar('🏴‍☠️')">🏴‍☠️</button>
-                  <button type="button" class="btn-emoji" onclick="setAvatar('🦉')">🦉</button>
-                  <button type="button" class="btn-emoji" onclick="setAvatar('🐱')">🐱</button>
-                  <button type="button" class="btn-emoji" onclick="setAvatar('🚀')">🚀</button>
-                  <button type="button" class="btn-emoji" onclick="setAvatar('🎮')">🎮</button>
-                </div>
-              </div>
-              <input type="hidden" id="charAvatar" value="🏴‍☠️">
-            </div>
-
-            <div class="port-row">
-              <span class="port-name" style="margin-left:auto;">Характер</span>
-              <div class="port-circle out type-char" id="sockCharOut" title="Выход: Характер"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Node 2: Системный промпт -->
-        <div class="node" id="nodePrompt" style="top: 320px; left: 60px;">
-          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, 'nodePrompt')">
-            <span class="node-title">🧠 Инструкция (Prompt)</span>
-            <span class="node-type-label">Config</span>
-          </div>
-          <div class="node-body">
-            <div>
-              <div class="control-label"><span>Готовые шаблоны</span></div>
-              <div class="template-bar">
-                <button type="button" class="btn-template" onclick="loadTemplate('pirate')">Пират</button>
-                <button type="button" class="btn-template" onclick="loadTemplate('tutor')">Репетитор</button>
-                <button type="button" class="btn-template" onclick="loadTemplate('quest')">Квест</button>
-                <button type="button" class="btn-template" onclick="loadTemplate('cat')">Кот</button>
-              </div>
-            </div>
-
-            <div>
-              <div class="control-label"><span>Системный промпт</span></div>
-              <textarea id="promptText" class="control-textarea">Ты — бывалый и веселый морской пират Капитан Морган. Общайся с задором, используй морской сленг ('Карамба!', 'Свистать всех наверх!', 'Тысяча чертей!'). Ты рассказываешь интересные морские байки и остаешься добрым другом для детей.</textarea>
-            </div>
-
-            <div class="port-row">
-              <span class="port-name" style="margin-left:auto;">Промпт</span>
-              <div class="port-circle out type-prompt" id="sockPromptOut" title="Выход: Промпт"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Node 3: База знаний (RAG) -->
-        <div class="node" id="nodeKb" style="top: 80px; left: 400px;">
-          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, 'nodeKb')">
-            <span class="node-title">📚 База знаний (RAG)</span>
-            <span class="node-type-label">Docs</span>
-          </div>
-          <div class="node-body">
-            <div>
-              <div class="control-label"><span>Факты (текст)</span></div>
-              <textarea id="kbText" class="control-textarea" style="min-height:65px;">Пираты прячут сундуки с золотом на необитаемом острове в Карибском море. Корабль Капитана Моргана называется «Быстрый Альбатрос».</textarea>
-            </div>
-
-            <div>
-              <div class="control-label"><span>Или файл (.txt, .pdf, .docx до 1 МБ)</span></div>
-              <div class="file-input-wrapper">
-                <input type="file" id="kbFile" accept=".txt,.pdf,.docx" onchange="onFileSelected(event)">
-                <span id="filePrompt">Нажмите для выбора файла</span>
-                <div class="file-tag" id="fileTag">
-                  <span id="fileName">документ.pdf</span>
-                  <button type="button" onclick="clearFile(event)" style="background:none; border:none; color:#f87171; cursor:pointer;">✕</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="port-row">
-              <span class="port-name" style="margin-left:auto;">Знания</span>
-              <div class="port-circle out type-kb" id="sockKbOut" title="Выход: База знаний"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Node 4: Сборщик Бота -->
-        <div class="node assembler-node" id="nodeAssembler" style="top: 140px; left: 740px;">
-          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, 'nodeAssembler')">
-            <span class="node-title">⚡ Сборщик Бота</span>
-            <span class="node-type-label" style="color:#38bdf8;">Qwen 2.5 3B</span>
-          </div>
-          <div class="node-body">
-            <div class="port-row">
-              <div class="port-circle in type-char" id="sockCharIn"></div>
-              <span class="port-name" style="margin-left:6px;">Персонаж</span>
-              <span style="font-size:10px; color:#10b981; font-family:monospace;">CONNECT</span>
-            </div>
-
-            <div class="port-row">
-              <div class="port-circle in type-prompt" id="sockPromptIn"></div>
-              <span class="port-name" style="margin-left:6px;">Промпт</span>
-              <span style="font-size:10px; color:#10b981; font-family:monospace;">CONNECT</span>
-            </div>
-
-            <div class="port-row">
-              <div class="port-circle in type-kb" id="sockKbIn"></div>
-              <span class="port-name" style="margin-left:6px;">База знаний</span>
-              <span style="font-size:10px; color:#10b981; font-family:monospace;">CONNECT</span>
-            </div>
-
-            <div style="background:#090f19; border:1px solid #142239; border-radius:4px; padding:8px; font-size:11px; color:var(--text-muted);">
-              <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
-                <span>Движок:</span> <span style="color:#f1f5f9; font-family:monospace;">llama-server (8000)</span>
-              </div>
-              <div style="display:flex; justify-content:space-between;">
-                <span>Ранжирование:</span> <span style="color:#f1f5f9; font-family:monospace;">BM25Okapi</span>
-              </div>
-            </div>
-
-            <button class="btn-assemble-node" id="btnAssembleNode" onclick="queueBotAssembly()">
-              Собрать и Запустить
-            </button>
-          </div>
-        </div>
-
+        <!-- Dynamic Nodes Container -->
+        <div id="nodesContainer"></div>
       </div>
     </div>
 
@@ -1085,7 +1142,7 @@
     </div>
 
     <div class="canvas-hint">
-      Колёсико мыши: масштаб. Зажмите левую кнопку на фоне: перемещение холста.
+      Нажмите <strong>+</strong> слева для добавления ноды. Кликните по кружочку порта, чтобы протянуть провод!
     </div>
   </div>
 
@@ -1167,34 +1224,43 @@
       }
     };
 
-    // State
+    // Viewport Pan/Zoom State
     let scale = 1.0;
     let panX = 0;
     let panY = 0;
-
     let isPanning = false;
     let panStartX = 0;
     let panStartY = 0;
 
+    // Node Dragging State
     let draggedNode = null;
     let dragStartX = 0;
     let dragStartY = 0;
     let nodeStartX = 0;
     let nodeStartY = 0;
 
+    // Wiring State
+    let connectingSocket = null; // { nodeId, portId, type, dir }
+    let nodeCounter = 0;
+    let nodes = {}; // id -> { type, element }
+    let connections = []; // [ { fromNode, fromPort, toNode, toPort, type } ]
+
+    // Chat & Bot State
     let allBots = [];
     let currentBotId = null;
     let chatHistories = {};
     let isStreaming = false;
 
-    // Elements
+    // DOM
     const viewport = document.getElementById('viewport');
     const world = document.getElementById('world');
+    const nodesContainer = document.getElementById('nodesContainer');
+    const wiresGroup = document.getElementById('wiresGroup');
+    const tempWire = document.getElementById('tempWire');
 
-    // Init
     window.addEventListener('DOMContentLoaded', async () => {
       setupViewport();
-      updateWires();
+      setupInitialDefaultWorkflow();
       await fetchBotsList();
 
       const params = new URLSearchParams(window.location.search);
@@ -1207,13 +1273,416 @@
       }
 
       setInterval(() => fetchBotsList(true), 10000);
+
+      // Close node menu on click outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.add-node-bar')) {
+          closeNodeMenu();
+        }
+      });
     });
 
-    // Viewport Pan & Zoom Implementation
+    // 1. Initial Default Workflow
+    function setupInitialDefaultWorkflow() {
+      const nChar = createNodeElement('char', 60, 80);
+      const nPrompt = createNodeElement('prompt', 60, 320);
+      const nKb = createNodeElement('kb', 400, 80);
+      const nAsm = createNodeElement('assembler', 740, 140);
+
+      // Connect them by default
+      connectPorts(nChar, 'out', nAsm, 'in-char', 'char');
+      connectPorts(nPrompt, 'out', nAsm, 'in-prompt', 'prompt');
+      connectPorts(nKb, 'out', nAsm, 'in-kb', 'kb');
+
+      updateAllWires();
+    }
+
+    // 2. Add Node Menu
+    function toggleNodeMenu(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('nodeMenu');
+      const btn = document.getElementById('btnAddNode');
+      const isActive = menu.classList.contains('active');
+      if (isActive) {
+        closeNodeMenu();
+      } else {
+        menu.classList.add('active');
+        btn.classList.add('active');
+      }
+    }
+
+    function closeNodeMenu() {
+      document.getElementById('nodeMenu').classList.remove('active');
+      document.getElementById('btnAddNode').classList.remove('active');
+    }
+
+    function spawnNode(type) {
+      closeNodeMenu();
+
+      // Compute center of current viewport in world coords
+      const rect = viewport.getBoundingClientRect();
+      const viewCenterX = rect.width / 2;
+      const viewCenterY = rect.height / 2;
+
+      // Add a slight random offset so multiple spawned nodes don't overlap completely
+      const jitterX = (Math.random() - 0.5) * 80;
+      const jitterY = (Math.random() - 0.5) * 80;
+
+      const worldX = (viewCenterX - panX) / scale - 140 + jitterX;
+      const worldY = (viewCenterY - panY) / scale - 80 + jitterY;
+
+      const nodeId = createNodeElement(type, Math.round(worldX), Math.round(worldY));
+      showToast(`Нода создана`, 'info');
+      updateAllWires();
+      return nodeId;
+    }
+
+    // 3. Node Creation
+    function createNodeElement(type, x, y) {
+      nodeCounter++;
+      const id = `node_${nodeCounter}_${type}`;
+
+      const el = document.createElement('div');
+      el.className = `node ${type === 'assembler' ? 'assembler-node' : ''}`;
+      el.id = id;
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+
+      let inner = '';
+
+      if (type === 'char') {
+        inner = `
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
+            <span class="node-title">🎭 Персонаж</span>
+            <div class="node-header-actions">
+              <span class="node-type-label">Input</span>
+              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+            </div>
+          </div>
+          <div class="node-body">
+            <div>
+              <div class="control-label"><span>Имя</span></div>
+              <input type="text" class="control-input node-val-name" value="Капитан Морган" maxlength="35">
+            </div>
+            <div>
+              <div class="control-label"><span>Аватар</span></div>
+              <div class="avatar-row">
+                <div class="avatar-preview node-avatar-preview">🏴‍☠️</div>
+                <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                  <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '🤖')">🤖</button>
+                  <button type="button" class="btn-emoji active" onclick="setNodeAvatar('${id}', '🏴‍☠️')">🏴‍☠️</button>
+                  <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '🦉')">🦉</button>
+                  <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '🐱')">🐱</button>
+                  <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '🚀')">🚀</button>
+                  <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '🎮')">🎮</button>
+                </div>
+              </div>
+              <input type="hidden" class="node-val-avatar" value="🏴‍☠️">
+            </div>
+            <div class="port-row">
+              <span class="port-name" style="margin-left:auto;">Характер</span>
+              <div class="port-circle out type-char" id="${id}_out" 
+                   data-node="${id}" data-port="out" data-type="char" data-dir="out"
+                   onclick="handleSocketClick(event, '${id}', 'out', 'char', 'out')" title="Выход: Характер"></div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'prompt') {
+        inner = `
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
+            <span class="node-title">🧠 Инструкция (Prompt)</span>
+            <div class="node-header-actions">
+              <span class="node-type-label">Config</span>
+              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+            </div>
+          </div>
+          <div class="node-body">
+            <div>
+              <div class="control-label"><span>Шаблоны</span></div>
+              <div class="template-bar">
+                <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'pirate')">Пират</button>
+                <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'tutor')">Репетитор</button>
+                <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'quest')">Квест</button>
+                <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'cat')">Кот</button>
+              </div>
+            </div>
+            <div>
+              <div class="control-label"><span>Системный промпт</span></div>
+              <textarea class="control-textarea node-val-prompt">Ты — бывалый и веселый морской пират Капитан Морган. Общайся с задором, используй морской сленг ('Карамба!', 'Свистать всех наверх!', 'Тысяча чертей!'). Ты рассказываешь интересные морские байки и остаешься добрым другом для детей.</textarea>
+            </div>
+            <div class="port-row">
+              <span class="port-name" style="margin-left:auto;">Промпт</span>
+              <div class="port-circle out type-prompt" id="${id}_out" 
+                   data-node="${id}" data-port="out" data-type="prompt" data-dir="out"
+                   onclick="handleSocketClick(event, '${id}', 'out', 'prompt', 'out')" title="Выход: Промпт"></div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'kb') {
+        inner = `
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
+            <span class="node-title">📚 База знаний (RAG)</span>
+            <div class="node-header-actions">
+              <span class="node-type-label">Docs</span>
+              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+            </div>
+          </div>
+          <div class="node-body">
+            <div>
+              <div class="control-label"><span>Факты (текст)</span></div>
+              <textarea class="control-textarea node-val-kb" style="min-height:65px;">Пираты прячут сундуки с золотом на необитаемом острове в Карибском море. Корабль Капитана Моргана называется «Быстрый Альбатрос».</textarea>
+            </div>
+            <div>
+              <div class="control-label"><span>Или файл (.txt, .pdf, .docx до 1 МБ)</span></div>
+              <div class="file-input-wrapper">
+                <input type="file" class="node-val-file" accept=".txt,.pdf,.docx" onchange="onNodeFileSelected(event, '${id}')">
+                <span class="file-prompt-text">Нажмите для выбора файла</span>
+                <div class="file-tag">
+                  <span class="file-tag-name">документ.pdf</span>
+                  <button type="button" onclick="clearNodeFile(event, '${id}')" style="background:none; border:none; color:#f87171; cursor:pointer;">✕</button>
+                </div>
+              </div>
+            </div>
+            <div class="port-row">
+              <span class="port-name" style="margin-left:auto;">Знания</span>
+              <div class="port-circle out type-kb" id="${id}_out" 
+                   data-node="${id}" data-port="out" data-type="kb" data-dir="out"
+                   onclick="handleSocketClick(event, '${id}', 'out', 'kb', 'out')" title="Выход: База знаний"></div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'assembler') {
+        inner = `
+          <div class="node-header" onmousedown="onNodeHeaderMouseDown(event, '${id}')">
+            <span class="node-title">⚡ Сборщик Бота</span>
+            <div class="node-header-actions">
+              <span class="node-type-label" style="color:#38bdf8;">Qwen 2.5 3B</span>
+              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+            </div>
+          </div>
+          <div class="node-body">
+            <div class="port-row">
+              <div class="port-circle in type-char" id="${id}_in-char" 
+                   data-node="${id}" data-port="in-char" data-type="char" data-dir="in"
+                   onclick="handleSocketClick(event, '${id}', 'in-char', 'char', 'in')"></div>
+              <span class="port-name" style="margin-left:6px;">Персонаж</span>
+              <span class="status-indicator status-char" style="font-size:10px; color:#64748b; font-family:monospace;">DISCONNECTED</span>
+            </div>
+            <div class="port-row">
+              <div class="port-circle in type-prompt" id="${id}_in-prompt" 
+                   data-node="${id}" data-port="in-prompt" data-type="prompt" data-dir="in"
+                   onclick="handleSocketClick(event, '${id}', 'in-prompt', 'prompt', 'in')"></div>
+              <span class="port-name" style="margin-left:6px;">Промпт</span>
+              <span class="status-indicator status-prompt" style="font-size:10px; color:#64748b; font-family:monospace;">DISCONNECTED</span>
+            </div>
+            <div class="port-row">
+              <div class="port-circle in type-kb" id="${id}_in-kb" 
+                   data-node="${id}" data-port="in-kb" data-type="kb" data-dir="in"
+                   onclick="handleSocketClick(event, '${id}', 'in-kb', 'kb', 'in')"></div>
+              <span class="port-name" style="margin-left:6px;">База знаний</span>
+              <span class="status-indicator status-kb" style="font-size:10px; color:#64748b; font-family:monospace;">DISCONNECTED</span>
+            </div>
+            <div style="background:#090f19; border:1px solid #142239; border-radius:4px; padding:8px; font-size:11px; color:var(--text-muted);">
+              <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                <span>Движок:</span> <span style="color:#f1f5f9; font-family:monospace;">llama-server (8000)</span>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span>Ранжирование:</span> <span style="color:#f1f5f9; font-family:monospace;">BM25Okapi</span>
+              </div>
+            </div>
+            <button class="btn-assemble-node" onclick="queueBotAssembly('${id}')">
+              Собрать и Запустить
+            </button>
+          </div>
+        `;
+      }
+
+      el.innerHTML = inner;
+      nodesContainer.appendChild(el);
+      nodes[id] = { type, element: el };
+      return id;
+    }
+
+    function removeNode(nodeId) {
+      // Remove connected wires
+      connections = connections.filter(c => c.fromNode !== nodeId && c.toNode !== nodeId);
+      const el = document.getElementById(nodeId);
+      if (el) el.remove();
+      delete nodes[nodeId];
+      updateAllWires();
+      showToast('Нода удалена', 'info');
+    }
+
+    // 4. Node Form Controls
+    function setNodeAvatar(nodeId, emoji) {
+      const el = document.getElementById(nodeId);
+      if (!el) return;
+      el.querySelector('.node-val-avatar').value = emoji;
+      el.querySelector('.node-avatar-preview').textContent = emoji;
+      el.querySelectorAll('.btn-emoji').forEach(b => {
+        b.classList.toggle('active', b.textContent.trim() === emoji);
+      });
+    }
+
+    function loadNodeTemplate(nodeId, key) {
+      const t = TEMPLATES[key];
+      if (!t) return;
+      const el = document.getElementById(nodeId);
+      if (!el) return;
+      el.querySelector('.node-val-prompt').value = t.prompt;
+
+      // Also sync character node if connected or exists
+      const charConn = connections.find(c => c.fromNode === nodeId || c.toNode === nodeId);
+      showToast(`Шаблон «${t.name}» загружен`, 'success');
+    }
+
+    function onNodeFileSelected(e, nodeId) {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 1024 * 1024) {
+        showToast('Файл больше 1 МБ', 'error');
+        clearNodeFile(null, nodeId);
+        return;
+      }
+      const el = document.getElementById(nodeId);
+      el.querySelector('.file-prompt-text').style.display = 'none';
+      const tag = el.querySelector('.file-tag');
+      tag.style.display = 'inline-flex';
+      tag.querySelector('.file-tag-name').textContent = file.name;
+    }
+
+    function clearNodeFile(e, nodeId) {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      const el = document.getElementById(nodeId);
+      el.querySelector('.node-val-file').value = '';
+      el.querySelector('.file-prompt-text').style.display = 'block';
+      el.querySelector('.file-tag').style.display = 'none';
+    }
+
+    // 5. Interactive Wiring (Click socket to start wire -> click target socket to connect)
+    function handleSocketClick(e, nodeId, portId, type, dir) {
+      e.stopPropagation();
+
+      if (!connectingSocket) {
+        // Start connection
+        connectingSocket = { nodeId, portId, type, dir };
+        document.querySelectorAll('.port-circle').forEach(p => {
+          if (p.dataset.type === type && p.dataset.dir !== dir) {
+            p.classList.add('highlight');
+          }
+        });
+        showToast('Выберите ответный порт для соединения...', 'info');
+      } else {
+        // Try connecting
+        const from = connectingSocket;
+        const to = { nodeId, portId, type, dir };
+
+        if (from.nodeId === to.nodeId) {
+          cancelConnecting();
+          return;
+        }
+
+        if (from.type !== to.type || from.dir === to.dir) {
+          showToast('Несовместимые порты', 'error');
+          cancelConnecting();
+          return;
+        }
+
+        const outSock = from.dir === 'out' ? from : to;
+        const inSock = from.dir === 'in' ? from : to;
+
+        connectPorts(outSock.nodeId, outSock.portId, inSock.nodeId, inSock.portId, type);
+        cancelConnecting();
+        showToast('Порты соединены!', 'success');
+      }
+    }
+
+    function cancelConnecting() {
+      connectingSocket = null;
+      tempWire.style.display = 'none';
+      document.querySelectorAll('.port-circle').forEach(p => p.classList.remove('highlight'));
+    }
+
+    function connectPorts(fromNode, fromPort, toNode, toPort, type) {
+      // Remove any existing connection to the same input port
+      connections = connections.filter(c => !(c.toNode === toNode && c.toPort === toPort));
+      connections.push({ fromNode, fromPort, toNode, toPort, type });
+      updateAllWires();
+    }
+
+    function disconnectWire(index) {
+      connections.splice(index, 1);
+      updateAllWires();
+      showToast('Связь удалена', 'info');
+    }
+
+    // Update Wire Paths
+    function getSocketWorldCoord(nodeId, portId) {
+      const sock = document.getElementById(`${nodeId}_${portId}`);
+      if (!sock) return null;
+      const sockRect = sock.getBoundingClientRect();
+      const viewRect = viewport.getBoundingClientRect();
+
+      const screenX = sockRect.left + sockRect.width / 2 - viewRect.left;
+      const screenY = sockRect.top + sockRect.height / 2 - viewRect.top;
+
+      return {
+        x: (screenX - panX) / scale,
+        y: (screenY - panY) / scale
+      };
+    }
+
+    function buildWirePath(p1, p2) {
+      const dx = Math.abs(p2.x - p1.x) * 0.55;
+      const cp1x = p1.x + Math.max(dx, 40);
+      const cp1y = p1.y;
+      const cp2x = p2.x - Math.max(dx, 40);
+      const cp2y = p2.y;
+      return `M ${p1.x} ${p1.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+    }
+
+    function updateAllWires() {
+      let svgHtml = '';
+
+      // Update assembler status indicators
+      document.querySelectorAll('.status-indicator').forEach(s => {
+        s.textContent = 'DISCONNECTED';
+        s.style.color = '#64748b';
+      });
+
+      connections.forEach((conn, idx) => {
+        const p1 = getSocketWorldCoord(conn.fromNode, conn.fromPort);
+        const p2 = getSocketWorldCoord(conn.toNode, conn.toPort);
+
+        if (!p1 || !p2) return;
+
+        const pathD = buildWirePath(p1, p2);
+        const colorVar = conn.type === 'char' ? 'var(--wire-char)' : conn.type === 'prompt' ? 'var(--wire-prompt)' : 'var(--wire-kb)';
+
+        svgHtml += `
+          <path class="wire-shadow" d="${pathD}"></path>
+          <path class="wire" stroke="${colorVar}" d="${pathD}" onclick="disconnectWire(${idx})" title="Кликните, чтобы удалить связь"></path>
+        `;
+
+        // Update target assembler status indicator if applicable
+        const targetNodeEl = document.getElementById(conn.toNode);
+        if (targetNodeEl) {
+          const indicator = targetNodeEl.querySelector(`.status-${conn.type}`);
+          if (indicator) {
+            indicator.textContent = 'CONNECT';
+            indicator.style.color = '#10b981';
+          }
+        }
+      });
+
+      wiresGroup.innerHTML = svgHtml;
+    }
+
+    // 6. Viewport Pan & Zoom Implementation
     function setupViewport() {
       applyTransform();
 
-      // Mouse Wheel Zoom
+      // Wheel Zoom
       viewport.addEventListener('wheel', (e) => {
         e.preventDefault();
         const factor = e.deltaY < 0 ? 1.12 : 0.88;
@@ -1223,18 +1692,20 @@
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
 
-        // Keep mouse target position fixed under zoom
         panX = mouseX - (mouseX - panX) * (newScale / scale);
         panY = mouseY - (mouseY - panY) * (newScale / scale);
         scale = newScale;
 
         applyTransform();
-        updateWires();
+        updateAllWires();
       }, { passive: false });
 
-      // Pan Canvas Background
+      // Pan Canvas
       viewport.addEventListener('mousedown', (e) => {
-        // Only pan if clicked on viewport background directly
+        if (connectingSocket) {
+          cancelConnecting();
+          return;
+        }
         if (e.target === viewport || e.target === world || e.target.id === 'wiresSvg') {
           isPanning = true;
           panStartX = e.clientX - panX;
@@ -1251,10 +1722,23 @@
         } else if (draggedNode) {
           const dx = (e.clientX - dragStartX) / scale;
           const dy = (e.clientY - dragStartY) / scale;
-
           draggedNode.style.left = `${nodeStartX + dx}px`;
           draggedNode.style.top = `${nodeStartY + dy}px`;
-          updateWires();
+          updateAllWires();
+        } else if (connectingSocket) {
+          // Render temp wire
+          const p1 = getSocketWorldCoord(connectingSocket.nodeId, connectingSocket.portId);
+          if (p1) {
+            const viewRect = viewport.getBoundingClientRect();
+            const mouseWorld = {
+              x: (e.clientX - viewRect.left - panX) / scale,
+              y: (e.clientY - viewRect.top - panY) / scale
+            };
+            const pStart = connectingSocket.dir === 'out' ? p1 : mouseWorld;
+            const pEnd = connectingSocket.dir === 'out' ? mouseWorld : p1;
+            tempWire.setAttribute('d', buildWirePath(pStart, pEnd));
+            tempWire.style.display = 'block';
+          }
         }
       });
 
@@ -1269,7 +1753,7 @@
         }
       });
 
-      window.addEventListener('resize', updateWires);
+      window.addEventListener('resize', updateAllWires);
     }
 
     function applyTransform() {
@@ -1290,7 +1774,7 @@
       scale = newScale;
 
       applyTransform();
-      updateWires();
+      updateAllWires();
     }
 
     function resetZoom() {
@@ -1298,10 +1782,9 @@
       panX = 0;
       panY = 0;
       applyTransform();
-      updateWires();
+      updateAllWires();
     }
 
-    // Node Dragging
     function onNodeHeaderMouseDown(e, nodeId) {
       if (e.button !== 0) return;
       draggedNode = document.getElementById(nodeId);
@@ -1313,146 +1796,106 @@
       nodeStartY = parseFloat(draggedNode.style.top) || 0;
     }
 
-    // Wires (Bezier Curves in World Space)
-    function getSocketWorldCoord(sockId) {
-      const sock = document.getElementById(sockId);
-      if (!sock) return { x: 0, y: 0 };
-      const sockRect = sock.getBoundingClientRect();
-      const viewRect = viewport.getBoundingClientRect();
+    // 7. Queue Bot Assembly (Compile from connected nodes)
+    async function queueBotAssembly(targetAssemblerId) {
+      // Find the assembler node
+      let asmId = targetAssemblerId;
+      if (!asmId) {
+        const anyAsm = Object.keys(nodes).find(k => nodes[k].type === 'assembler');
+        if (!anyAsm) {
+          showToast('Добавьте ноду «Сборщик Бота» через +', 'error');
+          return;
+        }
+        asmId = anyAsm;
+      }
 
-      // Convert from screen space to world space
-      const screenCenterX = sockRect.left + sockRect.width / 2 - viewRect.left;
-      const screenCenterY = sockRect.top + sockRect.height / 2 - viewRect.top;
+      const asmEl = document.getElementById(asmId);
+      const btnAssemble = asmEl ? asmEl.querySelector('.btn-assemble-node') : null;
+      const btnTop = document.getElementById('btnQueue');
 
-      return {
-        x: (screenCenterX - panX) / scale,
-        y: (screenCenterY - panY) / scale
-      };
-    }
+      if (btnAssemble) btnAssemble.disabled = true;
+      btnTop.disabled = true;
 
-    function buildWirePath(p1, p2) {
-      const dx = Math.abs(p2.x - p1.x) * 0.55;
-      const cp1x = p1.x + Math.max(dx, 40);
-      const cp1y = p1.y;
-      const cp2x = p2.x - Math.max(dx, 40);
-      const cp2y = p2.y;
-      return `M ${p1.x} ${p1.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
-    }
-
-    function updateWires() {
-      const pCharOut = getSocketWorldCoord('sockCharOut');
-      const pCharIn = getSocketWorldCoord('sockCharIn');
-      const dChar = buildWirePath(pCharOut, pCharIn);
-      document.getElementById('wireChar').setAttribute('d', dChar);
-      document.getElementById('shadowChar').setAttribute('d', dChar);
-
-      const pPromptOut = getSocketWorldCoord('sockPromptOut');
-      const pPromptIn = getSocketWorldCoord('sockPromptIn');
-      const dPrompt = buildWirePath(pPromptOut, pPromptIn);
-      document.getElementById('wirePrompt').setAttribute('d', dPrompt);
-      document.getElementById('shadowPrompt').setAttribute('d', dPrompt);
-
-      const pKbOut = getSocketWorldCoord('sockKbOut');
-      const pKbIn = getSocketWorldCoord('sockKbIn');
-      const dKb = buildWirePath(pKbOut, pKbIn);
-      document.getElementById('wireKb').setAttribute('d', dKb);
-      document.getElementById('shadowKb').setAttribute('d', dKb);
-    }
-
-    // Tab Switching
-    function switchTab(name) {
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
-
-      if (name === 'nodes') {
-        document.getElementById('tabBtnNodes').classList.add('active');
-        document.getElementById('canvasView').classList.add('active');
-        setTimeout(updateWires, 20);
+      // 1. Find connected Character Node
+      const charConn = connections.find(c => c.toNode === asmId && c.type === 'char');
+      let name = '';
+      let avatar = '🤖';
+      if (charConn) {
+        const charEl = document.getElementById(charConn.fromNode);
+        if (charEl) {
+          name = charEl.querySelector('.node-val-name').value.trim();
+          avatar = charEl.querySelector('.node-val-avatar').value.trim();
+        }
       } else {
-        document.getElementById('tabBtnChat').classList.add('active');
-        document.getElementById('chatGalleryView').classList.add('active');
+        // Fallback: look for any character node on canvas
+        const anyChar = Object.keys(nodes).find(k => nodes[k].type === 'char');
+        if (anyChar) {
+          const charEl = document.getElementById(anyChar);
+          name = charEl.querySelector('.node-val-name').value.trim();
+          avatar = charEl.querySelector('.node-val-avatar').value.trim();
+        }
       }
-    }
 
-    // Node Form Handlers
-    function setAvatar(emoji) {
-      document.getElementById('charAvatar').value = emoji;
-      document.getElementById('avatarPreview').textContent = emoji;
-      document.querySelectorAll('.btn-emoji').forEach(b => {
-        b.classList.toggle('active', b.textContent.trim() === emoji);
+      if (!name) {
+        showToast('Подключите или заполните имя в ноде «Персонаж»', 'error');
+        if (btnAssemble) btnAssemble.disabled = false;
+        btnTop.disabled = false;
+        return;
+      }
+
+      // 2. Find connected Prompt Node
+      const promptConn = connections.find(c => c.toNode === asmId && c.type === 'prompt');
+      let prompt = '';
+      if (promptConn) {
+        const promptEl = document.getElementById(promptConn.fromNode);
+        if (promptEl) {
+          prompt = promptEl.querySelector('.node-val-prompt').value.trim();
+        }
+      } else {
+        const anyPrompt = Object.keys(nodes).find(k => nodes[k].type === 'prompt');
+        if (anyPrompt) {
+          prompt = document.getElementById(anyPrompt).querySelector('.node-val-prompt').value.trim();
+        }
+      }
+
+      if (!prompt) {
+        showToast('Подключите или заполните промпт в ноде «Инструкция»', 'error');
+        if (btnAssemble) btnAssemble.disabled = false;
+        btnTop.disabled = false;
+        return;
+      }
+
+      // 3. Find connected Knowledge Base nodes (aggregate all)
+      const kbConns = connections.filter(c => c.toNode === asmId && c.type === 'kb');
+      let aggregatedKbText = '';
+      let fileToUpload = null;
+
+      kbConns.forEach(conn => {
+        const kbEl = document.getElementById(conn.fromNode);
+        if (kbEl) {
+          const txt = kbEl.querySelector('.node-val-kb').value.trim();
+          if (txt) aggregatedKbText += txt + '\n';
+          const f = kbEl.querySelector('.node-val-file').files[0];
+          if (f && !fileToUpload) fileToUpload = f;
+        }
       });
-    }
-
-    function loadTemplate(key) {
-      const t = TEMPLATES[key];
-      if (!t) return;
-      document.getElementById('charName').value = t.name;
-      document.getElementById('promptText').value = t.prompt;
-      if (t.kb) document.getElementById('kbText').value = t.kb;
-      setAvatar(t.avatar);
-      showToast(`Шаблон «${t.name}» загружен`, 'success');
-    }
-
-    function onFileSelected(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      if (file.size > 1024 * 1024) {
-        showToast('Файл больше 1 МБ', 'error');
-        clearFile();
-        return;
-      }
-      document.getElementById('filePrompt').style.display = 'none';
-      const tag = document.getElementById('fileTag');
-      tag.style.display = 'inline-flex';
-      document.getElementById('fileName').textContent = file.name;
-    }
-
-    function clearFile(e) {
-      if (e) { e.preventDefault(); e.stopPropagation(); }
-      document.getElementById('kbFile').value = '';
-      document.getElementById('filePrompt').style.display = 'block';
-      document.getElementById('fileTag').style.display = 'none';
-    }
-
-    // Bot Creation (Queue Assembly)
-    async function queueBotAssembly() {
-      const btnQueue = document.getElementById('btnQueue');
-      const btnNode = document.getElementById('btnAssembleNode');
-
-      btnQueue.disabled = true;
-      btnNode.disabled = true;
-      btnNode.textContent = 'Сборка бота...';
-
-      const name = document.getElementById('charName').value.trim();
-      const avatar = document.getElementById('charAvatar').value.trim() || '🤖';
-      const prompt = document.getElementById('promptText').value.trim();
-      const kbText = document.getElementById('kbText').value.trim();
-      const kbFile = document.getElementById('kbFile').files[0];
-
-      if (!name || !prompt) {
-        showToast('Заполните имя и системный промпт', 'error');
-        btnQueue.disabled = false;
-        btnNode.disabled = false;
-        btnNode.textContent = 'Собрать и Запустить';
-        return;
-      }
 
       const fd = new FormData();
       fd.append('name', name);
       fd.append('avatar', avatar);
       fd.append('system_prompt', prompt);
-      if (kbText) fd.append('kb_text', kbText);
-      if (kbFile) fd.append('kb_file', kbFile);
+      if (aggregatedKbText.trim()) fd.append('kb_text', aggregatedKbText.trim());
+      if (fileToUpload) fd.append('kb_file', fileToUpload);
 
       try {
         const res = await fetch('/api/bots', { method: 'POST', body: fd });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          throw new Error(err.detail || 'Ошибка создания бота');
+          throw new Error(err.detail || 'Ошибка сборки бота');
         }
 
         const newBot = await res.json();
-        showToast(`Бот «${newBot.name}» создан`, 'success');
+        showToast(`Бот «${newBot.name}» успешно собран!`, 'success');
 
         await fetchBotsList();
         selectBot(newBot.id, true);
@@ -1461,13 +1904,27 @@
       } catch (err) {
         showToast(err.message, 'error');
       } finally {
-        btnQueue.disabled = false;
-        btnNode.disabled = false;
-        btnNode.textContent = 'Собрать и Запустить';
+        if (btnAssemble) btnAssemble.disabled = false;
+        btnTop.disabled = false;
       }
     }
 
-    // Gallery & Chat
+    // 8. Tab Switching
+    function switchTab(name) {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
+
+      if (name === 'nodes') {
+        document.getElementById('tabBtnNodes').classList.add('active');
+        document.getElementById('canvasView').classList.add('active');
+        setTimeout(updateAllWires, 20);
+      } else {
+        document.getElementById('tabBtnChat').classList.add('active');
+        document.getElementById('chatGalleryView').classList.add('active');
+      }
+    }
+
+    // 9. Gallery & Chat Logic
     async function fetchBotsList(silent = false) {
       try {
         const res = await fetch('/api/bots');
@@ -1666,7 +2123,6 @@
       }
     }
 
-    // Toast
     function showToast(text, type = 'info') {
       const tray = document.getElementById('toastTray');
       const toast = document.createElement('div');
