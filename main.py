@@ -18,7 +18,7 @@ from docx import Document
 
 # Конфигурация
 DB_PATH = os.getenv("DB_PATH", "bots.db")
-LLM_BASE_URL = os.getenv("LLM_BASE_URL", "http://127.0.0.1:8080/v1")
+LLM_BASE_URL = os.getenv("LLM_BASE_URL", "http://127.0.0.1:8000/v1")
 STATIC_INDEX_PATH = os.path.join(os.path.dirname(__file__), "index.html")
 
 # Клиент AsyncOpenAI для локального llama-server

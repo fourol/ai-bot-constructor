@@ -10,3 +10,9 @@ bots.db
 *.log
 .idea/
 .vscode/
+
+# Исключаем тяжелые бинарники и файлы моделей (>100 МБ для GitHub)
+llm/
+*.gguf
+*.zip
+*.tar.gz
