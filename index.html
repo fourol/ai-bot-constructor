@@ -696,6 +696,241 @@
       background: rgba(239, 68, 68, 0.25);
     }
 
+    /* Header Onboarding Button */
+    .btn-tour-header {
+      background: rgba(56, 189, 248, 0.08);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-tour-header:hover {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Onboarding Guided Tour Overlay & Elements */
+    .tour-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(2px);
+      z-index: 1100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .tour-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .tour-highlight {
+      position: fixed;
+      z-index: 1101;
+      border-radius: 8px;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.68), 0 0 25px rgba(56, 189, 248, 0.65);
+      border: 2px solid #38bdf8;
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .tour-highlight.active {
+      opacity: 1;
+    }
+
+    .tour-card {
+      position: fixed;
+      z-index: 1102;
+      background: #242122;
+      border: 1px solid var(--c-mid);
+      border-radius: 10px;
+      width: 440px;
+      max-width: calc(100vw - 32px);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      padding: 18px 20px;
+      color: #ffffff;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      opacity: 0;
+      transform: scale(0.96);
+      transition: opacity 0.2s ease, transform 0.2s ease, top 0.25s ease, left 0.25s ease;
+    }
+
+    .tour-card.active {
+      display: flex;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .tour-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .tour-step-badge {
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #38bdf8;
+      margin-bottom: 3px;
+    }
+
+    .tour-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      line-height: 1.3;
+    }
+
+    .btn-tour-close {
+      background: transparent;
+      border: none;
+      color: var(--c-light-mid);
+      font-size: 16px;
+      cursor: pointer;
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-tour-close:hover {
+      background: var(--c-dark);
+      color: #ffffff;
+    }
+
+    .tour-body {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #cbd5e1;
+    }
+
+    .tour-tip {
+      background: rgba(56, 189, 248, 0.07);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 6px;
+      padding: 9px 12px;
+      font-size: 11.5px;
+      line-height: 1.4;
+      color: #94a3b8;
+    }
+
+    .tour-tip strong {
+      color: #38bdf8;
+    }
+
+    .tour-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 6px;
+      border-top: 1px solid var(--c-dark);
+    }
+
+    .tour-dots {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .tour-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--c-mid-dark);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tour-dot.active {
+      background: #38bdf8;
+      width: 16px;
+      border-radius: 4px;
+    }
+
+    .tour-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-tour-skip {
+      background: transparent;
+      border: none;
+      color: var(--c-light);
+      font-size: 12px;
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: 4px;
+      transition: color 0.15s ease;
+    }
+
+    .btn-tour-skip:hover {
+      color: #ffffff;
+    }
+
+    .btn-tour-nav {
+      background: var(--c-dark);
+      color: #ffffff;
+      border: 1px solid var(--c-mid-dark);
+      border-radius: 5px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-tour-nav:hover:not(:disabled) {
+      background: var(--c-mid-dark);
+      border-color: var(--c-light-mid);
+    }
+
+    .btn-tour-nav:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .btn-tour-primary {
+      background: #0284c7;
+      color: #ffffff;
+      border: 1px solid #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    }
+
+    .btn-tour-primary:hover:not(:disabled) {
+      background: #0369a1;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.4);
+    }
+
     /* Module Info Modal */
     .modal-overlay {
       position: fixed;
@@ -2012,6 +2247,9 @@
     </div>
 
     <div class="top-actions">
+      <button type="button" class="btn-tour-header" id="btnTourHeader" onclick="startOnboarding(true)" title="Интерактивное обучение для начинающих">
+        🎓 Обучение
+      </button>
       <button class="btn-queue" id="btnQueue" onclick="queueBotAssembly()">
         <span>🚀 Запустить бота</span>
       </button>
@@ -2257,6 +2495,32 @@
     </div>
   </div>
 
+  <!-- Onboarding Tour Elements -->
+  <div class="tour-backdrop" id="tourBackdrop" onclick="finishOnboarding()"></div>
+  <div class="tour-highlight" id="tourHighlight"></div>
+  <div class="tour-card" id="tourCard" role="dialog" aria-modal="true">
+    <div class="tour-header">
+      <div>
+        <div class="tour-step-badge" id="tourStepBadge">Введение</div>
+        <div class="tour-title" id="tourTitle">Добро пожаловать в НейроКонструктор</div>
+      </div>
+      <button type="button" class="btn-tour-close" onclick="finishOnboarding()" title="Закрыть обучение">✕</button>
+    </div>
+
+    <div class="tour-body" id="tourBody"></div>
+
+    <div class="tour-tip" id="tourTip"></div>
+
+    <div class="tour-footer">
+      <div class="tour-dots" id="tourDots"></div>
+      <div class="tour-actions">
+        <button type="button" class="btn-tour-skip" onclick="finishOnboarding()">Пропустить</button>
+        <button type="button" class="btn-tour-nav" id="btnTourPrev" onclick="prevTourStep()">Назад</button>
+        <button type="button" class="btn-tour-nav btn-tour-primary" id="btnTourNext" onclick="nextTourStep()">Далее ➔</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Module Info Modal -->
   <div class="modal-overlay" id="moduleInfoModal" onclick="closeModuleInfoModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
@@ -2303,6 +2567,257 @@
 
   <!-- Interactive Logic -->
   <script>
+    // --- Interactive Onboarding Tour (Обучение при первом запуске) ---
+    const TOUR_STEPS = [
+      {
+        targetSelector: null,
+        badge: "Введение • Лаборатория ИИ",
+        icon: "🚀",
+        title: "Добро пожаловать в НейроКонструктор КС54!",
+        body: "Здесь ты научишься проектировать и запускать собственных интеллектуальных ботов. Модульная архитектура устроена так же, как в реальной разработке (Prompt Engineering & RAG). Давай за 1 минуту познакомимся с интерфейсом!",
+        tip: "💡 Это интерактивное обучение можно повторить в любой момент по кнопке <strong>🎓 Обучение</strong> в правом верхнем углу."
+      },
+      {
+        targetSelector: ".node",
+        badge: "Шаг 1 из 5 • Модули схемы",
+        icon: "🎭",
+        title: "Блоки конфигурации бота",
+        body: "Каждый модуль на холсте отвечает за отдельную задачу: имя и аватарка (Персонаж), системная инструкция (Промпт), креативность (Температура) и формат вывода. Меняй параметры прямо внутри блока под свой проект!",
+        tip: "💡 Зажми заголовок любого модуля левой кнопкой мыши, чтобы перетащить его в удобное место схемы. Позиции модулей сохраняются автоматически."
+      },
+      {
+        targetSelector: ".btn-info-node",
+        badge: "Шаг 2 из 5 • Справка ⓘ",
+        icon: "ℹ️",
+        title: "Инженерная справка по модулям",
+        body: "Сомневаешься, зачем нужен модуль? Нажми круглую синюю кнопку <strong>ⓘ</strong> в заголовке блока. Откроется подробная справка: что делает модуль, почему это важно в IT, как его соединять и практический пример.",
+        tip: "💡 Справка встроена во все 11 модулей конструктора."
+      },
+      {
+        targetSelector: ".port-circle",
+        badge: "Шаг 3 из 5 • Проводка",
+        icon: "🔌",
+        title: "Соединение портов проводами",
+        body: "Блоки связываются проводами! Зажми цветной кружок порта и протяни провод во входной порт «Мозга Бота», а от Мозга — в «Терминал Бота». Чтобы отсоединить провод, просто кликни по нему.",
+        tip: "💡 Цвета проводов подсказывают тип данных: характер, промпт, стиль, параметры или документы базы знаний."
+      },
+      {
+        targetSelector: "#btnAddNode",
+        badge: "Шаг 4 из 5 • Библиотека +",
+        icon: "🎛️",
+        title: "Библиотека из 11 модулей",
+        body: "Нажми на кнопку <strong>«+»</strong> слева, чтобы открыть библиотеку: добавь Few-Shot примеры для точного обучения, защиту Guardrails, строгий JSON-формат или Базу знаний (RAG) для загрузки собственных учебных файлов.",
+        tip: "💡 Модули разбиты на понятные вкладки: Базовые, AI-Тюнинг и Диалог с удобным поиском."
+      },
+      {
+        targetSelector: "#btnQueue",
+        badge: "Шаг 5 из 5 • Запуск и Чат",
+        icon: "💬",
+        title: "Запуск бота в Галерею",
+        body: "Когда схема собрана, нажми <strong>«🚀 Запустить бота»</strong>. Твой ИИ-ассистент моментально скомпилируется, сохранится в базе данных и откроется во вкладке «Чат и Галерея», где ты сможешь сразу начать с ним общение!",
+        tip: "💡 Также прямо на схеме в ноде Терминала есть экспресс-чат для быстрой проверки ответов без перехода в Галерею."
+      }
+    ];
+
+    let currentTourStep = 0;
+    let isTourActive = false;
+
+    function startOnboarding(manual = false) {
+      if (!manual) {
+        try {
+          if (localStorage.getItem('bot_onboarding_completed') === 'true') {
+            return;
+          }
+        } catch(e) {}
+      }
+
+      // Ensure canvas tab is active
+      switchTab('nodes');
+
+      // Reset view pan/zoom so starter nodes are perfectly in frame
+      panX = 0;
+      panY = 0;
+      scale = 1.0;
+      applyTransform();
+      updateAllWires();
+
+      isTourActive = true;
+      currentTourStep = 0;
+
+      const backdrop = document.getElementById('tourBackdrop');
+      const highlight = document.getElementById('tourHighlight');
+      const card = document.getElementById('tourCard');
+
+      if (backdrop) backdrop.classList.add('active');
+      if (highlight) highlight.classList.add('active');
+      if (card) card.classList.add('active');
+
+      renderTourStep();
+    }
+
+    function renderTourStep() {
+      if (!isTourActive) return;
+
+      const step = TOUR_STEPS[currentTourStep];
+      if (!step) {
+        finishOnboarding();
+        return;
+      }
+
+      document.getElementById('tourStepBadge').textContent = step.badge;
+      document.getElementById('tourTitle').innerHTML = `<span>${step.icon}</span> <span>${step.title}</span>`;
+      document.getElementById('tourBody').innerHTML = step.body;
+      document.getElementById('tourTip').innerHTML = step.tip;
+
+      // Update dots
+      const dotsContainer = document.getElementById('tourDots');
+      dotsContainer.innerHTML = '';
+      TOUR_STEPS.forEach((_, idx) => {
+        const dot = document.createElement('div');
+        dot.className = `tour-dot ${idx === currentTourStep ? 'active' : ''}`;
+        dot.title = `Шаг ${idx + 1}`;
+        dot.onclick = () => goToTourStep(idx);
+        dotsContainer.appendChild(dot);
+      });
+
+      // Update buttons
+      const btnPrev = document.getElementById('btnTourPrev');
+      const btnNext = document.getElementById('btnTourNext');
+      btnPrev.disabled = currentTourStep === 0;
+
+      if (currentTourStep === TOUR_STEPS.length - 1) {
+        btnNext.textContent = 'Понятно, к сборке! 🚀';
+      } else {
+        btnNext.textContent = 'Далее ➔';
+      }
+
+      // Position highlight and card
+      const highlight = document.getElementById('tourHighlight');
+      let targetEl = null;
+
+      if (step.targetSelector) {
+        targetEl = document.querySelector(step.targetSelector);
+      }
+
+      if (targetEl) {
+        const rect = targetEl.getBoundingClientRect();
+        const pad = 6;
+        highlight.style.display = 'block';
+        highlight.style.top = `${rect.top - pad}px`;
+        highlight.style.left = `${rect.left - pad}px`;
+        highlight.style.width = `${rect.width + pad * 2}px`;
+        highlight.style.height = `${rect.height + pad * 2}px`;
+        highlight.classList.add('active');
+
+        positionTourCard(rect);
+      } else {
+        highlight.classList.remove('active');
+        highlight.style.display = 'none';
+        positionTourCard(null);
+      }
+    }
+
+    function positionTourCard(targetRect) {
+      const card = document.getElementById('tourCard');
+      if (!card) return;
+
+      const cardW = 440;
+      const cardH = 260;
+      const padding = 20;
+      const gap = 16;
+
+      if (!targetRect) {
+        card.style.top = `${Math.max(padding, (window.innerHeight - cardH) / 2)}px`;
+        card.style.left = `${Math.max(padding, (window.innerWidth - cardW) / 2)}px`;
+        return;
+      }
+
+      let top, left;
+
+      // Try below target
+      if (targetRect.bottom + gap + cardH <= window.innerHeight - padding) {
+        top = targetRect.bottom + gap;
+        left = targetRect.left + (targetRect.width - cardW) / 2;
+      } else if (targetRect.top - gap - cardH >= padding) {
+        // Try above target
+        top = targetRect.top - gap - cardH;
+        left = targetRect.left + (targetRect.width - cardW) / 2;
+      } else if (targetRect.right + gap + cardW <= window.innerWidth - padding) {
+        // Try right of target
+        top = targetRect.top + (targetRect.height - cardH) / 2;
+        left = targetRect.right + gap;
+      } else {
+        // Try left of target
+        top = targetRect.top + (targetRect.height - cardH) / 2;
+        left = targetRect.left - gap - cardW;
+      }
+
+      // Keep card within viewport bounds
+      left = Math.max(padding, Math.min(window.innerWidth - cardW - padding, left));
+      top = Math.max(padding, Math.min(window.innerHeight - cardH - padding, top));
+
+      card.style.top = `${top}px`;
+      card.style.left = `${left}px`;
+    }
+
+    function nextTourStep() {
+      if (currentTourStep < TOUR_STEPS.length - 1) {
+        currentTourStep++;
+        renderTourStep();
+      } else {
+        finishOnboarding();
+      }
+    }
+
+    function prevTourStep() {
+      if (currentTourStep > 0) {
+        currentTourStep--;
+        renderTourStep();
+      }
+    }
+
+    function goToTourStep(idx) {
+      if (idx >= 0 && idx < TOUR_STEPS.length) {
+        currentTourStep = idx;
+        renderTourStep();
+      }
+    }
+
+    function finishOnboarding() {
+      isTourActive = false;
+      const backdrop = document.getElementById('tourBackdrop');
+      const highlight = document.getElementById('tourHighlight');
+      const card = document.getElementById('tourCard');
+
+      if (backdrop) backdrop.classList.remove('active');
+      if (highlight) highlight.classList.remove('active');
+      if (card) card.classList.remove('active');
+
+      try {
+        localStorage.setItem('bot_onboarding_completed', 'true');
+      } catch(e) {}
+
+      showToast('Обучение завершено! Приятного творчества 🚀', 'success');
+    }
+
+    window.addEventListener('resize', () => {
+      if (isTourActive) {
+        renderTourStep();
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (!isTourActive) return;
+      if (e.key === 'Escape') {
+        finishOnboarding();
+      } else if (e.key === 'ArrowRight') {
+        nextTourStep();
+      } else if (e.key === 'ArrowLeft') {
+        prevTourStep();
+      }
+    });
+
+
     // Module Knowledge Base / Documentation (Справка по модулям для 8 класса)
     const MODULE_INFO = {
       char: {
@@ -2539,6 +3054,13 @@
       }
 
       setInterval(() => fetchBotsList(true), 10000);
+
+      // Auto-launch onboarding on first visit
+      try {
+        if (localStorage.getItem('bot_onboarding_completed') !== 'true') {
+          setTimeout(() => startOnboarding(false), 500);
+        }
+      } catch(e) {}
 
       // Close node menu on click outside
       document.addEventListener('click', (e) => {
