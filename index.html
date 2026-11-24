@@ -651,6 +651,35 @@
       border: 1px solid var(--c-mid-dark);
     }
 
+    .btn-info-node {
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      background: var(--c-dark);
+      border: 1px solid var(--c-mid-dark);
+      color: #38bdf8;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: serif, sans-serif;
+      font-style: italic;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      line-height: 1;
+      padding: 0;
+      margin-right: 2px;
+    }
+
+    .btn-info-node:hover {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #38bdf8;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+      transform: scale(1.1);
+    }
+
     .btn-close-node {
       background: none;
       border: none;
@@ -665,6 +694,176 @@
     .btn-close-node:hover {
       color: #ffffff;
       background: rgba(239, 68, 68, 0.25);
+    }
+
+    /* Module Info Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #242122;
+      border: 1px solid var(--c-mid);
+      border-radius: 10px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalFadeIn 0.18s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-head {
+      padding: 14px 18px;
+      background: var(--c-darkest);
+      border-bottom: 1px solid var(--c-dark);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-head-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modal-icon {
+      font-size: 24px;
+      width: 38px;
+      height: 38px;
+      background: var(--bg-node);
+      border: 1px solid var(--c-mid-dark);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .modal-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .modal-badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #38bdf8;
+      margin-top: 2px;
+    }
+
+    .btn-modal-close {
+      background: transparent;
+      border: none;
+      color: var(--c-light-mid);
+      font-size: 16px;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .btn-modal-close:hover {
+      background: var(--c-dark);
+      color: #ffffff;
+    }
+
+    .modal-body {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 70vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--c-mid-dark) var(--c-darkest);
+    }
+
+    .info-section {
+      background: #191819;
+      border: 1px solid var(--c-dark);
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+
+    .info-section.highlight {
+      background: rgba(56, 189, 248, 0.05);
+      border-color: rgba(56, 189, 248, 0.2);
+    }
+
+    .info-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .info-text {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #94a3b8;
+    }
+
+    .info-section.highlight .info-text {
+      color: #e2e8f0;
+    }
+
+    .modal-footer {
+      padding: 10px 18px;
+      background: var(--c-darkest);
+      border-top: 1px solid var(--c-dark);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-modal-ok {
+      background: #0284c7;
+      color: #ffffff;
+      border: 1px solid #38bdf8;
+      border-radius: 5px;
+      padding: 7px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-modal-ok:hover {
+      background: #0369a1;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
     }
 
     .node-body {
@@ -2057,10 +2256,186 @@
     </div>
   </div>
 
+  <!-- Module Info Modal -->
+  <div class="modal-overlay" id="moduleInfoModal" onclick="closeModuleInfoModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <div class="modal-head-title">
+          <span class="modal-icon" id="infoModalIcon">ℹ️</span>
+          <div>
+            <div class="modal-name" id="infoModalTitle">Модуль</div>
+            <div class="modal-badge" id="infoModalCategory">Категория</div>
+          </div>
+        </div>
+        <button type="button" class="btn-modal-close" onclick="closeModuleInfoModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="info-section">
+          <div class="info-label">📌 Что делает этот модуль:</div>
+          <div class="info-text" id="infoModalDesc"></div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-label">💡 Зачем это нужно:</div>
+          <div class="info-text" id="infoModalWhy"></div>
+        </div>
+
+        <div class="info-section">
+          <div class="info-label">🔌 Как соединять на схеме:</div>
+          <div class="info-text" id="infoModalWire"></div>
+        </div>
+
+        <div class="info-section highlight">
+          <div class="info-label">🎯 Пример на практике:</div>
+          <div class="info-text" id="infoModalExample"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-ok" onclick="closeModuleInfoModal()">Понятно, спасибо! 👍</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast-tray" id="toastTray"></div>
 
   <!-- Interactive Logic -->
   <script>
+    // Module Knowledge Base / Documentation (Справка по модулям для 8 класса)
+    const MODULE_INFO = {
+      char: {
+        title: "Персонаж",
+        category: "Базовый модуль (Input)",
+        icon: "🎭",
+        desc: "Задаёт имя и визуальную аватарку вашего ИИ-бота.",
+        why: "Любой ИИ-ассистент начинается с идентификации. Имя и аватарка формируют первое впечатление пользователя и определяют, под каким названием бот сохраняется в Галерее.",
+        wire: "Потяните провод от выходного порта «Характер» к входному порту «Имя & Персона» ноды «Мозг Бота».",
+        example: "Имя «DevMentor КС54» с аватаркой 💻 сразу задаёт образ профессионального программиста-наставника."
+      },
+      prompt: {
+        title: "Инструкция (Prompt)",
+        category: "Базовый модуль (Config)",
+        icon: "🧠",
+        desc: "Задаёт системный промпт (System Prompt) — главную инструкцию, которая определяет роль, поведение, знания и правила нейросети.",
+        why: "В реальном IT (Prompt Engineering) системный промпт — это фундамент бота. Без чёткого промпта модель будет отвечать стандартно и размыто.",
+        wire: "Соедините выходной порт «Инструкция» с портом «Промпт» в ноде «Мозг Бота».",
+        example: "«Ты наставник по Python в КС54. Помогай писать чистый код с комментариями, задавай наводящие вопросы и не выдавай готовых решений домашних заданий»."
+      },
+      brain: {
+        title: "Мозг Бота (Ядро)",
+        category: "Архитектурный Хаб (Hub)",
+        icon: "🧠",
+        desc: "Центральный процессор личности бота. Собирает воедино все входящие параметры: характер, промпт, стиль, температуру, формат вывода и фильтры.",
+        why: "Паттерн «Мозг и Тело» из взрослой робототехники и GameDev. Избавляет схему от путаницы проводов: все настройки сходятся в одном узле «Мозг», который передаёт готовую конфигурацию в Терминал.",
+        wire: "Принимает до 8 соединений слева и отдаёт один мощный фиолетовый провод «Мозг Бота» в ноду «Терминал Бота».",
+        example: "Подключив к Мозгу одновременно Промпт, Формат и Few-Shot примеры, вы получаете идеально сфокусированного бота."
+      },
+      assembler: {
+        title: "Терминал Бота",
+        category: "Конечная нода (Endpoint)",
+        icon: "🖥️",
+        desc: "Финальный узел сборки и запуска бота. Показывает сводный статус готовности компонентов и отправляет готового бота в Галерею.",
+        why: "Точка компиляции. Когда вы нажимаете большую кнопку «🚀 Запустить бота в Галерею», Терминал сохраняет бота в базу данных и открывает окно чата.",
+        wire: "Принимает провод от ноды «Мозг Бота» и опционально провод от ноды «База знаний (RAG)».",
+        example: "Когда в Терминале загорается зелёный индикатор «Готов к запуску», бот полностью готов к компиляции."
+      },
+      params: {
+        title: "Креативность и Длина",
+        category: "Параметры LLM (LLM Config)",
+        icon: "🔥",
+        desc: "Управляет температурой нейросети (Temperature: от 0.1 до 1.5) и максимальным количеством генерируемых токенов (длиной ответа).",
+        why: "Температура определяет степень случайности: низкая (0.2–0.4) нужна для строгого кода и математики, высокая (0.9–1.2) — для фантазии, стихов и квестов.",
+        wire: "Соедините порт «Параметры» с портом «Фантазия» ноды «Мозг Бота».",
+        example: "Для проверки синтаксиса Python лучше всего выставить температуру 0.3, чтобы модель не придумывала несуществующие функции."
+      },
+      format: {
+        title: "Формат Данных",
+        category: "Структурированный вывод (Output)",
+        icon: "📊",
+        desc: "Принуждает модель отвечать в строгом техническом формате: валидный JSON, таблица Markdown, чистый код или лаконичный TL;DR в 3 пункта.",
+        why: "В коммерческой разработке боты почти никогда не отвечают сплошным текстом: сайты и мобильные приложения ждут от нейросети чёткий JSON для отрисовки интерфейса.",
+        wire: "Соедините порт «Формат» с портом «Формат данных» в ноде «Мозг Бота».",
+        example: "Режим «Строгий JSON» превращает ответ в данные вида {\"status\": \"ok\", \"response\": ...}, которые можно сразу использовать в коде."
+      },
+      fewshot: {
+        title: "Few-Shot Обучение",
+        category: "Промпт-инжиниринг (Learning)",
+        icon: "🎯",
+        desc: "Передаёт модели примеры идеального диалога: «Вопрос пользователя ➔ Образцовый ответ бота».",
+        why: "Главный инструмент профессионального промпт-инжиниринга! 1–2 примера калибруют тон бота гораздо точнее, чем длинный текст инструкции.",
+        wire: "Соедините порт «Few-Shot» с портом «Few-Shot примеры» в ноде «Мозг Бота».",
+        example: "Пример «Как найти дискриминант? ➔ Формула D = b² - 4ac. Попробуй сам для x²-5x+6=0!» сразу учит бота задавать встречный вопрос."
+      },
+      guard: {
+        title: "Рамки & Guardrails",
+        category: "Безопасность и фильтры (Safety)",
+        icon: "🌐",
+        desc: "Устанавливает строгие защитные барьеры: лок языка (только RU или строго EN), метод Сократа, рендеринг формул через LaTeX и запрет галлюцинаций.",
+        why: "Гарантирует, что модель не выйдет за рамки роли и не будет выдумывать факты, если их нет в проверенных источниках.",
+        wire: "Соедините порт «Ограничения» с портом «Рамки & Guardrails» в ноде «Мозг Бота».",
+        example: "Метод Сократа запрещает давать готовые решения задач, заставляя ученика додуматься до ответа через наводящие вопросы."
+      },
+      rules: {
+        title: "Стиль и Правила",
+        category: "Поведение (Style & Guidelines)",
+        icon: "⚙️",
+        desc: "Задаёт тон общения (лаконичный инженерный, ментор, код-ревьюер) и набор быстрых чекбоксов поведения (отвечать без воды, оформлять код в блоки).",
+        why: "Позволяет быстро подстроить манеру речи бота под конкретную аудиторию в один клик без долгого написания текста вручную.",
+        wire: "Соедините порт «Стиль и Правила» с портом «Стиль» в ноде «Мозг Бота».",
+        example: "Правило «Отвечать без воды» экономит время и убирает бесполезные шаблонные фразы («Здравствуйте, я рад вам помочь...»)."
+      },
+      quick: {
+        title: "Приветствие и Кнопки",
+        category: "Интерфейс чата (Chat UI)",
+        icon: "💬",
+        desc: "Настраивает первое приветственное сообщение при открытии чата и три быстрые кнопки (Quick Chips) с готовыми вопросами.",
+        why: "Улучшает пользовательский опыт (UX): собеседнику не нужно думать, что написать — он нажимает готовую кнопку и сразу начинает продуктивный диалог.",
+        wire: "Соедините порт «Приветствие» с портом «Приветствие» в ноде «Мозг Бота».",
+        example: "Кнопки «🐍 Скрипт на Python», «🌐 Как устроена сеть?» и «⚡ Найти ошибку в коде» в чате бота КС54."
+      },
+      kb: {
+        title: "База знаний (RAG)",
+        category: "RAG / Документы (Docs)",
+        icon: "📚",
+        desc: "Загружает в бота собственные документы (.txt, .pdf, .docx) или факты. Модель ищет нужные фрагменты по алгоритму BM25 и отвечает строго по ним.",
+        why: "Решает проблему галлюцинаций и обучает бота закрытой информации (конспекты лекций, расписание, правила колледжа КС54).",
+        wire: "Соединяется напрямую с входным портом «База знаний (RAG)» в ноде «Терминал Бота»!",
+        example: "Загрузите PDF с методичкой по сетям, и бот будет отвечать строго опираясь на текст этой методички."
+      }
+    };
+
+    function showModuleInfo(type) {
+      const info = MODULE_INFO[type];
+      if (!info) return;
+
+      document.getElementById('infoModalIcon').textContent = info.icon;
+      document.getElementById('infoModalTitle').textContent = info.title;
+      document.getElementById('infoModalCategory').textContent = info.category;
+      document.getElementById('infoModalDesc').textContent = info.desc;
+      document.getElementById('infoModalWhy').textContent = info.why;
+      document.getElementById('infoModalWire').textContent = info.wire;
+      document.getElementById('infoModalExample').textContent = info.example;
+
+      document.getElementById('moduleInfoModal').classList.add('active');
+    }
+
+    function closeModuleInfoModal(e) {
+      if (e && e.target !== e.currentTarget && !e.target.classList.contains('btn-modal-close') && !e.target.classList.contains('btn-modal-ok')) {
+        return;
+      }
+      document.getElementById('moduleInfoModal').classList.remove('active');
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('moduleInfoModal');
+        if (modal && modal.classList.contains('active')) {
+          modal.classList.remove('active');
+        }
+      }
+    });
+
     const TEMPLATES = {
       dev: {
         name: "DevMentor КС54",
@@ -2286,7 +2661,7 @@
             <span class="node-title">🎭 Персонаж</span>
             <div class="node-header-actions">
               <span class="node-type-label">Input</span>
-              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+              <button type="button" class="btn-info-node" onclick="showModuleInfo('${type}')" title="Справка: что делает этот модуль?">i</button><button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
             </div>
           </div>
           <div class="node-body">
@@ -2323,7 +2698,7 @@
             <span class="node-title">🧠 Инструкция (Prompt)</span>
             <div class="node-header-actions">
               <span class="node-type-label">Config</span>
-              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+              <button type="button" class="btn-info-node" onclick="showModuleInfo('${type}')" title="Справка: что делает этот модуль?">i</button><button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
             </div>
           </div>
           <div class="node-body">
@@ -2356,7 +2731,7 @@
             <span class="node-title">⚙️ Стиль и Правила</span>
             <div class="node-header-actions">
               <span class="node-type-label" style="color:var(--wire-rules);">Style</span>
-              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+              <button type="button" class="btn-info-node" onclick="showModuleInfo('${type}')" title="Справка: что делает этот модуль?">i</button><button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
             </div>
           </div>
           <div class="node-body">
@@ -2406,7 +2781,7 @@
             <span class="node-title">🔥 Креативность и Длина</span>
             <div class="node-header-actions">
               <span class="node-type-label" style="color:var(--wire-params);">LLM Config</span>
-              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+              <button type="button" class="btn-info-node" onclick="showModuleInfo('${type}')" title="Справка: что делает этот модуль?">i</button><button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
             </div>
           </div>
           <div class="node-body">
@@ -2447,7 +2822,7 @@
             <span class="node-title">📊 Формат Данных</span>
             <div class="node-header-actions">
               <span class="node-type-label" style="color:var(--wire-format);">Output</span>
-              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+              <button type="button" class="btn-info-node" onclick="showModuleInfo('${type}')" title="Справка: что делает этот модуль?">i</button><button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
             </div>
           </div>
           <div class="node-body">
@@ -2478,7 +2853,7 @@
             <span class="node-title">🎯 Few-Shot (Примеры)</span>
             <div class="node-header-actions">
               <span class="node-type-label" style="color:var(--wire-fewshot);">Learning</span>
-              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+              <button type="button" class="btn-info-node" onclick="showModuleInfo('${type}')" title="Справка: что делает этот модуль?">i</button><button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
             </div>
           </div>
           <div class="node-body">
@@ -2518,7 +2893,7 @@
             <span class="node-title">🌐 Рамки и Фильтры</span>
             <div class="node-header-actions">
               <span class="node-type-label" style="color:var(--wire-guard);">Guardrails</span>
-              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+              <button type="button" class="btn-info-node" onclick="showModuleInfo('${type}')" title="Справка: что делает этот модуль?">i</button><button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
             </div>
           </div>
           <div class="node-body">
@@ -2558,7 +2933,7 @@
             <span class="node-title">💬 Приветствие и Кнопки</span>
             <div class="node-header-actions">
               <span class="node-type-label" style="color:var(--wire-quick);">Chat UI</span>
-              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+              <button type="button" class="btn-info-node" onclick="showModuleInfo('${type}')" title="Справка: что делает этот модуль?">i</button><button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
             </div>
           </div>
           <div class="node-body">
@@ -2588,7 +2963,7 @@
             <span class="node-title">📚 База знаний (RAG)</span>
             <div class="node-header-actions">
               <span class="node-type-label">Docs</span>
-              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+              <button type="button" class="btn-info-node" onclick="showModuleInfo('${type}')" title="Справка: что делает этот модуль?">i</button><button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
             </div>
           </div>
           <div class="node-body">
@@ -2624,7 +2999,7 @@
             <span class="node-title">🧠 Мозг Бота (Ядро)</span>
             <div class="node-header-actions">
               <span class="node-type-label" style="color:var(--wire-brain);">Hub</span>
-              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+              <button type="button" class="btn-info-node" onclick="showModuleInfo('${type}')" title="Справка: что делает этот модуль?">i</button><button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
             </div>
           </div>
           <div class="node-body">
@@ -2728,7 +3103,7 @@
             <span class="node-title">🖥️ Терминал Бота</span>
             <div class="node-header-actions">
               <span class="node-type-label" style="color:#fb923c;">Endpoint</span>
-              <button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
+              <button type="button" class="btn-info-node" onclick="showModuleInfo('${type}')" title="Справка: что делает этот модуль?">i</button><button class="btn-close-node" onclick="removeNode('${id}')" title="Удалить ноду">✕</button>
             </div>
           </div>
           <div class="node-body">
