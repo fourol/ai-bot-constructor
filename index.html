@@ -2045,9 +2045,9 @@
       </div>
 
       <div class="quick-chips" id="chatQuickChips">
-        <button class="btn-chip" onclick="quickSend('Привет! Расскажи о себе и чем ты можешь помочь?')">Расскажи о себе</button>
-        <button class="btn-chip" onclick="quickSend('Какие интересные факты ты знаешь?')">Что ты знаешь?</button>
-        <button class="btn-chip" onclick="quickSend('Загадай мне интересную загадку!')">Загадай загадку</button>
+        <button class="btn-chip" onclick="quickSend('Привет! Чем ты можешь помочь мне в учебе и IT?')">Чем поможешь?</button>
+        <button class="btn-chip" onclick="quickSend('Напиши простой пример полезного скрипта на Python с пояснением')">🐍 Скрипт на Python</button>
+        <button class="btn-chip" onclick="quickSend('Объясни простыми словами, как компьютеры находят друг друга в сети')">🌐 Как устроена сеть?</button>
       </div>
 
       <div class="chat-input-bar">
@@ -2062,29 +2062,29 @@
   <!-- Interactive Logic -->
   <script>
     const TEMPLATES = {
-      pirate: {
-        name: "Капитан Морган",
-        avatar: "🏴‍☠️",
-        prompt: "Ты — бывалый и веселый морской пират Капитан Морган. Общайся с задором, используй морской сленг ('Карамба!', 'Свистать всех наверх!', 'Тысяча чертей!'). Ты рассказываешь интересные морские байки и остаешься добрым другом для детей.",
-        kb: "Пираты прячут сундуки с золотом на необитаемом острове в Карибском море. Корабль Капитана Моргана называется «Быстрый Альбатрос»."
+      dev: {
+        name: "DevMentor КС54",
+        avatar: "💻",
+        prompt: "Ты — опытный IT-наставник и ментор по программированию для студентов Колледжа связи №54.\nПомогай писать чистый и рабочий код на Python, объясняй алгоритмы и принципы работы веб-технологий простым языком.\nОтвечай чётко, структурированно, без шаблонной 'воды'. В примерах кода приводи краткие поясняющие комментарии.",
+        kb: "Колледж связи №54 (КС54) готовит специалистов по IT, инфокоммуникациям и сетевой безопасности. В Python базовые структуры данных — list, dict, set и tuple. Модель OSI состоит из 7 уровней."
       },
-      tutor: {
-        name: "Учитель Совёнок",
-        avatar: "🦉",
-        prompt: "Ты — терпеливый и мудрый репетитор Совёнок. Твоя миссия — объяснять школьные темы простыми примерами, метафорами и добрым юмором. Задавай наводящие вопросы и хвали за сообразительность!",
-        kb: "Совы прекрасно видят в темноте благодаря особым клеткам сетчатки. В геометрии сумма углов любого треугольника на плоскости всегда равна 180 градусам."
+      network: {
+        name: "Сетевой Инженер",
+        avatar: "🌐",
+        prompt: "Ты — специалист по телекоммуникациям, Linux и сетевой инженерии КС54.\nТвоя область: модель OSI, протоколы TCP/IP, DNS, маршрутизация и базовые команды терминала Linux.\nОбъясняй архитектуру сетей простыми и наглядными инженерными аналогиями без лишних сложностей.",
+        kb: "Модель OSI имеет 7 уровней: физический, канальный, сетевой, транспортный, сеансовый, представления, прикладной. IP-адрес версии 4 (IPv4) состоит из 4 октетов (32 бита). Маска подсети определяет сетевую и узловую части."
       },
-      quest: {
-        name: "Мастер Квестов",
-        avatar: "🎮",
-        prompt: "Ты — мудрый гейм-мастер волшебного мира. Придумывай захватывающие текстовые мини-квесты. В конце каждого ответа предлагай игроку 2-3 варианта действий на выбор и развивай сюжет!",
-        kb: "В Волшебном лесу растет Дерево Истины. Чтобы пройти стражника, нужен синий кристалл или пароль: «Лунная стрекоза»."
+      oge: {
+        name: "Тьютор ОГЭ Инфо",
+        avatar: "🎓",
+        prompt: "Ты — преподаватель информатики для подготовки к ОГЭ и экзаменам.\nПомогай разбирать задачи по системам счисления, логическим выражениям, графам и алгоритмам на Python.\nНе давай готовый ответ сразу — задавай наводящий вопрос, чтобы ученик сам дошёл до правильного решения!",
+        kb: "Для перевода числа из двоичной системы в десятичную суммируются степени двойки. 1 Кбайт = 1024 байта = 8192 бита. Таблицы истинности: операция 'И' истинна только если оба операнда истинны."
       },
-      cat: {
-        name: "Кот-учёный",
-        avatar: "🐱",
-        prompt: "Ты — пушистый Кот-учёный. Вставляй милое 'Мяу!' и 'Муррр', делись невероятными научными фактами о космосе, природе и роботах, поднимая собеседнику настроение!",
-        kb: "Кошки могут издавать около 100 различных звуков. В невесомости на МКС кошки быстро учатся ориентироваться хвостом."
+      cyber: {
+        name: "Кибердетектив",
+        avatar: "🕵️‍♂️",
+        prompt: "Ты — аналитик кибербезопасности. Проведи с пользователем интерактивный инженерный квест-расследование кибератаки на сервер КС54.\nВ конце каждой реплики предлагай 2-3 конкретных действия (проверить логи auth.log, заблокировать IP в firewall, проверить хеш файла) и развивай сюжет на основе выбора.",
+        kb: "Сервер КС54 зафиксировал подозрительную активность на порту 22 (SSH). Хеш подозрительного файла: SHA256-a1b2c3. IP атакующего принадлежит неизвестной автономной системе."
       }
     };
 
@@ -2292,22 +2292,22 @@
           <div class="node-body">
             <div>
               <div class="control-label"><span>Имя бота</span></div>
-              <input type="text" class="control-input node-val-name" value="Капитан Морган" maxlength="35" oninput="onCharNodeInputChange('${id}')">
+              <input type="text" class="control-input node-val-name" value="DevMentor КС54" maxlength="35" oninput="onCharNodeInputChange('${id}')">
             </div>
             <div>
               <div class="control-label"><span>Аватар</span></div>
               <div class="avatar-row">
-                <div class="avatar-preview node-avatar-preview">🏴‍☠️</div>
+                <div class="avatar-preview node-avatar-preview">💻</div>
                 <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                  <button type="button" class="btn-emoji active" onclick="setNodeAvatar('${id}', '💻')">💻</button>
+                  <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '⚡')">⚡</button>
                   <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '🤖')">🤖</button>
-                  <button type="button" class="btn-emoji active" onclick="setNodeAvatar('${id}', '🏴‍☠️')">🏴‍☠️</button>
-                  <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '🦉')">🦉</button>
-                  <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '🐱')">🐱</button>
-                  <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '🚀')">🚀</button>
-                  <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '🎮')">🎮</button>
+                  <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '🐍')">🐍</button>
+                  <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '🌐')">🌐</button>
+                  <button type="button" class="btn-emoji" onclick="setNodeAvatar('${id}', '🎓')">🎓</button>
                 </div>
               </div>
-              <input type="hidden" class="node-val-avatar" value="🏴‍☠️">
+              <input type="hidden" class="node-val-avatar" value="💻">
             </div>
             <div class="port-row port-row-out">
               <span class="port-name">Характер</span>
@@ -2330,15 +2330,17 @@
             <div>
               <div class="control-label"><span>Шаблоны роли</span></div>
               <div class="template-bar">
-                <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'pirate')">Пират</button>
-                <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'tutor')">Репетитор</button>
-                <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'quest')">Квест</button>
-                <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'cat')">Кот</button>
+                <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'dev')">💻 IT-Ментор</button>
+                <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'network')">🌐 Сети & Linux</button>
+                <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'oge')">🎓 ОГЭ Инфо</button>
+                <button type="button" class="btn-template" onclick="loadNodeTemplate('${id}', 'cyber')">🕵️ Киберквест</button>
               </div>
             </div>
             <div>
               <div class="control-label"><span>Системный промпт</span></div>
-              <textarea class="control-textarea node-val-prompt" oninput="updateAllTerminals()">Ты — бывалый и веселый морской пират Капитан Морган. Общайся с задором, используй морской сленг ('Карамба!', 'Свистать всех наверх!', 'Тысяча чертей!'). Ты рассказываешь интересные морские байки и остаешься добрым другом для детей.</textarea>
+              <textarea class="control-textarea node-val-prompt" oninput="updateAllTerminals()">Ты — опытный IT-наставник и ментор по программированию для студентов Колледжа связи №54.
+Помогай писать чистый и рабочий код на Python, объясняй алгоритмы и принципы работы сетей простыми словами.
+Отвечай структурированно, без шаблонной "воды". В примерах кода приводи краткие поясняющие комментарии.</textarea>
             </div>
             <div class="port-row port-row-out">
               <span class="port-name">Инструкция</span>
@@ -2361,32 +2363,32 @@
             <div>
               <div class="control-label"><span>Тон общения</span></div>
               <select class="control-select node-val-tone">
-                <option value="Весельчак и шутник 🤪">Весельчак и шутник 🤪</option>
-                <option value="Терпеливый учитель 🦉">Терпеливый учитель 🦉</option>
-                <option value="Геймер и стример 🎮">Геймер и стример 🎮</option>
-                <option value="Бывалый морской пират 🏴‍☠️">Бывалый морской пират 🏴‍☠️</option>
-                <option value="Мудрый сказочник 🧙‍♂️">Мудрый сказочник 🧙‍♂️</option>
-                <option value="Точный робот-киборг 🤖">Точный робот-киборг 🤖</option>
+                <option value="Лаконичный инженерный 💻" selected>Лаконичный инженерный 💻</option>
+                <option value="Дружелюбный IT-наставник 🎓">Дружелюбный IT-наставник 🎓</option>
+                <option value="Строгий код-ревьюер 🔍">Строгий код-ревьюер 🔍</option>
+                <option value="Сетевой специалист 🌐">Сетевой специалист 🌐</option>
+                <option value="Точный научный стиль 📐">Точный научный стиль 📐</option>
+                <option value="Интерактивный гейм-мастер 🎮">Интерактивный гейм-мастер 🎮</option>
               </select>
             </div>
             <div>
-              <div class="control-label"><span>Правила для бота</span></div>
+              <div class="control-label"><span>Инженерные правила</span></div>
               <div style="display:flex; flex-direction:column; gap:4px;">
                 <label class="rule-checkbox-row">
-                  <input type="checkbox" class="node-rule-check" value="Используй много эмодзи в каждом ответе" checked>
-                  <span>Добавлять много эмодзи ✨</span>
+                  <input type="checkbox" class="node-rule-check" value="Отвечай строго по существу вопроса, без лишней воды и общих фраз" checked>
+                  <span>Отвечать по делу, без «воды»</span>
                 </label>
                 <label class="rule-checkbox-row">
-                  <input type="checkbox" class="node-rule-check" value="Отвечай кратко, максимум 2 предложения" checked>
-                  <span>Отвечать кратко (1-2 фразы)</span>
+                  <input type="checkbox" class="node-rule-check" value="Программный код и команды оформляй в аккуратные Markdown-блоки с подсветкой" checked>
+                  <span>Оформлять код в блоки Markdown</span>
                 </label>
                 <label class="rule-checkbox-row">
-                  <input type="checkbox" class="node-rule-check" value="Общайся с добрым юмором и шутками">
-                  <span>Шутить и поднимать настроение</span>
+                  <input type="checkbox" class="node-rule-check" value="Объясняй сложные технические термины простыми практическими аналогиями">
+                  <span>Объяснять термины на аналогиях</span>
                 </label>
                 <label class="rule-checkbox-row">
-                  <input type="checkbox" class="node-rule-check" value="Если факта нет в твоей базе знаний, честно признайся в этом" checked>
-                  <span>Честно говорить «Не знаю», если нет в базе</span>
+                  <input type="checkbox" class="node-rule-check" value="В конце ответа задай один наводящий вопрос для закрепления темы">
+                  <span>Наводящий вопрос для проверки</span>
                 </label>
               </div>
             </div>
@@ -2562,14 +2564,14 @@
           <div class="node-body">
             <div>
               <div class="control-label"><span>Приветственная фраза</span></div>
-              <textarea class="control-textarea node-val-greeting" style="min-height:55px;">Привет! Я твой новый умный помощник. Спроси меня о чём угодно!</textarea>
+              <textarea class="control-textarea node-val-greeting" style="min-height:55px;">Привет! Я DevMentor КС54 — твой наставник по коду и сетевым технологиям. Какую задачу разберём: напишем скрипт на Python, найдём баг или объясним алгоритм?</textarea>
             </div>
             <div>
               <div class="control-label"><span>Быстрые кнопки для диалога</span></div>
               <div style="display:flex; flex-direction:column; gap:5px;">
-                <input type="text" class="control-input node-val-q1" value="Кто ты и что умеешь?">
-                <input type="text" class="control-input node-val-q2" value="Расскажи секретный факт!">
-                <input type="text" class="control-input node-val-q3" value="Пошути или удиви меня!">
+                <input type="text" class="control-input node-val-q1" value="🐍 Напиши скрипт на Python">
+                <input type="text" class="control-input node-val-q2" value="🌐 Как устроена модель OSI?">
+                <input type="text" class="control-input node-val-q3" value="⚡ Помоги найти ошибку в коде">
               </div>
             </div>
             <div class="port-row port-row-out">
@@ -2591,8 +2593,10 @@
           </div>
           <div class="node-body">
             <div>
-              <div class="control-label"><span>Факты (текст)</span></div>
-              <textarea class="control-textarea node-val-kb" style="min-height:65px;">Пираты прячут сундуки с золотом на необитаемом острове в Карибском море. Корабль Капитана Моргана называется «Быстрый Альбатрос».</textarea>
+              <div class="control-label"><span>Факты базы знаний (текст)</span></div>
+              <textarea class="control-textarea node-val-kb" style="min-height:65px;">Колледж связи №54 (КС54) готовит специалистов по IT, инфокоммуникациям и сетевой безопасности.
+В Python базовые структуры данных — list (список), dict (словарь), set (множество) и tuple (кортеж).
+Модель OSI состоит из 7 уровней: физический, канальный, сетевой, транспортный, сеансовый, представления и прикладной.</textarea>
             </div>
             <div>
               <div class="control-label"><span>Или файл (.txt, .pdf, .docx до 1 МБ)</span></div>
@@ -4030,9 +4034,9 @@
         `).join('');
       } else {
         chipsContainer.innerHTML = `
-          <button class="btn-chip" onclick="quickSend('Привет! Расскажи о себе и чем ты можешь помочь?')">Расскажи о себе</button>
-          <button class="btn-chip" onclick="quickSend('Какие интересные факты ты знаешь?')">Что ты знаешь?</button>
-          <button class="btn-chip" onclick="quickSend('Загадай мне интересную загадку!')">Загадай загадку</button>
+          <button class="btn-chip" onclick="quickSend('Привет! Чем ты можешь помочь мне в учебе и IT?')">Чем поможешь?</button>
+          <button class="btn-chip" onclick="quickSend('Напиши простой пример полезного скрипта на Python с пояснением')">🐍 Скрипт на Python</button>
+          <button class="btn-chip" onclick="quickSend('Объясни простыми словами, как компьютеры находят друг друга в сети')">🌐 Как устроена сеть?</button>
         `;
       }
 
