@@ -1530,6 +1530,39 @@
       border-color: var(--c-light-mid);
     }
 
+    .btn-delete-chat:hover {
+      color: #ffffff !important;
+      background: #b91c1c !important;
+      border-color: #ef4444 !important;
+    }
+
+    .btn-card-delete {
+      background: transparent;
+      border: none;
+      color: var(--c-light-mid);
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      opacity: 0.35;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+      margin-left: 4px;
+    }
+
+    .bot-card:hover .btn-card-delete {
+      opacity: 1;
+    }
+
+    .btn-card-delete:hover {
+      background: #dc2626;
+      color: #ffffff;
+    }
+
     .chat-stream-box {
       flex: 1 1 0%;
       min-height: 0;
@@ -1998,7 +2031,8 @@
 
         <div class="chat-head-actions">
           <button class="btn-sm-action" onclick="copyBotLink()">Ссылка на бота</button>
-          <button class="btn-sm-action" onclick="clearCurrentChat()">Очистить чат</button>
+          <button class="btn-sm-action" onclick="clearCurrentChat()">Очистить переписку</button>
+          <button class="btn-sm-action btn-delete-chat" onclick="deleteCurrentBot()" title="Удалить чат и бота">🗑️ Удалить чат</button>
         </div>
       </div>
 
@@ -3923,6 +3957,7 @@
             <div class="bot-card-title">${escapeHtml(b.name)}</div>
             <div class="bot-card-meta">${b.chunks_count || 0} фактов • Temp ${b.temperature != null ? b.temperature : 0.7} • #${b.id}</div>
           </div>
+          <button type="button" class="btn-card-delete" onclick="deleteBotById(event, '${b.id}')" title="Удалить чат с «${escapeHtml(b.name)}»">✕</button>
         </div>
       `).join('');
     }
@@ -4011,6 +4046,63 @@
       navigator.clipboard.writeText(url).then(() => {
         showToast('Ссылка скопирована', 'success');
       }).catch(() => prompt('Ссылка:', url));
+    }
+
+    async function deleteBotById(e, botId) {
+      if (e) e.stopPropagation();
+      const targetId = botId || currentBotId;
+      if (!targetId) return;
+
+      const bot = allBots.find(b => b.id === targetId);
+      const botName = bot ? bot.name : 'бота';
+
+      if (!confirm(`Удалить чат с «${botName}» и карточку бота навсегда?`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/bots/${targetId}`, { method: 'DELETE' });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.detail || 'Ошибка удаления бота');
+        }
+
+        // Clean up localStorage for this bot
+        try {
+          localStorage.removeItem(`bot_chat_history_${targetId}`);
+          localStorage.removeItem(`bot_ui_${targetId}`);
+          if (localStorage.getItem('bot_last_active_id') === targetId) {
+            localStorage.removeItem('bot_last_active_id');
+          }
+        } catch(err) {}
+
+        delete chatHistories[targetId];
+        showToast(`Чат с «${botName}» удалён`, 'info');
+
+        await fetchBotsList(true);
+
+        if (currentBotId === targetId) {
+          if (allBots.length > 0) {
+            selectBot(allBots[0].id, true);
+          } else {
+            currentBotId = null;
+            document.getElementById('currentAvatar').textContent = '🤖';
+            document.getElementById('currentName').textContent = 'Ботов пока нет';
+            document.getElementById('chatMessages').innerHTML = `
+              <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--c-light-mid); gap:6px; font-size:13px;">
+                <span>Все чаты удалены. Создайте нового бота на Схеме нод!</span>
+              </div>
+            `;
+          }
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function deleteCurrentBot() {
+      if (!currentBotId) return;
+      deleteBotById(null, currentBotId);
     }
 
     function clearCurrentChat() {

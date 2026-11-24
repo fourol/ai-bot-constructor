@@ -320,6 +320,23 @@ async def get_bot(bot_id: str):
     }
 
 
+# Удаление бота и его базы знаний
+@app.delete("/api/bots/{bot_id}")
+async def delete_bot(bot_id: str):
+    bot_id = bot_id.strip()
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name FROM bots WHERE id = ?", (bot_id,))
+        bot = cursor.fetchone()
+        if not bot:
+            raise HTTPException(status_code=404, detail="Бот не найден")
+
+        cursor.execute("DELETE FROM bots WHERE id = ?", (bot_id,))
+        conn.commit()
+
+    return {"status": "ok", "deleted_id": bot_id, "name": bot["name"]}
+
+
 # Чат с ботом (со стримингом текста)
 @app.post("/api/chat")
 async def chat_with_bot(payload: ChatRequest):
