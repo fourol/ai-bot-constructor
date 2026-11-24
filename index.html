@@ -720,19 +720,18 @@
       transform: translateY(-1px);
     }
 
-    /* Onboarding Guided Tour Overlay & Elements */
+    /* Onboarding Guided Tour Overlay & Elements (Light translucent backdrop) */
     .tour-backdrop {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(2px);
+      background: rgba(0, 0, 0, 0.28);
       z-index: 1100;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.25s ease;
+      transition: opacity 0.2s ease, background-color 0.2s ease;
     }
 
     .tour-backdrop.active {
@@ -740,11 +739,15 @@
       pointer-events: auto;
     }
 
+    .tour-backdrop.has-highlight {
+      background: transparent;
+    }
+
     .tour-highlight {
       position: fixed;
       z-index: 1101;
       border-radius: 8px;
-      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.68), 0 0 25px rgba(56, 189, 248, 0.65);
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.28), 0 0 22px rgba(56, 189, 248, 0.6);
       border: 2px solid #38bdf8;
       transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
       pointer-events: none;
@@ -2708,11 +2711,15 @@
         highlight.style.width = `${rect.width + pad * 2}px`;
         highlight.style.height = `${rect.height + pad * 2}px`;
         highlight.classList.add('active');
+        const backdrop = document.getElementById('tourBackdrop');
+        if (backdrop) backdrop.classList.add('has-highlight');
 
         positionTourCard(rect);
       } else {
         highlight.classList.remove('active');
         highlight.style.display = 'none';
+        const backdrop = document.getElementById('tourBackdrop');
+        if (backdrop) backdrop.classList.remove('has-highlight');
         positionTourCard(null);
       }
     }
@@ -2789,7 +2796,10 @@
       const highlight = document.getElementById('tourHighlight');
       const card = document.getElementById('tourCard');
 
-      if (backdrop) backdrop.classList.remove('active');
+      if (backdrop) {
+        backdrop.classList.remove('active');
+        backdrop.classList.remove('has-highlight');
+      }
       if (highlight) highlight.classList.remove('active');
       if (card) card.classList.remove('active');
 
