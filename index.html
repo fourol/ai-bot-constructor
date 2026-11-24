@@ -1973,6 +1973,48 @@
       border-color: #ef4444 !important;
     }
 
+    .btn-edit-nodes {
+      background: rgba(56, 189, 248, 0.12) !important;
+      border: 1px solid rgba(56, 189, 248, 0.45) !important;
+      color: #38bdf8 !important;
+      font-weight: 600 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+    }
+
+    .btn-edit-nodes:hover {
+      background: #0284c7 !important;
+      border-color: #38bdf8 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35) !important;
+      transform: translateY(-1px);
+    }
+
+    .btn-card-edit {
+      background: transparent;
+      border: none;
+      color: var(--c-light-mid);
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      opacity: 0.65;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-card-edit:hover {
+      background: var(--c-dark);
+      color: #38bdf8;
+      opacity: 1;
+    }
+
+
     .btn-card-delete {
       background: transparent;
       border: none;
@@ -2471,6 +2513,9 @@
         </div>
 
         <div class="chat-head-actions">
+          <button type="button" class="btn-sm-action btn-edit-nodes" id="btnEditBotNodes" onclick="editCurrentBotOnCanvas()" title="Открыть схему и параметры этого бота на холсте нод">
+            🧩 Настроить ноды
+          </button>
           <button class="btn-sm-action" onclick="copyBotLink()">Ссылка на бота</button>
           <button class="btn-sm-action" onclick="clearCurrentChat()">Очистить переписку</button>
           <button class="btn-sm-action btn-delete-chat" onclick="deleteCurrentBot()" title="Удалить чат и бота">🗑️ Удалить чат</button>
@@ -5092,6 +5137,14 @@
 
         const newBot = await res.json();
 
+        // Store dedicated scheme snapshot for this bot so we can restore its exact nodes anytime!
+        try {
+          const currentCanvas = localStorage.getItem('bot_workflow_canvas');
+          if (currentCanvas) {
+            localStorage.setItem(`bot_scheme_${newBot.id}`, currentCanvas);
+          }
+        } catch(e) {}
+
         // Store custom UI greeting & chips in localStorage if provided
         if (customGreeting || customChips.length > 0) {
           localStorage.setItem(`bot_ui_${newBot.id}`, JSON.stringify({
@@ -5133,6 +5186,140 @@
       }
     }
 
+    // --- Return to Canvas to Edit Specific Bot Nodes (Настройка нод выбранного бота) ---
+    function editCurrentBotOnCanvas() {
+      if (!currentBotId) {
+        showToast('Сначала выберите бота в списке', 'info');
+        return;
+      }
+      loadBotToCanvas(currentBotId);
+    }
+
+    function editBotById(e, botId) {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      loadBotToCanvas(botId);
+    }
+
+    function loadBotToCanvas(botId) {
+      const bot = allBots.find(b => b.id === botId);
+      if (!bot) {
+        showToast('Бот не найден', 'error');
+        return;
+      }
+
+      // 1. Try to load dedicated saved scheme from localStorage
+      let loaded = false;
+      try {
+        const rawScheme = localStorage.getItem(`bot_scheme_${bot.id}`);
+        if (rawScheme) {
+          localStorage.setItem('bot_workflow_canvas', rawScheme);
+          loaded = loadSavedWorkflow();
+        }
+      } catch(e) {
+        loaded = false;
+      }
+
+      // 2. If no saved scheme exists, synthesize a clean workflow for this bot
+      if (!loaded) {
+        nodesContainer.innerHTML = '';
+        nodes = {};
+        connections = [];
+        nodeCounter = 0;
+
+        const nChar = createNodeElement('char', 50, 80);
+        const nPrompt = createNodeElement('prompt', 50, 340);
+        const nParams = createNodeElement('params', 50, 600);
+        const nBrain = createNodeElement('brain', 450, 200);
+        const nAsm = createNodeElement('assembler', 860, 140);
+
+        // Populate Character
+        const charEl = document.getElementById(nChar);
+        if (charEl) {
+          const nameInp = charEl.querySelector('.node-val-name');
+          if (nameInp) nameInp.value = bot.name || 'Бот';
+          if (bot.avatar) setNodeAvatar(nChar, bot.avatar);
+        }
+
+        // Populate Prompt
+        const promptEl = document.getElementById(nPrompt);
+        if (promptEl) {
+          const pInp = promptEl.querySelector('.node-val-prompt');
+          if (pInp) pInp.value = bot.system_prompt || '';
+        }
+
+        // Populate Params
+        const paramsEl = document.getElementById(nParams);
+        if (paramsEl) {
+          const tempSlider = paramsEl.querySelector('.node-val-temp');
+          if (tempSlider && bot.temperature != null) {
+            tempSlider.value = bot.temperature;
+            onTempSliderInput({ target: tempSlider }, nParams);
+          }
+          const tokVal = bot.max_tokens || 350;
+          const tokInp = paramsEl.querySelector('.node-val-tokens');
+          if (tokInp) tokInp.value = tokVal;
+          const btns = paramsEl.querySelectorAll('.btn-toggle');
+          btns.forEach(b => {
+            const isMatch = (tokVal <= 150 && b.textContent.includes('1–2')) ||
+                            (tokVal > 150 && b.textContent.includes('Развёрнуто'));
+            b.classList.toggle('active', isMatch);
+          });
+        }
+
+        // Check if custom UI greeting / chips exist
+        let nQuick = null;
+        try {
+          const rawUi = localStorage.getItem(`bot_ui_${bot.id}`);
+          if (rawUi) {
+            const uiData = JSON.parse(rawUi);
+            if (uiData.greeting || (uiData.chips && uiData.chips.length > 0)) {
+              nQuick = createNodeElement('quick', 50, 840);
+              const qEl = document.getElementById(nQuick);
+              if (qEl) {
+                if (uiData.greeting) qEl.querySelector('.node-val-greeting').value = uiData.greeting;
+                if (uiData.chips) {
+                  if (uiData.chips[0]) qEl.querySelector('.node-val-q1').value = uiData.chips[0];
+                  if (uiData.chips[1]) qEl.querySelector('.node-val-q2').value = uiData.chips[1];
+                  if (uiData.chips[2]) qEl.querySelector('.node-val-q3').value = uiData.chips[2];
+                }
+              }
+            }
+          }
+        } catch(e) {}
+
+        // Connect ports
+        connectPorts(nChar, 'out', nBrain, 'in-char', 'char');
+        connectPorts(nPrompt, 'out', nBrain, 'in-prompt', 'prompt');
+        connectPorts(nParams, 'out', nBrain, 'in-params', 'params');
+        if (nQuick) {
+          connectPorts(nQuick, 'out', nBrain, 'in-quick', 'quick');
+        }
+        connectPorts(nBrain, 'out', nAsm, 'in-brain', 'brain');
+
+        panX = 0;
+        panY = 0;
+        scale = 1.0;
+        applyTransform();
+
+        setTimeout(() => {
+          updateAllWires();
+          updateAllTerminals();
+          saveWorkflowState();
+          try {
+            localStorage.setItem(`bot_scheme_${bot.id}`, localStorage.getItem('bot_workflow_canvas'));
+          } catch(e) {}
+        }, 60);
+      }
+
+      // Switch to nodes tab and notify user
+      switchTab('nodes');
+      showToast(`Схема бота «${bot.name}» открыта для настройки 🧩`, 'success');
+    }
+
+
     // 11. Gallery & Chat Logic
     async function fetchBotsList(silent = false) {
       try {
@@ -5165,7 +5352,10 @@
             <div class="bot-card-title">${escapeHtml(b.name)}</div>
             <div class="bot-card-meta">${b.chunks_count || 0} фактов • Temp ${b.temperature != null ? b.temperature : 0.7} • #${b.id}</div>
           </div>
-          <button type="button" class="btn-card-delete" onclick="deleteBotById(event, '${b.id}')" title="Удалить чат с «${escapeHtml(b.name)}»">✕</button>
+          <div style="display:flex; align-items:center; gap:2px;">
+            <button type="button" class="btn-card-edit" onclick="editBotById(event, '${b.id}')" title="Настроить ноды «${escapeHtml(b.name)}» на схеме">⚙️</button>
+            <button type="button" class="btn-card-delete" onclick="deleteBotById(event, '${b.id}')" title="Удалить чат с «${escapeHtml(b.name)}»">✕</button>
+          </div>
         </div>
       `).join('');
     }
@@ -5279,6 +5469,7 @@
         try {
           localStorage.removeItem(`bot_chat_history_${targetId}`);
           localStorage.removeItem(`bot_ui_${targetId}`);
+          localStorage.removeItem(`bot_scheme_${targetId}`);
           if (localStorage.getItem('bot_last_active_id') === targetId) {
             localStorage.removeItem('bot_last_active_id');
           }
