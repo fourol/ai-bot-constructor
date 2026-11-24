@@ -2102,11 +2102,22 @@
 
       const params = new URLSearchParams(window.location.search);
       const botParam = params.get('bot');
+      let lastTab = null;
+      let lastBot = null;
+      try {
+        lastTab = localStorage.getItem('bot_last_tab');
+        lastBot = localStorage.getItem('bot_last_active_id');
+      } catch(e) {}
+
       if (botParam) {
         selectBot(botParam, false);
         switchTab('chat');
+      } else if (lastBot && allBots.some(b => b.id === lastBot)) {
+        selectBot(lastBot, false);
+        if (lastTab === 'chat') switchTab('chat');
       } else if (allBots.length > 0) {
         selectBot(allBots[0].id, false);
+        if (lastTab === 'chat') switchTab('chat');
       }
 
       setInterval(() => fetchBotsList(true), 10000);
@@ -3866,6 +3877,10 @@
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
 
+      try {
+        localStorage.setItem('bot_last_tab', name);
+      } catch(e) {}
+
       if (name === 'nodes') {
         document.getElementById('tabBtnNodes').classList.add('active');
         document.getElementById('canvasView').classList.add('active');
@@ -3912,11 +3927,39 @@
       `).join('');
     }
 
+    function loadChatHistory(botId) {
+      if (!botId) return null;
+      try {
+        const raw = localStorage.getItem(`bot_chat_history_${botId}`);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch (e) {
+        console.error('Error loading chat history:', e);
+      }
+      return null;
+    }
+
+    function saveChatHistory(botId) {
+      if (!botId || !chatHistories[botId]) return;
+      try {
+        // Keep up to 150 recent messages per bot
+        const toSave = chatHistories[botId].slice(-150);
+        localStorage.setItem(`bot_chat_history_${botId}`, JSON.stringify(toSave));
+      } catch (e) {
+        console.error('Error saving chat history:', e);
+      }
+    }
+
     function selectBot(id, updateUrl = true) {
       const bot = allBots.find(b => b.id === id);
       if (!bot) return;
 
       currentBotId = id;
+      try {
+        localStorage.setItem('bot_last_active_id', id);
+      } catch(e) {}
 
       if (updateUrl) {
         window.history.pushState({ id }, '', `${window.location.pathname}?bot=${id}`);
@@ -3932,11 +3975,15 @@
         if (stored) uiConfig = JSON.parse(stored);
       } catch(e) {}
 
-      // If chat is empty and bot has a custom greeting, auto-greet!
-      if (!chatHistories[id] || chatHistories[id].length === 0) {
+      // Load persistent chat history from localStorage
+      let saved = loadChatHistory(id);
+      if (saved && saved.length > 0) {
+        chatHistories[id] = saved;
+      } else if (!chatHistories[id] || chatHistories[id].length === 0) {
         chatHistories[id] = [];
         if (uiConfig && uiConfig.greeting) {
           chatHistories[id].push({ role: 'assistant', content: uiConfig.greeting });
+          saveChatHistory(id);
         }
       }
 
@@ -3969,6 +4016,9 @@
     function clearCurrentChat() {
       if (!currentBotId) return;
       chatHistories[currentBotId] = [];
+      try {
+        localStorage.removeItem(`bot_chat_history_${currentBotId}`);
+      } catch(e) {}
       renderMessages();
       showToast('Диалог очищен', 'info');
     }
@@ -4031,6 +4081,7 @@
 
       if (!chatHistories[currentBotId]) chatHistories[currentBotId] = [];
       chatHistories[currentBotId].push({ role: 'user', content: text });
+      saveChatHistory(currentBotId);
       renderMessages();
 
       isStreaming = true;
@@ -4089,6 +4140,7 @@
           role: 'assistant',
           content: responseText.trim()
         });
+        saveChatHistory(currentBotId);
 
       } catch (err) {
         document.getElementById('typingIndicator').style.display = 'none';
