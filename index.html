@@ -2200,7 +2200,8 @@
       <button class="btn-zoom" onclick="zoomBy(0.85)" title="Уменьшить">−</button>
       <span class="zoom-label" id="zoomPercent">100%</span>
       <button class="btn-zoom" onclick="zoomBy(1.15)" title="Увеличить">+</button>
-      <button class="btn-zoom" onclick="resetZoom()" title="Сбросить масштаб">⟲</button>
+      <button class="btn-zoom" onclick="resetZoom()" title="Сбросить масштаб (100%)">⟲</button>
+      <button class="btn-zoom" onclick="resetWorkflowToDefault()" title="Сбросить схему и расположение к исходному шаблону" style="font-size:11px; width:auto; padding:0 8px; color:var(--c-light);">Исходная схема</button>
     </div>
 
     <div class="canvas-hint">
@@ -2506,7 +2507,15 @@
 
     window.addEventListener('DOMContentLoaded', async () => {
       setupViewport();
-      setupInitialDefaultWorkflow();
+      const loaded = loadSavedWorkflow();
+      if (!loaded) {
+        setupInitialDefaultWorkflow();
+      }
+
+      if (nodesContainer) {
+        nodesContainer.addEventListener('input', debounceSaveWorkflow);
+        nodesContainer.addEventListener('change', debounceSaveWorkflow);
+      }
       await fetchBotsList();
 
       const params = new URLSearchParams(window.location.search);
@@ -2539,6 +2548,269 @@
       });
     });
 
+    // --- Workflow & Module Positions Persistence (Сохранение позиций модулей и связей) ---
+    let saveWorkflowTimeout = null;
+    function debounceSaveWorkflow() {
+      clearTimeout(saveWorkflowTimeout);
+      saveWorkflowTimeout = setTimeout(saveWorkflowState, 350);
+    }
+
+    function saveWorkflowState() {
+      try {
+        const nodesData = [];
+        Object.keys(nodes).forEach(id => {
+          const nodeObj = nodes[id];
+          if (!nodeObj || !nodeObj.element) return;
+          const el = nodeObj.element;
+          const x = Math.round(parseFloat(el.style.left) || 0);
+          const y = Math.round(parseFloat(el.style.top) || 0);
+          const type = nodeObj.type;
+          const val = {};
+
+          if (type === 'char') {
+            const inpName = el.querySelector('.node-val-name');
+            const inpAvatar = el.querySelector('.node-val-avatar');
+            if (inpName) val.name = inpName.value;
+            if (inpAvatar) val.avatar = inpAvatar.value;
+          } else if (type === 'prompt') {
+            const p = el.querySelector('.node-val-prompt');
+            if (p) val.prompt = p.value;
+          } else if (type === 'rules') {
+            const tone = el.querySelector('.node-val-tone');
+            if (tone) val.tone = tone.value;
+            const chks = el.querySelectorAll('.node-rule-check');
+            val.rules = Array.from(chks).map(c => c.checked);
+          } else if (type === 'params') {
+            const temp = el.querySelector('.node-val-temp');
+            const tok = el.querySelector('.node-val-tokens');
+            if (temp) val.temp = temp.value;
+            if (tok) val.tokens = tok.value;
+          } else if (type === 'format') {
+            const fmt = el.querySelector('.node-val-format-type');
+            if (fmt) val.formatType = fmt.value;
+          } else if (type === 'fewshot') {
+            const q1 = el.querySelector('.node-val-few-q1');
+            const a1 = el.querySelector('.node-val-few-a1');
+            const q2 = el.querySelector('.node-val-few-q2');
+            const a2 = el.querySelector('.node-val-few-a2');
+            if (q1) val.q1 = q1.value;
+            if (a1) val.a1 = a1.value;
+            if (q2) val.q2 = q2.value;
+            if (a2) val.a2 = a2.value;
+          } else if (type === 'guard') {
+            const lang = el.querySelector('.node-val-guard-lang');
+            const soc = el.querySelector('.node-val-guard-socratic');
+            const lat = el.querySelector('.node-val-guard-latex');
+            const nof = el.querySelector('.node-val-guard-nofake');
+            if (lang) val.lang = lang.value;
+            if (soc) val.socratic = soc.checked;
+            if (lat) val.latex = lat.checked;
+            if (nof) val.nofake = nof.checked;
+          } else if (type === 'quick') {
+            const gr = el.querySelector('.node-val-greeting');
+            const q1 = el.querySelector('.node-val-q1');
+            const q2 = el.querySelector('.node-val-q2');
+            const q3 = el.querySelector('.node-val-q3');
+            if (gr) val.greeting = gr.value;
+            if (q1) val.q1 = q1.value;
+            if (q2) val.q2 = q2.value;
+            if (q3) val.q3 = q3.value;
+          } else if (type === 'kb') {
+            const kb = el.querySelector('.node-val-kb');
+            if (kb) val.kb = kb.value;
+          }
+
+          nodesData.push({ id, type, x, y, val });
+        });
+
+        const state = {
+          nodes: nodesData,
+          connections: connections,
+          viewport: { panX: Math.round(panX), panY: Math.round(panY), scale: parseFloat(scale.toFixed(2)) },
+          nodeCounter
+        };
+
+        localStorage.setItem('bot_workflow_canvas', JSON.stringify(state));
+      } catch (err) {
+        console.error('Error saving workflow state:', err);
+      }
+    }
+
+    function loadSavedWorkflow() {
+      try {
+        const raw = localStorage.getItem('bot_workflow_canvas');
+        if (!raw) return false;
+        const state = JSON.parse(raw);
+        if (!state || !Array.isArray(state.nodes) || state.nodes.length === 0) return false;
+
+        nodesContainer.innerHTML = '';
+        nodes = {};
+        connections = [];
+
+        if (state.nodeCounter && typeof state.nodeCounter === 'number') {
+          nodeCounter = state.nodeCounter;
+        }
+
+        if (state.viewport) {
+          if (typeof state.viewport.panX === 'number') panX = state.viewport.panX;
+          if (typeof state.viewport.panY === 'number') panY = state.viewport.panY;
+          if (typeof state.viewport.scale === 'number') scale = state.viewport.scale;
+          applyTransform();
+        }
+
+        state.nodes.forEach(n => {
+          createNodeElement(n.type, n.x, n.y, n.id);
+          const el = document.getElementById(n.id);
+          if (!el || !n.val) return;
+
+          if (n.type === 'char') {
+            if (n.val.name !== undefined) {
+              const inp = el.querySelector('.node-val-name');
+              if (inp) inp.value = n.val.name;
+            }
+            if (n.val.avatar) {
+              setNodeAvatar(n.id, n.val.avatar);
+            }
+          } else if (n.type === 'prompt') {
+            if (n.val.prompt !== undefined) {
+              const p = el.querySelector('.node-val-prompt');
+              if (p) p.value = n.val.prompt;
+            }
+          } else if (n.type === 'rules') {
+            if (n.val.tone) {
+              const sel = el.querySelector('.node-val-tone');
+              if (sel) sel.value = n.val.tone;
+            }
+            if (Array.isArray(n.val.rules)) {
+              const chks = el.querySelectorAll('.node-rule-check');
+              chks.forEach((chk, i) => {
+                if (n.val.rules[i] !== undefined) chk.checked = n.val.rules[i];
+              });
+            }
+          } else if (n.type === 'params') {
+            if (n.val.temp !== undefined) {
+              const slider = el.querySelector('.node-val-temp');
+              if (slider) {
+                slider.value = n.val.temp;
+                onTempSliderInput({ target: slider }, n.id);
+              }
+            }
+            if (n.val.tokens !== undefined) {
+              const tok = el.querySelector('.node-val-tokens');
+              if (tok) tok.value = n.val.tokens;
+              const btns = el.querySelectorAll('.btn-toggle');
+              btns.forEach(b => {
+                const isMatch = (n.val.tokens == 140 && b.textContent.includes('1–2')) ||
+                                (n.val.tokens == 350 && b.textContent.includes('Развёрнуто'));
+                b.classList.toggle('active', isMatch);
+              });
+            }
+          } else if (n.type === 'format') {
+            if (n.val.formatType) {
+              const sel = el.querySelector('.node-val-format-type');
+              if (sel) {
+                sel.value = n.val.formatType;
+                onFormatChange(n.id);
+              }
+            }
+          } else if (n.type === 'fewshot') {
+            if (n.val.q1 !== undefined) {
+              const inp = el.querySelector('.node-val-few-q1');
+              if (inp) inp.value = n.val.q1;
+            }
+            if (n.val.a1 !== undefined) {
+              const inp = el.querySelector('.node-val-few-a1');
+              if (inp) inp.value = n.val.a1;
+            }
+            if (n.val.q2 !== undefined) {
+              const inp = el.querySelector('.node-val-few-q2');
+              if (inp) inp.value = n.val.q2;
+            }
+            if (n.val.a2 !== undefined) {
+              const inp = el.querySelector('.node-val-few-a2');
+              if (inp) inp.value = n.val.a2;
+            }
+          } else if (n.type === 'guard') {
+            if (n.val.lang) {
+              const sel = el.querySelector('.node-val-guard-lang');
+              if (sel) sel.value = n.val.lang;
+            }
+            if (n.val.socratic !== undefined) {
+              const soc = el.querySelector('.node-val-guard-socratic');
+              if (soc) soc.checked = n.val.socratic;
+            }
+            if (n.val.latex !== undefined) {
+              const lat = el.querySelector('.node-val-guard-latex');
+              if (lat) lat.checked = n.val.latex;
+            }
+            if (n.val.nofake !== undefined) {
+              const nof = el.querySelector('.node-val-guard-nofake');
+              if (nof) nof.checked = n.val.nofake;
+            }
+          } else if (n.type === 'quick') {
+            if (n.val.greeting !== undefined) {
+              const gr = el.querySelector('.node-val-greeting');
+              if (gr) gr.value = n.val.greeting;
+            }
+            if (n.val.q1 !== undefined) {
+              const q1 = el.querySelector('.node-val-q1');
+              if (q1) q1.value = n.val.q1;
+            }
+            if (n.val.q2 !== undefined) {
+              const q2 = el.querySelector('.node-val-q2');
+              if (q2) q2.value = n.val.q2;
+            }
+            if (n.val.q3 !== undefined) {
+              const q3 = el.querySelector('.node-val-q3');
+              if (q3) q3.value = n.val.q3;
+            }
+          } else if (n.type === 'kb') {
+            if (n.val.kb !== undefined) {
+              const kb = el.querySelector('.node-val-kb');
+              if (kb) kb.value = n.val.kb;
+            }
+          }
+        });
+
+        if (Array.isArray(state.connections)) {
+          state.connections.forEach(c => {
+            if (document.getElementById(`${c.fromNode}_${c.fromPort}`) &&
+                document.getElementById(`${c.toNode}_${c.toPort}`)) {
+              connectPorts(c.fromNode, c.fromPort, c.toNode, c.toPort, c.type);
+            }
+          });
+        }
+
+        setTimeout(() => {
+          updateAllWires();
+          updateAllTerminals();
+        }, 60);
+
+        return true;
+      } catch (err) {
+        console.error('Error loading saved workflow:', err);
+        return false;
+      }
+    }
+
+    function resetWorkflowToDefault() {
+      if (!confirm('Сбросить схему и расположение модулей к начальному шаблону?')) {
+        return;
+      }
+      try {
+        localStorage.removeItem('bot_workflow_canvas');
+      } catch(e) {}
+      nodesContainer.innerHTML = '';
+      nodes = {};
+      connections = [];
+      panX = 0;
+      panY = 0;
+      scale = 1.0;
+      applyTransform();
+      setupInitialDefaultWorkflow();
+      showToast('Схема сброшена к начальному шаблону', 'info');
+    }
+
     // 1. Initial Default Workflow (Паттерн «Мозг и Тело» — только базовые модули без лишнего)
     function setupInitialDefaultWorkflow() {
       const nChar = createNodeElement('char', 50, 80);
@@ -2553,6 +2825,7 @@
       setTimeout(() => {
         updateAllWires();
         updateAllTerminals();
+        saveWorkflowState();
       }, 50);
     }
 
@@ -2639,13 +2912,26 @@
       const nodeId = createNodeElement(type, Math.round(worldX), Math.round(worldY));
       showToast('Модуль добавлен', 'info');
       setTimeout(updateAllWires, 30);
+      saveWorkflowState();
       return nodeId;
     }
 
     // 3. Node Creation
-    function createNodeElement(type, x, y) {
-      nodeCounter++;
-      const id = `node_${nodeCounter}_${type}`;
+    function createNodeElement(type, x, y, customId) {
+      let id;
+      if (customId) {
+        id = customId;
+        const match = customId.match(/node_(\d+)_/);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (!isNaN(num) && num > nodeCounter) {
+            nodeCounter = num;
+          }
+        }
+      } else {
+        nodeCounter++;
+        id = `node_${nodeCounter}_${type}`;
+      }
 
       const el = document.createElement('div');
       el.className = `node ${type === 'assembler' ? 'assembler-node' : ''} ${type === 'brain' ? 'brain-node' : ''} ${type === 'fewshot' ? 'fewshot-node' : ''}`;
@@ -3184,6 +3470,8 @@
       if (el) el.remove();
       delete nodes[nodeId];
       updateAllWires();
+      updateAllTerminals();
+      saveWorkflowState();
       showToast('Модуль удален', 'info');
     }
 
@@ -3197,6 +3485,7 @@
         b.classList.toggle('active', b.textContent.trim() === emoji);
       });
       updateAllTerminals();
+      debounceSaveWorkflow();
     }
 
     function onCharNodeInputChange(nodeId) {
@@ -3211,6 +3500,7 @@
       el.querySelector('.node-val-prompt').value = t.prompt;
       showToast(`Шаблон «${t.name}» загружен`, 'success');
       updateAllTerminals();
+      debounceSaveWorkflow();
     }
 
     function onTempSliderInput(e, nodeId) {
@@ -3287,6 +3577,7 @@
       el.querySelector('.node-val-few-a2').value = p.a2;
       showToast('Пресет загружен', 'success');
       updateAllTerminals();
+      debounceSaveWorkflow();
     }
 
     function onFormatChange(nodeId) {
@@ -3412,6 +3703,7 @@
       connectPorts(outSock.nodeId, outSock.portId, inSock.nodeId, inSock.portId, outSock.type);
       updateAllWires();
       updateAllTerminals();
+      saveWorkflowState();
       showToast('Связь установлена', 'success');
     }
 
@@ -3424,6 +3716,7 @@
       connections.splice(index, 1);
       updateAllWires();
       updateAllTerminals();
+      saveWorkflowState();
       showToast('Связь удалена', 'info');
     }
 
@@ -3978,10 +4271,12 @@
         if (isPanning) {
           isPanning = false;
           viewport.classList.remove('panning');
+          saveWorkflowState();
         }
         if (draggedNode) {
           draggedNode.classList.remove('dragging');
           draggedNode = null;
+          saveWorkflowState();
         }
         if (isDraggingPort) {
           tempWire.style.display = 'none';
@@ -4028,6 +4323,7 @@
 
       applyTransform();
       updateAllWires();
+      saveWorkflowState();
     }
 
     function resetZoom() {
@@ -4036,6 +4332,7 @@
       panY = 0;
       applyTransform();
       updateAllWires();
+      saveWorkflowState();
     }
 
     function onNodeHeaderMouseDown(e, nodeId) {
