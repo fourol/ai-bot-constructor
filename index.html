@@ -1082,28 +1082,110 @@
       padding: 6px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
+    }
+
+    .terminal-test-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 1px;
+    }
+
+    .terminal-test-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--c-light-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-clear-term {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--c-light-mid);
+      font-size: 10px;
+      cursor: pointer;
+      padding: 1px 5px;
+      border-radius: 3px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-clear-term:hover {
+      color: #ffffff;
+      background: var(--c-dark);
+      border-color: var(--c-mid-dark);
     }
 
     .terminal-response-screen {
       font-size: 11px;
       line-height: 1.4;
       color: #f1f5f9;
-      min-height: 42px;
-      max-height: 95px;
+      min-height: 52px;
+      max-height: 135px;
       overflow-y: auto;
+      overscroll-behavior: contain;
       background: #141314;
       border: 1px solid var(--c-dark);
-      border-radius: 3px;
+      border-radius: 4px;
       padding: 6px 8px;
       white-space: pre-wrap;
       word-break: break-word;
+      scrollbar-width: thin;
+      scrollbar-color: var(--c-mid-dark) #141314;
+    }
+
+    .terminal-response-screen::-webkit-scrollbar {
+      width: 5px;
+    }
+    .terminal-response-screen::-webkit-scrollbar-track {
+      background: #141314;
+      border-radius: 4px;
+    }
+    .terminal-response-screen::-webkit-scrollbar-thumb {
+      background: var(--c-mid-dark);
+      border-radius: 4px;
+    }
+    .terminal-response-screen::-webkit-scrollbar-thumb:hover {
+      background: var(--c-light-mid);
     }
 
     .terminal-response-screen.empty {
       color: var(--c-light-mid);
       font-style: italic;
       font-size: 11px;
+      display: flex;
+      align-items: center;
+    }
+
+    .term-chat-msg {
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+    .term-chat-msg:last-child {
+      margin-bottom: 0;
+    }
+    .term-msg-user {
+      color: #cbd5e1;
+    }
+    .term-msg-user .term-msg-author {
+      color: #38bdf8;
+      font-weight: 700;
+      font-size: 10px;
+      margin-right: 4px;
+    }
+    .term-msg-bot {
+      color: #f1f5f9;
+    }
+    .term-msg-bot .term-msg-author {
+      color: #a855f7;
+      font-weight: 700;
+      font-size: 10px;
+      margin-right: 4px;
+    }
+    .term-stream-target {
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .terminal-input-row {
@@ -2579,7 +2661,11 @@
 
               <!-- Live Test Window right on the Canvas -->
               <div class="terminal-test-box">
-                <div class="terminal-response-screen empty node-term-response">
+                <div class="terminal-test-header">
+                  <span class="terminal-test-title">⚡ Экспресс-чат</span>
+                  <button type="button" class="btn-clear-term" onclick="clearTerminalChat('${id}')" title="Очистить историю экспресс-теста">🗑️ Очистить</button>
+                </div>
+                <div class="terminal-response-screen empty node-term-response" onwheel="event.stopPropagation()">
                   Задайте тестовый вопрос боту...
                 </div>
                 <div class="terminal-input-row">
@@ -3099,6 +3185,20 @@
     }
 
     // 7. Live Test directly inside the Terminal Node on the Canvas!
+    const termChatHistories = {};
+
+    function clearTerminalChat(termNodeId) {
+      termChatHistories[termNodeId] = [];
+      const termEl = document.getElementById(termNodeId);
+      if (!termEl) return;
+      const screen = termEl.querySelector('.node-term-response');
+      if (screen) {
+        screen.classList.add('empty');
+        screen.innerHTML = 'Задайте тестовый вопрос боту...';
+      }
+      showToast('Экспресс-чат очищен', 'info');
+    }
+
     function onTerminalInputKeyDown(e, termNodeId) {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -3235,10 +3335,42 @@
         }
       });
 
-      screen.classList.remove('empty');
-      screen.textContent = 'Печатает ответ...';
+      // Prepare mini-chat history
+      if (!termChatHistories[termNodeId]) {
+        termChatHistories[termNodeId] = [];
+      }
+
+      if (screen.classList.contains('empty')) {
+        screen.classList.remove('empty');
+        screen.innerHTML = '';
+      }
+
+      const botAvatarEl = termEl.querySelector('.node-term-avatar');
+      const botNameEl = termEl.querySelector('.node-term-name');
+      const avatarText = botAvatarEl ? botAvatarEl.textContent.trim() : '🤖';
+      const botNameText = botNameEl ? botNameEl.textContent.trim() : 'Бот';
+
+      // 1. User message row
+      const userItem = document.createElement('div');
+      userItem.className = 'term-chat-msg term-msg-user';
+      userItem.innerHTML = `<span class="term-msg-author">Вы:</span> <span class="term-msg-content">${escapeHtml(message)}</span>`;
+      screen.appendChild(userItem);
+
+      // 2. Bot message row (with streaming container)
+      const botItem = document.createElement('div');
+      botItem.className = 'term-chat-msg term-msg-bot';
+      botItem.innerHTML = `<span class="term-msg-author">${escapeHtml(avatarText)} ${escapeHtml(botNameText)}:</span> <span class="term-msg-content term-stream-target">Печатает ответ...</span>`;
+      screen.appendChild(botItem);
+
+      input.value = '';
       btnTest.disabled = true;
       input.disabled = true;
+
+      // Auto-scroll down immediately
+      screen.scrollTop = screen.scrollHeight;
+
+      const streamTarget = botItem.querySelector('.term-stream-target');
+      let result = '';
 
       try {
         const res = await fetch('/api/test-draft', {
@@ -3249,7 +3381,8 @@
             system_prompt: prompt,
             temperature: temperature,
             max_tokens: Math.min(maxTokens, 200),
-            kb_text: kbText.trim() || null
+            kb_text: kbText.trim() || null,
+            history: termChatHistories[termNodeId]
           })
         });
 
@@ -3257,28 +3390,45 @@
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder('utf-8');
-        let result = '';
 
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
           result += decoder.decode(value, { stream: true });
-          screen.textContent = result;
+          streamTarget.textContent = result;
+          // Continuous smooth auto-scrolling down
           screen.scrollTop = screen.scrollHeight;
         }
 
+        // Save turns into terminal chat history
+        termChatHistories[termNodeId].push({ role: 'user', content: message });
+        termChatHistories[termNodeId].push({ role: 'assistant', content: result.trim() });
+
       } catch (err) {
-        screen.textContent = `[Ошибка: ${err.message}]`;
+        streamTarget.textContent = `[Ошибка: ${err.message}]`;
       } finally {
         btnTest.disabled = false;
         input.disabled = false;
         input.focus();
+        // Pin to bottom at conclusion
+        screen.scrollTop = screen.scrollHeight;
+        requestAnimationFrame(() => {
+          screen.scrollTop = screen.scrollHeight;
+        });
       }
     }
 
     // 8. Viewport Pan, Zoom & Drag Listeners
     function setupViewport() {
       viewport.addEventListener('wheel', (e) => {
+        // Allow natural scrolling inside terminal test chat, menu lists, textareas, inputs, and modals
+        const scrollable = e.target.closest(
+          '.terminal-response-screen, .node-term-response, .node-menu-list, .chat-stream-box, textarea, input, select'
+        );
+        if (scrollable) {
+          return;
+        }
+
         e.preventDefault();
         const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
         const rect = viewport.getBoundingClientRect();

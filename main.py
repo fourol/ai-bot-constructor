@@ -412,6 +412,7 @@ class TestDraftRequest(BaseModel):
     temperature: Optional[float] = 0.7
     max_tokens: Optional[int] = 160
     kb_text: Optional[str] = None
+    history: Optional[List[dict]] = None
 
 
 @app.post("/api/test-draft")
@@ -456,9 +457,13 @@ async def test_draft(payload: TestDraftRequest):
         final_system_message = system_prompt
 
     messages = [
-        {"role": "system", "content": final_system_message},
-        {"role": "user", "content": user_message}
+        {"role": "system", "content": final_system_message}
     ]
+    if payload.history:
+        for h in payload.history[-6:]:
+            if isinstance(h, dict) and "role" in h and "content" in h:
+                messages.append({"role": str(h["role"]), "content": str(h["content"])})
+    messages.append({"role": "user", "content": user_message})
 
     async def stream_generator():
         try:
