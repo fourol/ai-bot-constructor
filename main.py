@@ -1,6 +1,7 @@
 import os
 import re
 import io
+import json
 import secrets
 import string
 import sqlite3
@@ -158,6 +159,14 @@ def init_db():
             )
         """)
         conn.execute("CREATE INDEX IF NOT EXISTS idx_chunks_bot_id ON knowledge_chunks(bot_id)")
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS user_task_progress (
+                user_id TEXT PRIMARY KEY,
+                progress_json TEXT NOT NULL,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
 
         # Всегда гарантируем наличие официальных образцовых сценариев КС54
         for b_id, b_name, b_avatar, b_prompt, b_temp, b_tokens, b_kb in STARTER_BOTS:
@@ -711,3 +720,43 @@ async def test_draft(payload: TestDraftRequest):
             yield f"\n[Ошибка соединения: {str(e)}]"
 
     return StreamingResponse(stream_generator(), media_type="text/plain")
+
+
+class TaskProgressPayload(BaseModel):
+    progress: dict
+
+
+@app.get("/api/progress/{user_id}")
+async def get_task_progress(user_id: str):
+    clean_uid = user_id.strip() or "user_guest"
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT progress_json, updated_at FROM user_task_progress WHERE user_id = ?",
+            (clean_uid,),
+        ).fetchone()
+    if not row:
+        return {"user_id": clean_uid, "progress": None}
+    try:
+        data = json.loads(row[0])
+    except Exception:
+        data = None
+    return {"user_id": clean_uid, "progress": data, "updated_at": row[1]}
+
+
+@app.put("/api/progress/{user_id}")
+async def save_task_progress(user_id: str, payload: TaskProgressPayload):
+    clean_uid = user_id.strip() or "user_guest"
+    serialized = json.dumps(payload.progress, ensure_ascii=False)
+    with get_db() as conn:
+        conn.execute(
+            """
+            INSERT INTO user_task_progress (user_id, progress_json, updated_at)
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(user_id) DO UPDATE SET
+                progress_json = excluded.progress_json,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (clean_uid, serialized),
+        )
+        conn.commit()
+    return {"status": "ok", "user_id": clean_uid}

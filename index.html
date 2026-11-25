@@ -3344,6 +3344,40 @@
       color: var(--wire-char);
       font-weight: 700;
     }
+    .exam-variant-btn.passed {
+      border-color: rgba(16, 185, 129, 0.5);
+      color: var(--success);
+    }
+    .exam-variant-btn.passed::after {
+      content: ' ✓';
+      font-weight: 800;
+    }
+    .task-level-btn.passed::after {
+      content: '✓';
+      font-weight: 800;
+      margin-left: 2px;
+    }
+    .btn-restore-task {
+      background: var(--bg-deep);
+      border: 1px dashed var(--border-node);
+      color: var(--wire-char);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      transition: all 0.15s ease;
+    }
+    .btn-restore-task:hover {
+      background: rgba(2, 132, 199, 0.08);
+      border-color: var(--wire-char);
+      border-style: solid;
+    }
 
     .ai-exam-box {
       background: var(--bg-deep);
@@ -4573,17 +4607,279 @@
     }
 
     
+    // --- Task Progress Persistence (LocalStorage + Server SQLite Sync) ---
+    function getDefaultTaskProgress() {
+      return {
+        updatedAt: 0,
+        activeGuideTab: 'about',
+        activeTaskLevel: 'lvl1',
+        activeExamVariant: 'space',
+        levels: {
+          lvl1: { passed: false, checks: null, snapshot: null },
+          lvl2: { passed: false, checks: null, snapshot: null },
+          lvl3: { passed: false, checks: null, snapshot: null }
+        },
+        exams: {
+          space: { passed: false, schemaPassed: false, schemaChecks: null, aiPassed: false, aiResults: null, snapshot: null },
+          college: { passed: false, schemaPassed: false, schemaChecks: null, aiPassed: false, aiResults: null, snapshot: null },
+          socratic: { passed: false, schemaPassed: false, schemaChecks: null, aiPassed: false, aiResults: null, snapshot: null }
+        },
+        auditChecked: []
+      };
+    }
+
+    let taskProgressState = getDefaultTaskProgress();
+    let syncProgressTimer = null;
+
+    function getTaskProgressStorageKey() {
+      const uid = typeof getOrCreateUserId === 'function' ? getOrCreateUserId() : 'user_guest';
+      return `ks54_task_progress_${uid}`;
+    }
+
+    function saveTaskProgress(immediateServer = false) {
+      taskProgressState.updatedAt = Date.now();
+      try {
+        localStorage.setItem(getTaskProgressStorageKey(), JSON.stringify(taskProgressState));
+      } catch (e) {}
+
+      const pushToServer = () => {
+        const uid = typeof getOrCreateUserId === 'function' ? getOrCreateUserId() : 'user_guest';
+        fetch(`/api/progress/${encodeURIComponent(uid)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ progress: taskProgressState })
+        }).catch(() => {});
+      };
+
+      clearTimeout(syncProgressTimer);
+      if (immediateServer) {
+        pushToServer();
+      } else {
+        syncProgressTimer = setTimeout(pushToServer, 400);
+      }
+    }
+
+    function mergeTaskProgress(saved) {
+      const def = getDefaultTaskProgress();
+      if (!saved || typeof saved !== 'object') return def;
+      return {
+        updatedAt: saved.updatedAt || 0,
+        activeGuideTab: saved.activeGuideTab || def.activeGuideTab,
+        activeTaskLevel: saved.activeTaskLevel || def.activeTaskLevel,
+        activeExamVariant: saved.activeExamVariant || def.activeExamVariant,
+        levels: {
+          lvl1: Object.assign({}, def.levels.lvl1, saved.levels?.lvl1 || {}),
+          lvl2: Object.assign({}, def.levels.lvl2, saved.levels?.lvl2 || {}),
+          lvl3: Object.assign({}, def.levels.lvl3, saved.levels?.lvl3 || {})
+        },
+        exams: {
+          space: Object.assign({}, def.exams.space, saved.exams?.space || {}),
+          college: Object.assign({}, def.exams.college, saved.exams?.college || {}),
+          socratic: Object.assign({}, def.exams.socratic, saved.exams?.socratic || {})
+        },
+        auditChecked: Array.isArray(saved.auditChecked) ? saved.auditChecked : []
+      };
+    }
+
+    async function loadTaskProgress() {
+      let localData = null;
+      try {
+        const raw = localStorage.getItem(getTaskProgressStorageKey());
+        if (raw) localData = JSON.parse(raw);
+      } catch (e) {}
+
+      taskProgressState = mergeTaskProgress(localData);
+      applyTaskProgressUI();
+
+      // Fetch server backup and apply if server has newer state
+      try {
+        const uid = typeof getOrCreateUserId === 'function' ? getOrCreateUserId() : 'user_guest';
+        const res = await fetch(`/api/progress/${encodeURIComponent(uid)}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.progress) {
+            const serverTs = json.progress.updatedAt || 0;
+            if (!localData || serverTs > (taskProgressState.updatedAt || 0)) {
+              taskProgressState = mergeTaskProgress(json.progress);
+              try {
+                localStorage.setItem(getTaskProgressStorageKey(), JSON.stringify(taskProgressState));
+              } catch (e) {}
+              applyTaskProgressUI();
+            }
+          }
+        }
+      } catch (e) {}
+    }
+
+    function renderAIExamResultsBox(box, resultsArr) {
+      if (!box || !Array.isArray(resultsArr) || resultsArr.length === 0) {
+        if (box) box.classList.remove('active');
+        return;
+      }
+      const total = resultsArr.length;
+      const passedTests = resultsArr.filter(r => r.isOk).length;
+      const allPassed = passedTests === total;
+
+      box.classList.add('active');
+      box.innerHTML = `
+        <div class="verify-summary ${allPassed ? 'ok' : 'warn'}">
+          <span>${allPassed ? '🏆 Экзамен сдан! Бот прошёл проверку!' : '⚠️ Бот прошёл не все тесты'}</span>
+          <span>${passedTests} / ${total}</span>
+        </div>
+        ${resultsArr.map(r => `
+          <div class="ai-exam-box">
+            <div class="ai-exam-q">${escapeHtml(r.title)}</div>
+            <div style="color:var(--text-dim); font-style:italic;">Запрос: «${escapeHtml(r.question)}»</div>
+            <div class="ai-exam-a">${escapeHtml(r.answer || 'Пустой ответ')}</div>
+            <div class="ai-exam-verdict ${r.isOk ? 'ok' : 'fail'}">
+              ${escapeHtml(r.verdictText)}
+            </div>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function updateTasksProgressSummaryUI() {
+      const lvlIds = ['lvl1', 'lvl2', 'lvl3'];
+      const examIds = ['space', 'college', 'socratic'];
+      let passedTotal = 0;
+
+      lvlIds.forEach(lvl => {
+        const isPassed = Boolean(taskProgressState.levels[lvl]?.passed);
+        if (isPassed) passedTotal++;
+        const btn = document.getElementById(`taskBtn_${lvl}`);
+        if (btn) btn.classList.toggle('passed', isPassed);
+
+        const restBtn = document.getElementById(`btnRestore_${lvl}`);
+        if (restBtn) {
+          restBtn.style.display = taskProgressState.levels[lvl]?.snapshot ? 'inline-flex' : 'none';
+        }
+      });
+
+      let anyExamPassed = false;
+      examIds.forEach(ex => {
+        const isPassed = Boolean(taskProgressState.exams[ex]?.passed);
+        if (isPassed) {
+          passedTotal++;
+          anyExamPassed = true;
+        }
+        const vBtn = document.getElementById(`examVarBtn_${ex}`);
+        if (vBtn) vBtn.classList.toggle('passed', isPassed);
+      });
+
+      const examTabBtn = document.getElementById('taskBtn_exam');
+      if (examTabBtn) examTabBtn.classList.toggle('passed', anyExamPassed);
+
+      const totalTasks = lvlIds.length + examIds.length;
+      const counterEl = document.getElementById('tasksProgressCounter');
+      const barEl = document.getElementById('tasksProgressBar');
+      const hintEl = document.getElementById('tasksProgressHint');
+      if (counterEl) counterEl.textContent = `${passedTotal} / ${totalTasks}`;
+      if (barEl) barEl.style.width = `${Math.round((passedTotal / totalTasks) * 100)}%`;
+      if (hintEl) {
+        hintEl.textContent = passedTotal === totalTasks
+          ? '🏆 Все уровни и экзамены пройдены!'
+          : (passedTotal > 0 ? 'Прогресс и схемы сохранены' : 'Сохраняется автоматически');
+      }
+    }
+
+    function applySavedExamVariantUI(variant) {
+      const exData = taskProgressState.exams[variant];
+      const schemaBox = document.getElementById('verifyBox_exam_schema');
+      const aiBox = document.getElementById('verifyBox_exam_ai');
+      const restBtn = document.getElementById('btnRestore_exam');
+
+      if (exData && Array.isArray(exData.schemaChecks) && exData.schemaChecks.length > 0) {
+        renderVerifyResult('verifyBox_exam_schema', exData.schemaChecks, null, false);
+      } else if (schemaBox) {
+        schemaBox.classList.remove('active');
+      }
+
+      if (exData && Array.isArray(exData.aiResults) && exData.aiResults.length > 0) {
+        renderAIExamResultsBox(aiBox, exData.aiResults);
+      } else if (aiBox) {
+        aiBox.classList.remove('active');
+      }
+
+      if (restBtn) {
+        restBtn.style.display = exData?.snapshot ? 'inline-flex' : 'none';
+      }
+    }
+
+    function applyTaskProgressUI() {
+      // 1. Restore level check boxes
+      ['lvl1', 'lvl2', 'lvl3'].forEach(lvl => {
+        const lvlData = taskProgressState.levels[lvl];
+        const box = document.getElementById(`verifyBox_${lvl}`);
+        if (lvlData && Array.isArray(lvlData.checks) && lvlData.checks.length > 0) {
+          renderVerifyResult(`verifyBox_${lvl}`, lvlData.checks, `taskBtn_${lvl}`, false);
+        } else if (box) {
+          box.classList.remove('active');
+        }
+      });
+
+      // 2. Restore active guide tab, task level & exam variant
+      switchGuideTab(taskProgressState.activeGuideTab || 'about', true);
+      switchTaskLevel(taskProgressState.activeTaskLevel || 'lvl1', true);
+      selectExamVariant(taskProgressState.activeExamVariant || 'space', true);
+
+      // 3. Restore audit checklist checkboxes
+      if (Array.isArray(taskProgressState.auditChecked)) {
+        const cbs = document.querySelectorAll('#auditChecklistItems input[type="checkbox"]');
+        cbs.forEach((cb, idx) => {
+          cb.checked = taskProgressState.auditChecked.includes(idx);
+        });
+        calcAuditScore(true);
+      }
+
+      updateTasksProgressSummaryUI();
+    }
+
+    function restoreTaskSnapshot(key) {
+      let snapshot = null;
+      let label = '';
+      if (key === 'exam') {
+        snapshot = taskProgressState.exams[currentExamVariant]?.snapshot || null;
+        label = `Экзамена (${currentExamVariant})`;
+      } else {
+        snapshot = taskProgressState.levels[key]?.snapshot || null;
+        label = key === 'lvl1' ? 'Уровня 1' : (key === 'lvl2' ? 'Уровня 2' : 'Уровня 3');
+      }
+      if (!snapshot) {
+        showToast('Для этого задания ещё нет сохранённой схемы', 'info');
+        return;
+      }
+      editingBotId = null;
+      updateEditingBanner();
+      restoreWorkflowSnapshot(snapshot);
+      saveWorkflowState();
+      switchTab('nodes');
+      showToast(`Схема ${label} восстановлена на холсте! 📂`, 'success');
+    }
+
+    function resetAllTaskProgress() {
+      if (!confirm('Сбросить весь прогресс по заданиям, результатам экзамена и сохранённым схемам?')) return;
+      const prevTab = taskProgressState.activeGuideTab;
+      const prevLevel = taskProgressState.activeTaskLevel;
+      taskProgressState = getDefaultTaskProgress();
+      taskProgressState.activeGuideTab = prevTab;
+      taskProgressState.activeTaskLevel = prevLevel;
+      saveTaskProgress(true);
+      applyTaskProgressUI();
+      showToast('Прогресс заданий сброшен', 'info');
+    }
+
     // --- Right Project Guide & Scenario Loader Logic ---
     function toggleProjectGuide() {
       const panel = document.getElementById('projectGuidePanel');
       if (!panel) return;
       panel.classList.toggle('active');
       if (panel.classList.contains('active')) {
-        calcAuditScore();
+        calcAuditScore(true);
       }
     }
 
-    function switchGuideTab(tabName) {
+    function switchGuideTab(tabName, skipSave = false) {
       const tabs = document.querySelectorAll('.guide-tab-btn');
       const panels = document.querySelectorAll('.guide-tab-panel');
       tabs.forEach(t => t.classList.remove('active'));
@@ -4597,12 +4893,17 @@
           btn.classList.add('active');
         }
       });
+
+      if (!skipSave) {
+        taskProgressState.activeGuideTab = tabName;
+        saveTaskProgress();
+      }
     }
 
     // --- Interactive Tasks, Step-by-step Guides & Auto-Verification Engine ---
     let currentExamVariant = 'space';
 
-    function switchTaskLevel(level) {
+    function switchTaskLevel(level, skipSave = false) {
       document.querySelectorAll('.task-level-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.task-level-panel').forEach(p => p.classList.remove('active'));
 
@@ -4610,9 +4911,14 @@
       const targetPanel = document.getElementById(`taskPanel_${level}`);
       if (targetBtn) targetBtn.classList.add('active');
       if (targetPanel) targetPanel.classList.add('active');
+
+      if (!skipSave) {
+        taskProgressState.activeTaskLevel = level;
+        saveTaskProgress();
+      }
     }
 
-    function selectExamVariant(variant) {
+    function selectExamVariant(variant, skipSave = false) {
       currentExamVariant = variant;
       document.querySelectorAll('.exam-variant-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.exam-brief-card').forEach(c => c.style.display = 'none');
@@ -4622,10 +4928,12 @@
       if (btn) btn.classList.add('active');
       if (card) card.style.display = 'flex';
 
-      const schemaBox = document.getElementById('verifyBox_exam_schema');
-      const aiBox = document.getElementById('verifyBox_exam_ai');
-      if (schemaBox) schemaBox.classList.remove('active');
-      if (aiBox) aiBox.classList.remove('active');
+      applySavedExamVariantUI(variant);
+
+      if (!skipSave) {
+        taskProgressState.activeExamVariant = variant;
+        saveTaskProgress();
+      }
     }
 
     function inspectCanvasArchitecture() {
@@ -4747,7 +5055,7 @@
       };
     }
 
-    function renderVerifyResult(boxId, checks, levelBtnId) {
+    function renderVerifyResult(boxId, checks, levelBtnId, showToastMsg = true) {
       const box = document.getElementById(boxId);
       if (!box) return false;
       const passedCount = checks.filter(c => c.ok).length;
@@ -4775,10 +5083,12 @@
         if (btn) btn.classList.toggle('passed', allOk);
       }
 
-      if (allOk) {
-        showToast('Проверка пройдена на 100%! 🎉', 'success');
-      } else {
-        showToast(`Выполнено ${passedCount} из ${checks.length} пунктов`, 'info');
+      if (showToastMsg) {
+        if (allOk) {
+          showToast('Проверка пройдена на 100%! 🎉', 'success');
+        } else {
+          showToast(`Выполнено ${passedCount} из ${checks.length} пунктов`, 'info');
+        }
       }
       return allOk;
     }
@@ -4858,7 +5168,15 @@
         ];
       }
 
-      renderVerifyResult(`verifyBox_${level}`, checks, `taskBtn_${level}`);
+      const allOk = renderVerifyResult(`verifyBox_${level}`, checks, `taskBtn_${level}`, true);
+      if (taskProgressState.levels[level]) {
+        taskProgressState.levels[level].checks = checks;
+        taskProgressState.levels[level].passed = allOk;
+        taskProgressState.levels[level].snapshot = exportWorkflowSnapshot();
+        updateTasksProgressSummaryUI();
+        saveTaskProgress(true);
+      }
+      return allOk;
     }
 
     const EXAM_TASKS = {
@@ -4977,16 +5295,28 @@
       }
     };
 
-    function verifyExamSchema() {
+    function verifyExamSchema(showToastMsg = true) {
       const arch = inspectCanvasArchitecture();
       const task = EXAM_TASKS[currentExamVariant];
       if (!task) return false;
       const checks = task.schemaChecks(arch);
-      return renderVerifyResult('verifyBox_exam_schema', checks, null);
+      const schemaOk = renderVerifyResult('verifyBox_exam_schema', checks, null, showToastMsg);
+
+      const ex = taskProgressState.exams[currentExamVariant];
+      if (ex) {
+        ex.schemaChecks = checks;
+        ex.schemaPassed = schemaOk;
+        ex.passed = Boolean(ex.schemaPassed && ex.aiPassed);
+        ex.snapshot = exportWorkflowSnapshot();
+        updateTasksProgressSummaryUI();
+        saveTaskProgress(true);
+      }
+      return schemaOk;
     }
 
     async function runExamAITest() {
-      const task = EXAM_TASKS[currentExamVariant];
+      const variant = currentExamVariant;
+      const task = EXAM_TASKS[variant];
       if (!task) return;
       const arch = inspectCanvasArchitecture();
 
@@ -5008,7 +5338,7 @@
       box.innerHTML = `<div class="verify-summary warn"><span>🧪 Запуск живых тестов модели...</span><span>⏳</span></div>`;
 
       let passedTests = 0;
-      const resultsHtml = [];
+      const resultsData = [];
 
       try {
         for (const testItem of task.aiTests) {
@@ -5047,32 +5377,33 @@
             ? '❌ Нет ответа от локальной нейросети (проверьте, запущена ли LLM на порту 8000)'
             : (isOk ? '✅ ' + testItem.okMsg : '❌ ' + testItem.failMsg);
 
-          resultsHtml.push(`
-            <div class="ai-exam-box">
-              <div class="ai-exam-q">${escapeHtml(testItem.title)}</div>
-              <div style="color:var(--text-dim); font-style:italic;">Запрос: «${escapeHtml(testItem.question)}»</div>
-              <div class="ai-exam-a">${escapeHtml(answer || 'Пустой ответ')}</div>
-              <div class="ai-exam-verdict ${isOk ? 'ok' : 'fail'}">
-                ${escapeHtml(verdictText)}
-              </div>
-            </div>
-          `);
+          resultsData.push({
+            title: testItem.title,
+            question: testItem.question,
+            answer: answer || 'Пустой ответ',
+            isOk,
+            verdictText
+          });
         }
 
         const total = task.aiTests.length;
         const allPassed = passedTests === total;
 
-        box.innerHTML = `
-          <div class="verify-summary ${allPassed ? 'ok' : 'warn'}">
-            <span>${allPassed ? '🏆 Экзамен сдан! Бот прошёл проверку!' : '⚠️ Бот прошёл не все тесты'}</span>
-            <span>${passedTests} / ${total}</span>
-          </div>
-          ${resultsHtml.join('')}
-        `;
+        renderAIExamResultsBox(box, resultsData);
 
-        const schemaOk = verifyExamSchema();
-        const examTabBtn = document.getElementById('taskBtn_exam');
-        if (examTabBtn) examTabBtn.classList.toggle('passed', allPassed && schemaOk);
+        const ex = taskProgressState.exams[variant];
+        if (ex) {
+          ex.aiResults = resultsData;
+          ex.aiPassed = allPassed;
+          ex.snapshot = exportWorkflowSnapshot();
+        }
+
+        const schemaOk = verifyExamSchema(false);
+        if (ex) {
+          ex.passed = Boolean(schemaOk && allPassed);
+        }
+        updateTasksProgressSummaryUI();
+        saveTaskProgress(true);
 
         if (allPassed) {
           showToast('AI-экзамен успешно сдан! 🏆', 'success');
@@ -5125,7 +5456,7 @@
       toggleProjectGuide();
     }
 
-    function calcAuditScore() {
+    function calcAuditScore(skipSave = false) {
       const cbs = document.querySelectorAll('#auditChecklistItems input[type="checkbox"]');
       let score = 0;
       const checkedArr = [];
@@ -5139,6 +5470,11 @@
       try {
         localStorage.setItem('bot_audit_checklist', JSON.stringify(checkedArr));
       } catch(e) {}
+
+      if (!skipSave && typeof taskProgressState !== 'undefined') {
+        taskProgressState.auditChecked = checkedArr;
+        saveTaskProgress();
+      }
 
       const numEl = document.getElementById('auditScoreNum');
       const barEl = document.getElementById('auditFillBar');
@@ -5177,7 +5513,7 @@
           }
         }
       } catch(e) {}
-      calcAuditScore();
+      calcAuditScore(true);
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
@@ -5189,6 +5525,8 @@
       if (!loaded) {
         setupInitialDefaultWorkflow();
       }
+
+      loadTaskProgress();
 
       if (nodesContainer) {
         nodesContainer.addEventListener('input', debounceSaveWorkflow);
@@ -5241,85 +5579,237 @@
       saveWorkflowTimeout = setTimeout(saveWorkflowState, 350);
     }
 
+    function exportWorkflowSnapshot() {
+      const nodesData = [];
+      Object.keys(nodes).forEach(id => {
+        const nodeObj = nodes[id];
+        if (!nodeObj || !nodeObj.element) return;
+        const el = nodeObj.element;
+        const x = Math.round(parseFloat(el.style.left) || 0);
+        const y = Math.round(parseFloat(el.style.top) || 0);
+        const type = nodeObj.type;
+        const val = {};
+
+        if (type === 'char') {
+          const inpName = el.querySelector('.node-val-name');
+          const inpAvatar = el.querySelector('.node-val-avatar');
+          if (inpName) val.name = inpName.value;
+          if (inpAvatar) val.avatar = inpAvatar.value;
+        } else if (type === 'prompt') {
+          const p = el.querySelector('.node-val-prompt');
+          if (p) val.prompt = p.value;
+        } else if (type === 'rules') {
+          const tone = el.querySelector('.node-val-tone');
+          if (tone) val.tone = tone.value;
+          const chks = el.querySelectorAll('.node-rule-check');
+          val.rules = Array.from(chks).map(c => c.checked);
+        } else if (type === 'params') {
+          const temp = el.querySelector('.node-val-temp');
+          const tok = el.querySelector('.node-val-tokens');
+          if (temp) val.temp = temp.value;
+          if (tok) val.tokens = tok.value;
+        } else if (type === 'format') {
+          const fmt = el.querySelector('.node-val-format-type');
+          if (fmt) val.formatType = fmt.value;
+        } else if (type === 'fewshot') {
+          const q1 = el.querySelector('.node-val-few-q1');
+          const a1 = el.querySelector('.node-val-few-a1');
+          const q2 = el.querySelector('.node-val-few-q2');
+          const a2 = el.querySelector('.node-val-few-a2');
+          if (q1) val.q1 = q1.value;
+          if (a1) val.a1 = a1.value;
+          if (q2) val.q2 = q2.value;
+          if (a2) val.a2 = a2.value;
+        } else if (type === 'guard') {
+          const lang = el.querySelector('.node-val-guard-lang');
+          const soc = el.querySelector('.node-val-guard-socratic');
+          const lat = el.querySelector('.node-val-guard-latex');
+          const nof = el.querySelector('.node-val-guard-nofake');
+          if (lang) val.lang = lang.value;
+          if (soc) val.socratic = soc.checked;
+          if (lat) val.latex = lat.checked;
+          if (nof) val.nofake = nof.checked;
+        } else if (type === 'quick') {
+          const gr = el.querySelector('.node-val-greeting');
+          const q1 = el.querySelector('.node-val-q1');
+          const q2 = el.querySelector('.node-val-q2');
+          const q3 = el.querySelector('.node-val-q3');
+          if (gr) val.greeting = gr.value;
+          if (q1) val.q1 = q1.value;
+          if (q2) val.q2 = q2.value;
+          if (q3) val.q3 = q3.value;
+        } else if (type === 'kb') {
+          const kb = el.querySelector('.node-val-kb');
+          if (kb) val.kb = kb.value;
+        }
+
+        nodesData.push({ id, type, x, y, val });
+      });
+
+      return {
+        nodes: nodesData,
+        connections: JSON.parse(JSON.stringify(connections)),
+        viewport: { panX: Math.round(panX), panY: Math.round(panY), scale: parseFloat(scale.toFixed(2)) },
+        nodeCounter
+      };
+    }
+
     function saveWorkflowState() {
       try {
-        const nodesData = [];
-        Object.keys(nodes).forEach(id => {
-          const nodeObj = nodes[id];
-          if (!nodeObj || !nodeObj.element) return;
-          const el = nodeObj.element;
-          const x = Math.round(parseFloat(el.style.left) || 0);
-          const y = Math.round(parseFloat(el.style.top) || 0);
-          const type = nodeObj.type;
-          const val = {};
-
-          if (type === 'char') {
-            const inpName = el.querySelector('.node-val-name');
-            const inpAvatar = el.querySelector('.node-val-avatar');
-            if (inpName) val.name = inpName.value;
-            if (inpAvatar) val.avatar = inpAvatar.value;
-          } else if (type === 'prompt') {
-            const p = el.querySelector('.node-val-prompt');
-            if (p) val.prompt = p.value;
-          } else if (type === 'rules') {
-            const tone = el.querySelector('.node-val-tone');
-            if (tone) val.tone = tone.value;
-            const chks = el.querySelectorAll('.node-rule-check');
-            val.rules = Array.from(chks).map(c => c.checked);
-          } else if (type === 'params') {
-            const temp = el.querySelector('.node-val-temp');
-            const tok = el.querySelector('.node-val-tokens');
-            if (temp) val.temp = temp.value;
-            if (tok) val.tokens = tok.value;
-          } else if (type === 'format') {
-            const fmt = el.querySelector('.node-val-format-type');
-            if (fmt) val.formatType = fmt.value;
-          } else if (type === 'fewshot') {
-            const q1 = el.querySelector('.node-val-few-q1');
-            const a1 = el.querySelector('.node-val-few-a1');
-            const q2 = el.querySelector('.node-val-few-q2');
-            const a2 = el.querySelector('.node-val-few-a2');
-            if (q1) val.q1 = q1.value;
-            if (a1) val.a1 = a1.value;
-            if (q2) val.q2 = q2.value;
-            if (a2) val.a2 = a2.value;
-          } else if (type === 'guard') {
-            const lang = el.querySelector('.node-val-guard-lang');
-            const soc = el.querySelector('.node-val-guard-socratic');
-            const lat = el.querySelector('.node-val-guard-latex');
-            const nof = el.querySelector('.node-val-guard-nofake');
-            if (lang) val.lang = lang.value;
-            if (soc) val.socratic = soc.checked;
-            if (lat) val.latex = lat.checked;
-            if (nof) val.nofake = nof.checked;
-          } else if (type === 'quick') {
-            const gr = el.querySelector('.node-val-greeting');
-            const q1 = el.querySelector('.node-val-q1');
-            const q2 = el.querySelector('.node-val-q2');
-            const q3 = el.querySelector('.node-val-q3');
-            if (gr) val.greeting = gr.value;
-            if (q1) val.q1 = q1.value;
-            if (q2) val.q2 = q2.value;
-            if (q3) val.q3 = q3.value;
-          } else if (type === 'kb') {
-            const kb = el.querySelector('.node-val-kb');
-            if (kb) val.kb = kb.value;
-          }
-
-          nodesData.push({ id, type, x, y, val });
-        });
-
-        const state = {
-          nodes: nodesData,
-          connections: connections,
-          viewport: { panX: Math.round(panX), panY: Math.round(panY), scale: parseFloat(scale.toFixed(2)) },
-          nodeCounter
-        };
-
+        const state = exportWorkflowSnapshot();
         localStorage.setItem('bot_workflow_canvas', JSON.stringify(state));
       } catch (err) {
         console.error('Error saving workflow state:', err);
       }
+    }
+
+    function restoreWorkflowSnapshot(state) {
+      if (!state || !Array.isArray(state.nodes) || state.nodes.length === 0) return false;
+
+      nodesContainer.innerHTML = '';
+      nodes = {};
+      connections = [];
+
+      if (state.nodeCounter && typeof state.nodeCounter === 'number') {
+        nodeCounter = state.nodeCounter;
+      }
+
+      if (state.viewport) {
+        if (typeof state.viewport.panX === 'number') panX = state.viewport.panX;
+        if (typeof state.viewport.panY === 'number') panY = state.viewport.panY;
+        if (typeof state.viewport.scale === 'number') scale = state.viewport.scale;
+        applyTransform();
+      }
+
+      state.nodes.forEach(n => {
+        createNodeElement(n.type, n.x, n.y, n.id);
+        const el = document.getElementById(n.id);
+        if (!el || !n.val) return;
+
+        if (n.type === 'char') {
+          if (n.val.name !== undefined) {
+            const inp = el.querySelector('.node-val-name');
+            if (inp) inp.value = n.val.name;
+          }
+          if (n.val.avatar) {
+            setNodeAvatar(n.id, n.val.avatar);
+          }
+        } else if (n.type === 'prompt') {
+          if (n.val.prompt !== undefined) {
+            const p = el.querySelector('.node-val-prompt');
+            if (p) p.value = n.val.prompt;
+          }
+        } else if (n.type === 'rules') {
+          if (n.val.tone) {
+            const sel = el.querySelector('.node-val-tone');
+            if (sel) sel.value = n.val.tone;
+          }
+          if (Array.isArray(n.val.rules)) {
+            const chks = el.querySelectorAll('.node-rule-check');
+            chks.forEach((chk, i) => {
+              if (n.val.rules[i] !== undefined) chk.checked = n.val.rules[i];
+            });
+          }
+        } else if (n.type === 'params') {
+          if (n.val.temp !== undefined) {
+            const slider = el.querySelector('.node-val-temp');
+            if (slider) {
+              slider.value = n.val.temp;
+              onTempSliderInput({ target: slider }, n.id);
+            }
+          }
+          if (n.val.tokens !== undefined) {
+            const tok = el.querySelector('.node-val-tokens');
+            if (tok) tok.value = n.val.tokens;
+            const btns = el.querySelectorAll('.btn-toggle');
+            btns.forEach(b => {
+              const isMatch = (n.val.tokens == 140 && b.textContent.includes('1–2')) ||
+                              (n.val.tokens == 350 && b.textContent.includes('Развёрнуто'));
+              b.classList.toggle('active', isMatch);
+            });
+          }
+        } else if (n.type === 'format') {
+          if (n.val.formatType) {
+            const sel = el.querySelector('.node-val-format-type');
+            if (sel) {
+              sel.value = n.val.formatType;
+              onFormatChange(n.id);
+            }
+          }
+        } else if (n.type === 'fewshot') {
+          if (n.val.q1 !== undefined) {
+            const inp = el.querySelector('.node-val-few-q1');
+            if (inp) inp.value = n.val.q1;
+          }
+          if (n.val.a1 !== undefined) {
+            const inp = el.querySelector('.node-val-few-a1');
+            if (inp) inp.value = n.val.a1;
+          }
+          if (n.val.q2 !== undefined) {
+            const inp = el.querySelector('.node-val-few-q2');
+            if (inp) inp.value = n.val.q2;
+          }
+          if (n.val.a2 !== undefined) {
+            const inp = el.querySelector('.node-val-few-a2');
+            if (inp) inp.value = n.val.a2;
+          }
+        } else if (n.type === 'guard') {
+          if (n.val.lang) {
+            const sel = el.querySelector('.node-val-guard-lang');
+            if (sel) sel.value = n.val.lang;
+          }
+          if (n.val.socratic !== undefined) {
+            const soc = el.querySelector('.node-val-guard-socratic');
+            if (soc) soc.checked = n.val.socratic;
+          }
+          if (n.val.latex !== undefined) {
+            const lat = el.querySelector('.node-val-guard-latex');
+            if (lat) lat.checked = n.val.latex;
+          }
+          if (n.val.nofake !== undefined) {
+            const nof = el.querySelector('.node-val-guard-nofake');
+            if (nof) nof.checked = n.val.nofake;
+          }
+        } else if (n.type === 'quick') {
+          if (n.val.greeting !== undefined) {
+            const gr = el.querySelector('.node-val-greeting');
+            if (gr) gr.value = n.val.greeting;
+          }
+          if (n.val.q1 !== undefined) {
+            const q1 = el.querySelector('.node-val-q1');
+            if (q1) q1.value = n.val.q1;
+          }
+          if (n.val.q2 !== undefined) {
+            const q2 = el.querySelector('.node-val-q2');
+            if (q2) q2.value = n.val.q2;
+          }
+          if (n.val.q3 !== undefined) {
+            const q3 = el.querySelector('.node-val-q3');
+            if (q3) q3.value = n.val.q3;
+          }
+        } else if (n.type === 'kb') {
+          if (n.val.kb !== undefined) {
+            const kb = el.querySelector('.node-val-kb');
+            if (kb) kb.value = n.val.kb;
+          }
+        }
+      });
+
+      if (Array.isArray(state.connections)) {
+        state.connections.forEach(c => {
+          if (document.getElementById(`${c.fromNode}_${c.fromPort}`) &&
+              document.getElementById(`${c.toNode}_${c.toPort}`)) {
+            connectPorts(c.fromNode, c.fromPort, c.toNode, c.toPort, c.type);
+          }
+        });
+      }
+
+      setTimeout(() => {
+        updateAllWires();
+        updateAllTerminals();
+      }, 60);
+
+      return true;
     }
 
     function loadSavedWorkflow() {
@@ -5327,152 +5817,7 @@
         const raw = localStorage.getItem('bot_workflow_canvas');
         if (!raw) return false;
         const state = JSON.parse(raw);
-        if (!state || !Array.isArray(state.nodes) || state.nodes.length === 0) return false;
-
-        nodesContainer.innerHTML = '';
-        nodes = {};
-        connections = [];
-
-        if (state.nodeCounter && typeof state.nodeCounter === 'number') {
-          nodeCounter = state.nodeCounter;
-        }
-
-        if (state.viewport) {
-          if (typeof state.viewport.panX === 'number') panX = state.viewport.panX;
-          if (typeof state.viewport.panY === 'number') panY = state.viewport.panY;
-          if (typeof state.viewport.scale === 'number') scale = state.viewport.scale;
-          applyTransform();
-        }
-
-        state.nodes.forEach(n => {
-          createNodeElement(n.type, n.x, n.y, n.id);
-          const el = document.getElementById(n.id);
-          if (!el || !n.val) return;
-
-          if (n.type === 'char') {
-            if (n.val.name !== undefined) {
-              const inp = el.querySelector('.node-val-name');
-              if (inp) inp.value = n.val.name;
-            }
-            if (n.val.avatar) {
-              setNodeAvatar(n.id, n.val.avatar);
-            }
-          } else if (n.type === 'prompt') {
-            if (n.val.prompt !== undefined) {
-              const p = el.querySelector('.node-val-prompt');
-              if (p) p.value = n.val.prompt;
-            }
-          } else if (n.type === 'rules') {
-            if (n.val.tone) {
-              const sel = el.querySelector('.node-val-tone');
-              if (sel) sel.value = n.val.tone;
-            }
-            if (Array.isArray(n.val.rules)) {
-              const chks = el.querySelectorAll('.node-rule-check');
-              chks.forEach((chk, i) => {
-                if (n.val.rules[i] !== undefined) chk.checked = n.val.rules[i];
-              });
-            }
-          } else if (n.type === 'params') {
-            if (n.val.temp !== undefined) {
-              const slider = el.querySelector('.node-val-temp');
-              if (slider) {
-                slider.value = n.val.temp;
-                onTempSliderInput({ target: slider }, n.id);
-              }
-            }
-            if (n.val.tokens !== undefined) {
-              const tok = el.querySelector('.node-val-tokens');
-              if (tok) tok.value = n.val.tokens;
-              const btns = el.querySelectorAll('.btn-toggle');
-              btns.forEach(b => {
-                const isMatch = (n.val.tokens == 140 && b.textContent.includes('1–2')) ||
-                                (n.val.tokens == 350 && b.textContent.includes('Развёрнуто'));
-                b.classList.toggle('active', isMatch);
-              });
-            }
-          } else if (n.type === 'format') {
-            if (n.val.formatType) {
-              const sel = el.querySelector('.node-val-format-type');
-              if (sel) {
-                sel.value = n.val.formatType;
-                onFormatChange(n.id);
-              }
-            }
-          } else if (n.type === 'fewshot') {
-            if (n.val.q1 !== undefined) {
-              const inp = el.querySelector('.node-val-few-q1');
-              if (inp) inp.value = n.val.q1;
-            }
-            if (n.val.a1 !== undefined) {
-              const inp = el.querySelector('.node-val-few-a1');
-              if (inp) inp.value = n.val.a1;
-            }
-            if (n.val.q2 !== undefined) {
-              const inp = el.querySelector('.node-val-few-q2');
-              if (inp) inp.value = n.val.q2;
-            }
-            if (n.val.a2 !== undefined) {
-              const inp = el.querySelector('.node-val-few-a2');
-              if (inp) inp.value = n.val.a2;
-            }
-          } else if (n.type === 'guard') {
-            if (n.val.lang) {
-              const sel = el.querySelector('.node-val-guard-lang');
-              if (sel) sel.value = n.val.lang;
-            }
-            if (n.val.socratic !== undefined) {
-              const soc = el.querySelector('.node-val-guard-socratic');
-              if (soc) soc.checked = n.val.socratic;
-            }
-            if (n.val.latex !== undefined) {
-              const lat = el.querySelector('.node-val-guard-latex');
-              if (lat) lat.checked = n.val.latex;
-            }
-            if (n.val.nofake !== undefined) {
-              const nof = el.querySelector('.node-val-guard-nofake');
-              if (nof) nof.checked = n.val.nofake;
-            }
-          } else if (n.type === 'quick') {
-            if (n.val.greeting !== undefined) {
-              const gr = el.querySelector('.node-val-greeting');
-              if (gr) gr.value = n.val.greeting;
-            }
-            if (n.val.q1 !== undefined) {
-              const q1 = el.querySelector('.node-val-q1');
-              if (q1) q1.value = n.val.q1;
-            }
-            if (n.val.q2 !== undefined) {
-              const q2 = el.querySelector('.node-val-q2');
-              if (q2) q2.value = n.val.q2;
-            }
-            if (n.val.q3 !== undefined) {
-              const q3 = el.querySelector('.node-val-q3');
-              if (q3) q3.value = n.val.q3;
-            }
-          } else if (n.type === 'kb') {
-            if (n.val.kb !== undefined) {
-              const kb = el.querySelector('.node-val-kb');
-              if (kb) kb.value = n.val.kb;
-            }
-          }
-        });
-
-        if (Array.isArray(state.connections)) {
-          state.connections.forEach(c => {
-            if (document.getElementById(`${c.fromNode}_${c.fromPort}`) &&
-                document.getElementById(`${c.toNode}_${c.toPort}`)) {
-              connectPorts(c.fromNode, c.fromPort, c.toNode, c.toPort, c.type);
-            }
-          });
-        }
-
-        setTimeout(() => {
-          updateAllWires();
-          updateAllTerminals();
-        }, 60);
-
-        return true;
+        return restoreWorkflowSnapshot(state);
       } catch (err) {
         console.error('Error loading saved workflow:', err);
         return false;
@@ -7602,6 +7947,7 @@
       closeUserProfileModal();
       showToast('Сессия обновлена', 'info');
       fetchBotsList();
+      loadTaskProgress();
     }
 
     let currentGalleryFilter = 'my';
@@ -8468,6 +8814,21 @@
       <!-- TAB 3: Пошаговые задания и Самостоятельный экзамен с проверками -->
       <div class="guide-tab-panel" id="guideTab_tasks">
         
+        <!-- Progress Summary Bar -->
+        <div class="audit-bar-box" style="padding:8px 10px;">
+          <div class="audit-bar-header" style="font-size:11.5px;">
+            <span>📈 Прогресс заданий</span>
+            <span id="tasksProgressCounter" style="color:var(--wire-char);">0 / 6</span>
+          </div>
+          <div class="audit-meter">
+            <div class="audit-fill" id="tasksProgressBar"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+            <span id="tasksProgressHint" style="font-size:10.5px; color:var(--text-dim);">Сохраняется автоматически</span>
+            <button type="button" class="btn-sm-action" onclick="resetAllTaskProgress()" style="font-size:10px; padding:2px 6px;" title="Сбросить прогресс и сохранённые проверки">↺ Сбросить</button>
+          </div>
+        </div>
+
         <!-- Selector between levels -->
         <div class="task-level-bar">
           <button type="button" class="task-level-btn active" id="taskBtn_lvl1" onclick="switchTaskLevel('lvl1')">🟢 Ур. 1</button>
@@ -8532,6 +8893,7 @@
 
           <button type="button" class="btn-verify-task" onclick="verifyPracticeLevel('lvl1')">🔍 Проверить Уровень 1</button>
           <div class="verify-results-box" id="verifyBox_lvl1"></div>
+          <button type="button" class="btn-restore-task" id="btnRestore_lvl1" onclick="restoreTaskSnapshot('lvl1')" style="display:none;">📂 Загрузить сохранённую схему Уровня 1</button>
         </div>
 
         <!-- LEVEL 2: Практик -->
@@ -8588,6 +8950,7 @@
 
           <button type="button" class="btn-verify-task" onclick="verifyPracticeLevel('lvl2')">🔍 Проверить Уровень 2</button>
           <div class="verify-results-box" id="verifyBox_lvl2"></div>
+          <button type="button" class="btn-restore-task" id="btnRestore_lvl2" onclick="restoreTaskSnapshot('lvl2')" style="display:none;">📂 Загрузить сохранённую схему Уровня 2</button>
         </div>
 
         <!-- LEVEL 3: Архитектор -->
@@ -8636,6 +8999,7 @@
 
           <button type="button" class="btn-verify-task" onclick="verifyPracticeLevel('lvl3')">🔍 Проверить Уровень 3</button>
           <div class="verify-results-box" id="verifyBox_lvl3"></div>
+          <button type="button" class="btn-restore-task" id="btnRestore_lvl3" onclick="restoreTaskSnapshot('lvl3')" style="display:none;">📂 Загрузить сохранённую схему Уровня 3</button>
         </div>
 
         <!-- LEVEL 4: Самостоятельное задание (ЭКЗАМЕН С ПРОВЕРКАМИ) -->
@@ -8702,6 +9066,8 @@
 
             <button type="button" class="btn-verify-task secondary" id="btnRunExamAI" onclick="runExamAITest()">🧪 Запустить живой AI-экзамен</button>
             <div class="verify-results-box" id="verifyBox_exam_ai"></div>
+
+            <button type="button" class="btn-restore-task" id="btnRestore_exam" onclick="restoreTaskSnapshot('exam')" style="display:none;">📂 Загрузить сохранённую схему этого варианта</button>
           </div>
         </div>
 
