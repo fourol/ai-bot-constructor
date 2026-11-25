@@ -588,7 +588,7 @@ class TestDraftRequest(BaseModel):
     message: str
     system_prompt: str
     temperature: Optional[float] = 0.7
-    max_tokens: Optional[int] = 160
+    max_tokens: Optional[int] = 350
     kb_text: Optional[str] = None
     history: Optional[List[dict]] = None
 
@@ -601,7 +601,8 @@ async def test_draft(payload: TestDraftRequest):
 
     system_prompt = payload.system_prompt.strip() or "Ты дружелюбный ИИ-помощник."
     bot_temp = float(payload.temperature if payload.temperature is not None else 0.7)
-    bot_max_tokens = int(payload.max_tokens if payload.max_tokens is not None else 160)
+    bot_max_tokens = int(payload.max_tokens if payload.max_tokens is not None else 350)
+    bot_max_tokens = min(max(bot_max_tokens, 50), 1024)
 
     relevant_chunks = []
     if payload.kb_text and payload.kb_text.strip():

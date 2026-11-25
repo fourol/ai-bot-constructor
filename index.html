@@ -5613,7 +5613,7 @@
             message: testQ,
             system_prompt: arch.compiledPrompt,
             temperature: arch.tempVal,
-            max_tokens: 180,
+            max_tokens: Math.max(arch.tokensVal || 350, 400),
             kb_text: arch.kbText || null,
             history: []
           })
@@ -5733,7 +5733,7 @@
             message: String(message),
             system_prompt: arch.compiledPrompt,
             temperature: arch.tempVal,
-            max_tokens: arch.tokensVal || 200,
+            max_tokens: Math.max(arch.tokensVal || 350, 400),
             kb_text: arch.kbText || null,
             history: []
           })
