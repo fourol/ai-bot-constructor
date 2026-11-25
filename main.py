@@ -110,9 +110,11 @@ STARTER_BOTS = [
         "Ты — преподаватель информатики для подготовки к ОГЭ и экзаменам. Помогай разбирать задачи по системам счисления, логическим выражениям, графам и алгоритмам на Python. Не давай готовый ответ сразу — задавай наводящий вопрос, чтобы ученик сам дошёл до правильного решения!",
         0.7,
         300,
-        'Для перевода числа из двоичной системы в десятичную суммируются степени двойки. 1 Кбайт = 1024 байта = 8192 бита. Таблицы истинности: операция "И" (&, AND) истинна только если оба высказывания истинны. "ИЛИ" (|, OR) ложна только если оба ложны.',
+        "Для перевода числа из двоичной системы в десятичную суммируются степени двойки. 1 Кбайт = 1024 байта = 8192 бита. Таблицы истинности: операция \"И\" (&, AND) истинна только если оба высказывания истинны. \"ИЛИ\" (|, OR) ложна только если оба ложны.",
     ),
 ]
+
+STARTER_BOT_IDS = {b[0] for b in STARTER_BOTS}
 
 
 def get_db():
@@ -407,7 +409,7 @@ async def list_bots():
             "temperature": row["temperature"] if row["temperature"] is not None else 0.7,
             "max_tokens": row["max_tokens"] if row["max_tokens"] is not None else 350,
             "created_at": row["created_at"],
-            "user_id": row["user_id"] or "system",
+            "user_id": row["user_id"] or "anon",
             "chunks_count": row["chunks_count"]
         }
         for row in rows
@@ -487,6 +489,8 @@ async def update_bot(
         existing = cursor.fetchone()
         if not existing:
             raise HTTPException(status_code=404, detail="Бот не найден")
+        if bot_id in STARTER_BOT_IDS or existing["user_id"] == "system":
+            raise HTTPException(status_code=403, detail="Системные образцы КС54 нельзя перезаписывать")
 
         cursor.execute(
             """
@@ -546,10 +550,12 @@ async def delete_bot(bot_id: str):
     bot_id = bot_id.strip()
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT id, name FROM bots WHERE id = ?", (bot_id,))
+        cursor.execute("SELECT id, name, user_id FROM bots WHERE id = ?", (bot_id,))
         bot = cursor.fetchone()
         if not bot:
             raise HTTPException(status_code=404, detail="Бот не найден")
+        if bot_id in STARTER_BOT_IDS or bot["user_id"] == "system":
+            raise HTTPException(status_code=403, detail="Системные образцы КС54 нельзя удалить")
 
         cursor.execute("DELETE FROM bots WHERE id = ?", (bot_id,))
         conn.commit()

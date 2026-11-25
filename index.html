@@ -3908,7 +3908,7 @@
             🔄 Новый диалог
           </button>
           <button class="btn-sm-action" onclick="copyBotLink()" title="Скопировать ссылку на этого бота">🔗 Ссылка</button>
-          <button class="btn-sm-action btn-delete-chat" onclick="deleteCurrentBot()" title="Удалить бота">🗑️</button>
+          <button class="btn-sm-action btn-delete-chat" id="btnDeleteCurrentBot" onclick="deleteCurrentBot()" title="Удалить моего бота">🗑️</button>
         </div>
       </div>
 
@@ -5543,14 +5543,20 @@
         lastBot = localStorage.getItem('bot_last_active_id');
       } catch(e) {}
 
-      if (botParam) {
+      const myId = getOrCreateUserId();
+      const myBots = allBots.filter(b => b.user_id === myId);
+
+      if (botParam && allBots.some(b => b.id === botParam)) {
         selectBot(botParam, false);
         switchTab('chat');
       } else if (lastBot && allBots.some(b => b.id === lastBot)) {
         selectBot(lastBot, false);
         if (lastTab === 'chat') switchTab('chat');
-      } else if (allBots.length > 0) {
-        selectBot(allBots[0].id, false);
+      } else if (myBots.length > 0) {
+        selectBot(myBots[0].id, false);
+        if (lastTab === 'chat') switchTab('chat');
+      } else {
+        showEmptyChatState();
         if (lastTab === 'chat') switchTab('chat');
       }
 
@@ -7744,7 +7750,9 @@
         return;
       }
 
-      editingBotId = bot.id;
+      const myId = getOrCreateUserId();
+      const isOwner = Boolean(bot.user_id && bot.user_id === myId);
+      editingBotId = isOwner ? bot.id : null;
 
       // 1. Try to load dedicated saved scheme from localStorage
       let loaded = false;
@@ -7844,15 +7852,21 @@
           updateAllWires();
           updateAllTerminals();
           saveWorkflowState();
-          try {
-            localStorage.setItem(`bot_scheme_${bot.id}`, localStorage.getItem('bot_workflow_canvas'));
-          } catch(e) {}
+          if (isOwner) {
+            try {
+              localStorage.setItem(`bot_scheme_${bot.id}`, localStorage.getItem('bot_workflow_canvas'));
+            } catch(e) {}
+          }
         }, 60);
       }
 
       // Switch to nodes tab and notify user
       switchTab('nodes');
-      showToast(`Схема бота «${bot.name}» открыта для настройки 🧩`, 'success');
+      if (isOwner) {
+        showToast(`Схема бота «${bot.name}» открыта для настройки 🧩`, 'success');
+      } else {
+        showToast(`Шаблон «${bot.name}» скопирован на холст. Настройте и запустите как своего бота!`, 'info');
+      }
     }
 
 
@@ -7863,12 +7877,10 @@
         if (!res.ok) throw new Error('Ошибка загрузки ботов');
         allBots = await res.json();
 
-        document.getElementById('botsBadge').textContent = allBots.length;
+        const myId = getOrCreateUserId();
+        const myBots = allBots.filter(b => b.user_id && b.user_id === myId);
+        document.getElementById('botsBadge').textContent = myBots.length;
         renderGallery();
-
-        if (!currentBotId && allBots.length > 0) {
-          selectBot(allBots[0].id, false);
-        }
       } catch (e) {
         if (!silent) showToast(e.message, 'error');
       }
@@ -7969,10 +7981,6 @@
 
       if (currentGalleryFilter === 'my') {
         filtered = allBots.filter(b => (b.user_id && b.user_id === myId));
-        // If user has not created bots yet, also show official KS54 bots so gallery is not completely blank
-        if (filtered.length === 0) {
-          filtered = allBots.filter(b => b.user_id === 'system');
-        }
       } else if (currentGalleryFilter === 'ks54') {
         filtered = allBots.filter(b => b.user_id === 'system');
       } else {
@@ -7981,18 +7989,23 @@
 
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div style="text-align:center; padding:32px 14px; color:var(--text-dim); font-size:12px; display:flex; flex-direction:column; gap:6px; align-items:center;">
-            <span>${currentGalleryFilter === 'my' ? 'У вас пока нет созданных ботов' : 'Ботов не найдено'}</span>
-            <button type="button" class="btn-sm-action" onclick="switchTab('nodes')" style="margin-top:4px;">🧩 Собрать первого бота</button>
+          <div style="text-align:center; padding:32px 14px; color:var(--text-dim); font-size:12px; display:flex; flex-direction:column; gap:8px; align-items:center;">
+            <span>${currentGalleryFilter === 'my' ? 'У вас пока нет своих ботов' : 'Ботов не найдено'}</span>
+            <button type="button" class="btn-sm-action" onclick="createNewBotOnCanvas()" style="margin-top:2px; color:#0284c7; font-weight:700;">🧩 Собрать своего бота</button>
+            ${currentGalleryFilter === 'my' ? `<button type="button" class="btn-sm-action" onclick="setGalleryFilter('ks54')">🏛️ Посмотреть образцы КС54</button>` : ''}
           </div>
         `;
         return;
       }
 
       container.innerHTML = filtered.map(b => {
-        const isMy = b.user_id && b.user_id === myId;
+        const isMy = Boolean(b.user_id && b.user_id === myId);
         const isSystem = b.user_id === 'system';
         const ownerTag = isMy ? '<span class="bot-owner-tag my">Мой</span>' : (isSystem ? '<span class="bot-owner-tag system">КС54</span>' : '');
+        const actionIcon = isMy ? '⚙️' : '📋';
+        const actionTitle = isMy
+          ? `Настроить ноды «${escapeHtml(b.name)}» на схеме`
+          : `Скопировать шаблон «${escapeHtml(b.name)}» к себе на холст`;
 
         return `
         <div class="bot-card ${b.id === currentBotId ? 'active' : ''}" onclick="selectBot('${b.id}', true)">
@@ -8002,12 +8015,36 @@
             <div class="bot-card-meta">${b.chunks_count || 0} фактов • Temp ${b.temperature != null ? b.temperature : 0.7} • #${b.id}</div>
           </div>
           <div style="display:flex; align-items:center; gap:2px;">
-            <button type="button" class="btn-card-edit" onclick="editBotById(event, '${b.id}')" title="Настроить ноды «${escapeHtml(b.name)}» на схеме">⚙️</button>
-            ${!isSystem ? `<button type="button" class="btn-card-delete" onclick="deleteBotById(event, '${b.id}')" title="Удалить бота">✕</button>` : ''}
+            <button type="button" class="btn-card-edit" onclick="editBotById(event, '${b.id}')" title="${actionTitle}">${actionIcon}</button>
+            ${isMy ? `<button type="button" class="btn-card-delete" onclick="deleteBotById(event, '${b.id}')" title="Удалить моего бота">✕</button>` : ''}
           </div>
         </div>
       `;
       }).join('');
+    }
+
+    function showEmptyChatState() {
+      currentBotId = null;
+      const avEl = document.getElementById('currentAvatar');
+      const nmEl = document.getElementById('currentName');
+      const msgEl = document.getElementById('chatMessages');
+      const delBtn = document.getElementById('btnDeleteCurrentBot');
+      const editBtn = document.getElementById('btnEditBotNodes');
+
+      if (avEl) avEl.textContent = '🤖';
+      if (nmEl) nmEl.textContent = 'Выберите или соберите бота';
+      if (delBtn) delBtn.style.display = 'none';
+      if (editBtn) editBtn.style.display = 'none';
+      if (msgEl) {
+        msgEl.innerHTML = `
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-dim); gap:8px; font-size:13px; text-align:center; padding:20px;">
+            <span>У вас пока нет активного чата.</span>
+            <span style="font-size:12px;">Соберите своего бота во вкладке <strong>«Схема нод»</strong> или выберите учебный образец во вкладке <strong>«🏛️ КС54»</strong> слева.</span>
+          </div>
+        `;
+      }
+      if (typeof onChatScroll === 'function') onChatScroll();
+      renderGallery();
     }
 
     function loadChatHistory(botId) {
@@ -8068,6 +8105,19 @@
       document.getElementById('currentAvatar').textContent = bot.avatar;
       document.getElementById('currentName').textContent = bot.name;
 
+      const myId = getOrCreateUserId();
+      const isMy = Boolean(bot.user_id && bot.user_id === myId);
+      const delBtn = document.getElementById('btnDeleteCurrentBot');
+      const editBtn = document.getElementById('btnEditBotNodes');
+      if (delBtn) delBtn.style.display = isMy ? 'inline-flex' : 'none';
+      if (editBtn) {
+        editBtn.style.display = 'inline-flex';
+        editBtn.innerHTML = isMy ? '🧩 Настроить схему нод' : '📋 Взять шаблон к себе';
+        editBtn.title = isMy
+          ? 'Открыть схему и параметры этого бота на холсте нод'
+          : 'Скопировать схему этого образца на свой холст нод';
+      }
+
       // Check for custom UI config
       let uiConfig = null;
       try {
@@ -8118,7 +8168,12 @@
       const targetId = botId || currentBotId;
       if (!targetId) return;
 
+      const myId = getOrCreateUserId();
       const bot = allBots.find(b => b.id === targetId);
+      if (bot && bot.user_id !== myId) {
+        showToast('Можно удалять только своих ботов', 'error');
+        return;
+      }
       const botName = bot ? bot.name : 'бота';
 
       if (!confirm(`Удалить чат с «${botName}» и карточку бота навсегда?`)) {
@@ -8134,6 +8189,7 @@
 
         // Clean up localStorage for this bot
         try {
+          localStorage.removeItem(`bot_chat_history_${myId}_${targetId}`);
           localStorage.removeItem(`bot_chat_history_${targetId}`);
           localStorage.removeItem(`bot_ui_${targetId}`);
           localStorage.removeItem(`bot_scheme_${targetId}`);
@@ -8147,22 +8203,16 @@
           editingBotId = null;
           updateEditingBanner();
         }
-        showToast(`Чат с «${botName}» удалён`, 'info');
+        showToast(`Бот «${botName}» удалён`, 'info');
 
         await fetchBotsList(true);
 
         if (currentBotId === targetId) {
-          if (allBots.length > 0) {
-            selectBot(allBots[0].id, true);
+          const myBots = allBots.filter(b => b.user_id === myId);
+          if (myBots.length > 0) {
+            selectBot(myBots[0].id, true);
           } else {
-            currentBotId = null;
-            document.getElementById('currentAvatar').textContent = '🤖';
-            document.getElementById('currentName').textContent = 'Ботов пока нет';
-            document.getElementById('chatMessages').innerHTML = `
-              <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--c-light-mid); gap:6px; font-size:13px;">
-                <span>Все чаты удалены. Создайте нового бота на Схеме нод!</span>
-              </div>
-            `;
+            showEmptyChatState();
           }
         }
       } catch (err) {
