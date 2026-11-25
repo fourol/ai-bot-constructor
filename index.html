@@ -2928,8 +2928,8 @@
       position: fixed;
       top: 52px;
       right: 0;
-      width: 470px;
-      max-width: calc(100vw - 24px);
+      width: 500px;
+      max-width: calc(100vw - 20px);
       height: calc(100vh - 52px);
       background: var(--bg-node);
       border-left: 1px solid var(--border-node);
@@ -3008,28 +3008,37 @@
     }
 
     .guide-tabs {
-      display: flex;
-      gap: 3px;
-      padding: 6px 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      padding: 8px 12px;
       background: var(--bg-deep);
       border-bottom: 1px solid var(--border-subtle);
-      overflow-x: auto;
-      scrollbar-width: none;
       flex-shrink: 0;
     }
-    .guide-tabs::-webkit-scrollbar { display: none; }
+
+    @media (max-width: 440px) {
+      .guide-tabs {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
 
     .guide-tab-btn {
       background: transparent;
       border: 1px solid transparent;
       color: var(--text-dim);
-      padding: 4px 8px;
+      padding: 6px 4px;
       font-size: 11px;
       font-weight: 600;
-      border-radius: 4px;
+      border-radius: 5px;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      text-align: center;
     }
     .guide-tab-btn:hover {
       background: var(--bg-node);
