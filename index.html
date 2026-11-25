@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>КС54 • НейроКонструктор ИИ-ботов</title>
+  <title>КС54 • AI-Интегратор решений ИИ</title>
   <link rel="icon" type="image/png" href="/static/favicon.png">
   <script>
     (function() {
@@ -3189,8 +3189,8 @@
       </div>
       <div>
         <div class="brand-title">
-          <span>КС54 • НейроКонструктор</span>
-          <span class="brand-sub">ИИ-Лаборатория</span>
+          <span>КС54 • AI-Интегратор</span>
+          <span class="brand-sub">Специальность 09.02.13</span>
         </div>
       </div>
     </div>
@@ -3206,8 +3206,8 @@
     </div>
 
     <div class="top-actions">
-      <button type="button" class="btn-user-profile" id="btnUserProfile" onclick="openUserProfileModal()" title="Личный профиль (изоляция чатов и ботов)">
-        <span>👤</span> <span id="userProfileName">Студент</span>
+      <button type="button" class="btn-user-profile" id="btnUserProfile" onclick="openUserProfileModal()" title="Рабочее место: изолированная сессия настроена автоматически">
+        <span>🖥️</span> <span id="userProfileName">ПК-01</span>
       </button>
 
       <button type="button" class="btn-guide-header" id="btnProjectGuide" onclick="toggleProjectGuide()" title="База знаний проекта и специальности 09.02.13">
@@ -3480,7 +3480,7 @@
     <div class="tour-header">
       <div>
         <div class="tour-step-badge" id="tourStepBadge">Введение</div>
-        <div class="tour-title" id="tourTitle">Добро пожаловать в НейроКонструктор</div>
+        <div class="tour-title" id="tourTitle">Добро пожаловать в AI-Интегратор</div>
       </div>
       <button type="button" class="btn-tour-close" onclick="finishOnboarding()" title="Закрыть обучение">✕</button>
     </div>
@@ -3549,9 +3549,9 @@
     const TOUR_STEPS = [
       {
         targetSelector: null,
-        badge: "Введение • Лаборатория ИИ",
+        badge: "Введение • 09.02.13",
         icon: "🚀",
-        title: "Добро пожаловать в НейроКонструктор КС54!",
+        title: "Добро пожаловать в AI-Интегратор КС54!",
         body: "Здесь ты научишься проектировать и запускать собственных интеллектуальных ботов. Модульная архитектура устроена так же, как в реальной разработке (Prompt Engineering & RAG). Давай за 1 минуту познакомимся с интерфейсом!",
         tip: "💡 Это интерактивное обучение можно повторить в любой момент по кнопке <strong>🎓 Обучение</strong> в правом верхнем углу."
       },
@@ -3569,7 +3569,7 @@
         icon: "ℹ️",
         title: "Инженерная справка по модулям",
         body: "Сомневаешься, зачем нужен модуль? Нажми круглую синюю кнопку <strong>ⓘ</strong> в заголовке блока. Откроется подробная справка: что делает модуль, почему это важно в IT, как его соединять и практический пример.",
-        tip: "💡 Справка встроена во все 11 модулей конструктора."
+        tip: "💡 Справка встроена во все 11 модулей AI-интегратора."
       },
       {
         targetSelector: ".port-circle",
@@ -4116,81 +4116,102 @@
       const sc = KS54_PROJECT_SCENARIOS[scenarioKey];
       if (!sc) return;
 
+      // Clean canvas
       nodesContainer.innerHTML = '';
       nodes = {};
       connections = [];
+      nodeCounter = 0;
 
       // Spawn nodes positioned cleanly on canvas
-      const charId = spawnNodeAt('char', 80, 80);
-      const promptId = spawnNodeAt('prompt', 80, 310);
-      const paramsId = spawnNodeAt('params', 80, 560);
-      const brainId = spawnNodeAt('brain', 440, 200);
-      const kbId = spawnNodeAt('kb', 800, 60);
-      const quickId = spawnNodeAt('quick', 800, 360);
-      const asmId = spawnNodeAt('assembler', 800, 640);
+      const charId = createNodeElement('char', 50, 60);
+      const promptId = createNodeElement('prompt', 50, 310);
+      const paramsId = createNodeElement('params', 50, 560);
+      const quickId = createNodeElement('quick', 50, 810);
+      const brainId = createNodeElement('brain', 430, 180);
+      const kbId = createNodeElement('kb', 820, 60);
+      const asmId = createNodeElement('assembler', 820, 420);
 
       // Fill in scenario fields
+      // 1. Character
+      const charEl = document.getElementById(charId);
+      if (charEl) {
+        const nameInput = charEl.querySelector('.node-val-name');
+        if (nameInput) nameInput.value = sc.name;
+        if (sc.avatar) setNodeAvatar(charId, sc.avatar);
+      }
+
+      // 2. Prompt
+      const promptEl = document.getElementById(promptId);
+      if (promptEl) {
+        const promptInput = promptEl.querySelector('.node-val-prompt');
+        if (promptInput) promptInput.value = sc.prompt;
+      }
+
+      // 3. Params
+      const paramsEl = document.getElementById(paramsId);
+      if (paramsEl) {
+        const tempInput = paramsEl.querySelector('.node-val-temp');
+        const tokensInput = paramsEl.querySelector('.node-val-tokens');
+        if (tempInput && sc.temp != null) {
+          tempInput.value = sc.temp;
+          onTempSliderInput({ target: tempInput }, paramsId);
+        }
+        if (tokensInput && sc.tokens != null) {
+          tokensInput.value = sc.tokens;
+          const btns = paramsEl.querySelectorAll('.btn-toggle');
+          btns.forEach(b => {
+            const isMatch = (sc.tokens <= 150 && b.textContent.includes('1–2')) ||
+                            (sc.tokens > 150 && b.textContent.includes('Развёрнуто'));
+            b.classList.toggle('active', isMatch);
+          });
+        }
+      }
+
+      // 4. Knowledge Base (RAG)
+      const kbEl = document.getElementById(kbId);
+      if (kbEl && sc.kb) {
+        const kbInput = kbEl.querySelector('.node-val-kb');
+        if (kbInput) kbInput.value = sc.kb;
+      }
+
+      // 5. Quick Welcome / Suggestions
+      const quickEl = document.getElementById(quickId);
+      if (quickEl) {
+        const greetingInput = quickEl.querySelector('.node-val-greeting');
+        if (greetingInput && sc.greeting) greetingInput.value = sc.greeting;
+        if (sc.chips && sc.chips.length > 0) {
+          const q1 = quickEl.querySelector('.node-val-q1');
+          const q2 = quickEl.querySelector('.node-val-q2');
+          const q3 = quickEl.querySelector('.node-val-q3');
+          if (q1 && sc.chips[0]) q1.value = sc.chips[0];
+          if (q2 && sc.chips[1]) q2.value = sc.chips[1];
+          if (q3 && sc.chips[2]) q3.value = sc.chips[2];
+        }
+      }
+
+      // Wire connections
+      connectPorts(charId, 'out', brainId, 'in-char', 'char');
+      connectPorts(promptId, 'out', brainId, 'in-prompt', 'prompt');
+      connectPorts(paramsId, 'out', brainId, 'in-params', 'params');
+      connectPorts(quickId, 'out', brainId, 'in-quick', 'quick');
+      connectPorts(brainId, 'out', asmId, 'in-brain', 'brain');
+      connectPorts(kbId, 'out', asmId, 'in-kb', 'kb');
+
+      // Adjust viewport to show all nodes nicely
+      panX = 20;
+      panY = 10;
+      scale = 0.95;
+      applyTransform();
+
       setTimeout(() => {
-        const charEl = document.getElementById(charId);
-        if (charEl) {
-          const nameInput = charEl.querySelector('.node-val-name');
-          const avatarInput = charEl.querySelector('.node-val-avatar');
-          if (nameInput) nameInput.value = sc.name;
-          if (avatarInput) avatarInput.value = sc.avatar;
-        }
-
-        const promptEl = document.getElementById(promptId);
-        if (promptEl) {
-          const promptInput = promptEl.querySelector('.node-val-prompt');
-          if (promptInput) promptInput.value = sc.prompt;
-        }
-
-        const paramsEl = document.getElementById(paramsId);
-        if (paramsEl) {
-          const tempInput = paramsEl.querySelector('.node-val-temp');
-          const tokensInput = paramsEl.querySelector('.node-val-tokens');
-          if (tempInput) { tempInput.value = sc.temp; updateNodeTemp(paramsId, sc.temp); }
-          if (tokensInput) { tokensInput.value = sc.tokens; }
-        }
-
-        const kbEl = document.getElementById(kbId);
-        if (kbEl) {
-          const kbInput = kbEl.querySelector('.node-val-kb');
-          if (kbInput) kbInput.value = sc.kb;
-        }
-
-        const quickEl = document.getElementById(quickId);
-        if (quickEl) {
-          const greetingInput = quickEl.querySelector('.node-val-greeting');
-          if (greetingInput) greetingInput.value = sc.greeting;
-          if (sc.chips && sc.chips.length > 0) {
-            const q1 = quickEl.querySelector('.node-val-q1');
-            const q2 = quickEl.querySelector('.node-val-q2');
-            const q3 = quickEl.querySelector('.node-val-q3');
-            if (q1 && sc.chips[0]) q1.value = sc.chips[0];
-            if (q2 && sc.chips[1]) q2.value = sc.chips[1];
-            if (q3 && sc.chips[2]) q3.value = sc.chips[2];
-          }
-        }
-
-        // Add connections
-        connections = [
-          { fromNode: charId, fromPort: 'out', toNode: brainId, toPort: 'in-char', type: 'char' },
-          { fromNode: promptId, fromPort: 'out', toNode: brainId, toPort: 'in-prompt', type: 'prompt' },
-          { fromNode: paramsId, fromPort: 'out', toNode: brainId, toPort: 'in-params', type: 'params' },
-          { fromNode: quickId, fromPort: 'out', toNode: brainId, toPort: 'in-quick', type: 'quick' },
-          { fromNode: brainId, fromPort: 'out', toNode: asmId, toPort: 'in-brain', type: 'brain' },
-          { fromNode: kbId, fromPort: 'out', toNode: asmId, toPort: 'in-kb', type: 'kb' }
-        ];
-
+        updateAllWires();
         updateAllTerminals();
-        updateWiresSvg();
-        saveWorkflow();
-      }, 50);
+        saveWorkflowState();
+      }, 60);
 
       switchTab('nodes');
       toggleProjectGuide();
-      showToast(`Сценарий «${sc.name}» загружен на холст!`, 'success');
+      showToast(`Сценарий «${sc.name}» загружен на холст! ⚡`, 'success');
     }
 
     function copyAttackText(btn) {
@@ -6550,13 +6571,13 @@
       }
     }
 
-    // --- User Profile & Privacy Isolation ---
+    // --- User Profile & Privacy Isolation (100% Automatic) ---
     function getOrCreateUserId() {
       let uId = null;
       try {
         uId = localStorage.getItem('ks54_user_id');
         if (!uId) {
-          uId = 'user_' + Math.random().toString(36).substring(2, 9);
+          uId = 'user_' + Math.random().toString(36).substring(2, 10);
           localStorage.setItem('ks54_user_id', uId);
         }
       } catch(e) {
@@ -6567,9 +6588,16 @@
 
     function getCurrentUserName() {
       try {
-        return localStorage.getItem('ks54_user_name') || 'Студент';
+        let name = localStorage.getItem('ks54_user_name');
+        if (!name || name === 'Студент') {
+          // Automatic workstation name generation e.g. ПК-07 (clean, unique per PC/browser)
+          const randNum = Math.floor(1 + Math.random() * 30);
+          name = `ПК-${randNum < 10 ? '0' + randNum : randNum}`;
+          localStorage.setItem('ks54_user_name', name);
+        }
+        return name;
       } catch(e) {
-        return 'Студент';
+        return 'ПК-01';
       }
     }
 
@@ -6593,22 +6621,24 @@
 
     function saveUserProfile() {
       const input = document.getElementById('inputUserName');
-      const val = (input ? input.value : '').trim() || 'Студент';
+      const val = (input ? input.value : '').trim() || getCurrentUserName();
       try {
         localStorage.setItem('ks54_user_name', val);
       } catch(e) {}
       updateProfileBadge();
       closeUserProfileModal();
-      showToast(`Профиль обновлен: ${val}`, 'success');
+      showToast(`Имя рабочего места обновлено: ${val}`, 'success');
       renderGallery();
     }
 
     function resetUserSession() {
-      if (!confirm('Создать новую сессию? Будет сгенерирован новый ID пользователя, ваши старые чаты останутся в сохранности под прежним ID.')) return;
+      if (!confirm('Создать новую сессию? Будет сгенерирован новый ID пользователя и номер ПК, ваши старые чаты останутся сохранены под прежним ID.')) return;
       try {
-        const newUId = 'user_' + Math.random().toString(36).substring(2, 9);
+        const newUId = 'user_' + Math.random().toString(36).substring(2, 10);
+        const randNum = Math.floor(1 + Math.random() * 30);
+        const newName = `ПК-${randNum < 10 ? '0' + randNum : randNum}`;
         localStorage.setItem('ks54_user_id', newUId);
-        localStorage.setItem('ks54_user_name', 'Студент');
+        localStorage.setItem('ks54_user_name', newName);
       } catch(e) {}
       updateProfileBadge();
       closeUserProfileModal();
@@ -7412,26 +7442,30 @@
 
   <!-- USER PROFILE MODAL (Изоляция чатов и ботов) -->
   <div class="modal-overlay" id="userProfileModal">
-    <div class="modal-card" style="max-width: 420px;">
+    <div class="modal-card" style="max-width: 440px;">
       <div class="modal-head">
         <div class="modal-head-title">
-          <div class="modal-icon">👤</div>
+          <div class="modal-icon">🖥️</div>
           <div>
-            <div class="modal-name">Профиль пользователя</div>
-            <div class="modal-badge">Изоляция чатов и ботов</div>
+            <div class="modal-name">Рабочее место (Сессия)</div>
+            <div class="modal-badge" style="background:#10b981; color:#fff;">Автоматически активно</div>
           </div>
         </div>
         <button type="button" class="btn-modal-close" onclick="closeUserProfileModal()">✕</button>
       </div>
       <div class="modal-body">
+        <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:10px 12px; margin-bottom:12px; font-size:12px; color:var(--text); display:flex; align-items:flex-start; gap:8px; line-height:1.4;">
+          <span style="font-size:15px;">⚡</span>
+          <div><strong>Настроено автоматически!</strong> Для этого браузера выделен изолированный профиль. Боты и чаты сохраняются раздельно для каждого ПК. Менять параметры не требуется.</div>
+        </div>
         <div class="info-section">
-          <div class="info-label">👤 Ваше имя или номер ПК в классе:</div>
-          <input type="text" class="control-input" id="inputUserName" placeholder="Например: Иван (ПК-04) или Студент" style="margin-top:6px; font-size:13px; font-weight:600;">
+          <div class="info-label">👤 Номер ПК или имя (можно изменить при желании):</div>
+          <input type="text" class="control-input" id="inputUserName" placeholder="Например: ПК-07 или Иван" style="margin-top:6px; font-size:13px; font-weight:600;">
         </div>
         <div class="info-section highlight">
-          <div class="info-label">🔒 Как работает защита приватности:</div>
+          <div class="info-label">🔒 Полная изоляция чатов и ботов:</div>
           <div class="info-text">
-            Каждый пользователь на сервере работает в своём изолированном пространстве. Созданные вами боты и история диалогов сохраняются под вашим профилем и <strong>не смешиваются с другими пользователями</strong>.
+            Все созданные на этом компьютере боты и история диалогов сохраняются под вашим профилем и <strong>не смешиваются с другими 20+ студентами</strong> в локальной сети.
           </div>
         </div>
       </div>

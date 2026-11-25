@@ -1,10 +1,10 @@
 @echo off
 chcp 65001 >nul
 cd /d "%~dp0"
-title КС54 • НейроКонструктор — Запуск (20+ пользователей)
+title КС54 • AI-Интегратор — Запуск (20+ пользователей)
 
 echo ========================================================================
-echo    КС54 • НейроКонструктор — Запуск сервера (NVIDIA T1000 8GB)
+echo    КС54 • AI-Интегратор — Запуск сервера (NVIDIA T1000 8GB)
 echo ========================================================================
 echo.
 
@@ -29,7 +29,7 @@ echo [2/3] Ожидание загрузки Qwen 2.5 3B в видеопамят
 powershell -NoProfile -Command ^
   "$ok = $false; for ($i = 1; $i -le 60; $i++) { try { $r = Invoke-RestMethod -Uri 'http://127.0.0.1:8000/health' -TimeoutSec 2; if ($r.status -eq 'ok') { $ok = $true; break } } catch {}; Start-Sleep -Seconds 1 }; if (-not $ok) { Write-Host '[!] LLM загружается дольше обычного, но веб-сервер всё равно запустится.' -ForegroundColor Yellow } else { Write-Host '[OK] Модель загружена в GPU и готова к работе!' -ForegroundColor Green }"
 
-echo [3/3] Запуск веб-сервера конструктора на порту 3000...
+echo [3/3] Запуск веб-сервера AI-интегратора на порту 3000...
 start "KS54 Web Server (Port 3000)" cmd /k "cd /d "%~dp0" && start_web.bat"
 
 timeout /t 2 /nobreak >nul

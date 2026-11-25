@@ -41,7 +41,7 @@ function Download-File($Url, $OutFile) {
 }
 
 Write-Host "========================================================================" -ForegroundColor DarkCyan
-Write-Host "   КС54 • НейроКонструктор — Авторазвёртывание для Windows 10 Server" -ForegroundColor White
+Write-Host "   КС54 • AI-Интегратор — Авторазвёртывание для Windows 10 Server" -ForegroundColor White
 Write-Host "   Целевая конфигурация: NVIDIA T1000 (8 GB) • 20+ пользователей" -ForegroundColor Gray
 Write-Host "========================================================================" -ForegroundColor DarkCyan
 
@@ -320,14 +320,14 @@ Write-Step 6 6 "Завершение настройки и создание яр
 if (-not $SkipShortcut) {
     try {
         $desktop = [Environment]::GetFolderPath("Desktop")
-        $lnkPath = Join-Path $desktop "КС54 НейроКонструктор.lnk"
+        $lnkPath = Join-Path $desktop "КС54 AI-Интегратор.lnk"
         $wsh = New-Object -ComObject WScript.Shell
         $sc = $wsh.CreateShortcut($lnkPath)
         $sc.TargetPath = Join-Path $RepoRoot "start_all.bat"
         $sc.WorkingDirectory = $RepoRoot
         $sc.Description = "Запуск ИИ-Лаборатории КС54 (LLM + Веб-сервер)"
         $sc.Save()
-        Write-Ok "Ярлык «КС54 НейроКонструктор» создан на Рабочем столе."
+        Write-Ok "Ярлык «КС54 AI-Интегратор» создан на Рабочем столе."
     } catch {
         Write-Warn "Не удалось создать ярлык на Рабочем столе: $_"
     }

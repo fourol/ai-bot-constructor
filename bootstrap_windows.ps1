@@ -3,7 +3,7 @@
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 Write-Host "========================================================================" -ForegroundColor DarkCyan
-Write-Host "   КС54 • НейроКонструктор — Быстрая установка с GitHub (Windows 10)" -ForegroundColor White
+Write-Host "   КС54 • AI-Интегратор — Быстрая установка с GitHub (Windows 10)" -ForegroundColor White
 Write-Host "========================================================================" -ForegroundColor DarkCyan
 
 $TargetDir = "C:\ai-bot-constructor"
