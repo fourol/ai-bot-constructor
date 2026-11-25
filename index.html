@@ -4897,15 +4897,17 @@
 
       // Restore Code/API Bonus UI
       const bonusData = taskProgressState.bonusCode;
-      const codeBox = document.getElementById('verifyBox_code');
+      const codeSchemaBox = document.getElementById('verifyBox_code_schema');
+      const codeAiBox = document.getElementById('verifyBox_code_ai');
       if (bonusData && Array.isArray(bonusData.schemaChecks) && bonusData.schemaChecks.length > 0) {
-        renderCodeBonusResults(bonusData.schemaChecks, bonusData.aiResult);
-      } else if (codeBox) {
-        codeBox.classList.remove('active');
+        renderVerifyResult('verifyBox_code_schema', bonusData.schemaChecks, null, false);
+      } else if (codeSchemaBox) {
+        codeSchemaBox.classList.remove('active');
       }
-      const sandboxEl = document.getElementById('codeSandboxInput');
-      if (sandboxEl) {
-        sandboxEl.value = (bonusData && bonusData.savedCode) ? bonusData.savedCode : DEFAULT_SANDBOX_CODE;
+      if (bonusData && bonusData.aiResult) {
+        renderCodeTaskResultBox(codeAiBox, bonusData.aiResult);
+      } else if (codeAiBox) {
+        codeAiBox.classList.remove('active');
       }
 
       // 2. Restore active guide tab, task level & exam variant
@@ -4934,7 +4936,7 @@
         label = `Экзамена (${currentExamVariant})`;
       } else if (key === 'code') {
         snapshot = taskProgressState.bonusCode?.snapshot || null;
-        label = 'JSON-API бота';
+        label = 'ИИ-Программиста';
       } else {
         snapshot = taskProgressState.levels[key]?.snapshot || null;
         label = key === 'lvl1' ? 'Уровня 1' : (key === 'lvl2' ? 'Уровня 2' : 'Уровня 3');
@@ -5515,284 +5517,194 @@
       }
     }
 
-    // --- Bonus Level: Programming & JSON API Integration ---
-    const DEFAULT_SANDBOX_CODE = [
-      '// 1. Задайте массив запросов для пакетной обработки',
-      'const requestsList = [',
-      '  "Не открывается сайт и не проходит ping",',
-      '  "Как создать словарь dict в Python?"',
-      '];',
-      '',
-      '// 2. Отправляем запросы боту по API и разбираем JSON-ответ',
-      'for (const text of requestsList) {',
-      '  log(">>> Запрос: " + text);',
-      '  const raw = await askCurrentBot(text);',
-      '  try {',
-      '    const match = raw.match(/\\{[\\s\\S]*\\}/);',
-      '    const data = JSON.parse(match ? match[0] : raw);',
-      '    log("JSON OK -> ключи: " + Object.keys(data).join(", "));',
-      '    log("Ответ: " + JSON.stringify(data));',
-      '  } catch (err) {',
-      '    log("Ошибка JSON: " + raw);',
-      '  }',
-      '}'
-    ].join('\n');
+    // --- Bonus Level: Programming with AI (Python Codegen & Auto-Tests) ---
+    const CODE_TASK_DESCS = {
+      sum_pos: "Функция <code>solve(numbers)</code> принимает список чисел и возвращает сумму всех положительных элементов (&gt; 0). Если таких чисел нет, возвращает 0.",
+      vowels: "Функция <code>count_vowels(text)</code> считает количество гласных русских букв (а, е, ё, и, о, у, ы, э, ю, я) без учета регистра.",
+      palindrome: "Функция <code>is_palindrome(s)</code> проверяет, читается ли строка одинаково слева направо и справа налево (без пробелов и регистра)."
+    };
 
-    function renderCodeBonusResults(checks, aiResult) {
-      const box = document.getElementById('verifyBox_code');
-      if (!box) return;
-      renderVerifyResult('verifyBox_code', checks, null, false);
-      if (aiResult) {
-        const div = document.createElement('div');
-        div.className = 'ai-exam-box';
-        div.style.marginTop = '6px';
-        div.innerHTML = `
-          <div class="ai-exam-q">${escapeHtml(aiResult.title || 'Живой тест JSON API')}</div>
-          <div style="color:var(--text-dim); font-style:italic;">Запрос: «${escapeHtml(aiResult.question)}»</div>
-          <div class="ai-exam-a">${escapeHtml(aiResult.answer || 'Пустой ответ')}</div>
-          <div class="ai-exam-verdict ${aiResult.isOk ? 'ok' : 'fail'}">${escapeHtml(aiResult.verdictText)}</div>
-        `;
-        box.appendChild(div);
+    function onCodeTaskChange() {
+      const sel = document.getElementById('codeTaskSelector');
+      const box = document.getElementById('codeTaskDescBox');
+      if (sel && box) {
+        box.innerHTML = CODE_TASK_DESCS[sel.value] || '';
       }
-      const passedBtn = Boolean(checks.every(c => c.ok) && aiResult && aiResult.isOk);
-      const tabBtn = document.getElementById('taskBtn_code');
-      if (tabBtn && passedBtn) tabBtn.classList.add('passed');
     }
 
-    async function verifyCodeBonus() {
+    function renderCodeTaskResultBox(box, res) {
+      if (!box || !res) return;
+      box.classList.add('active');
+      const isPassed = Boolean(res.passed);
+      box.innerHTML = `
+        <div class="verify-summary ${isPassed ? 'ok' : 'warn'}">
+          <span>${isPassed ? '🏆 Задача решена! Все unit-тесты пройдены!' : '⚠️ Код не прошёл unit-тесты'}</span>
+          <span>${isPassed ? '4 / 4' : 'Ошибка тестов'}</span>
+        </div>
+        <div class="ai-exam-box" style="margin-top:6px;">
+          <div class="ai-exam-q">${escapeHtml(res.title || 'Задача на Python')}</div>
+          <div style="font-size:11px; margin:4px 0; color:var(--text);">${escapeHtml(res.description || '')}</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin:6px 0 2px 0;">
+            <span style="font-size:10.5px; font-weight:bold; color:var(--wire-char);">Сгенерированный Python-код:</span>
+            <button type="button" class="btn-sm-action" style="font-size:10px; padding:2px 6px;" onclick="copyCodeText(this)">📋 Копировать код</button>
+          </div>
+          <pre class="python-snippet-pre" style="max-height:160px; margin-bottom:6px;">${escapeHtml(res.extracted_code || res.raw_answer || '')}</pre>
+          ${res.error ? `<div class="ai-exam-verdict fail" style="margin-bottom:6px;">Ошибка Python: ${escapeHtml(res.error)}</div>` : ''}
+          <div style="font-size:10.5px; font-weight:600; color:var(--text-dim); margin-bottom:4px;">Результаты unit-тестов:</div>
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            ${(res.tests_labels || []).map(lbl => `
+              <div class="verify-check-row ${isPassed ? 'ok' : 'fail'}" style="padding:4px 8px; font-size:10.5px;">
+                <span>${isPassed ? '✅' : '❌'}</span>
+                <div><code>${escapeHtml(lbl)}</code></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function copyCodeText(btn) {
+      const pre = btn.closest('.ai-exam-box')?.querySelector('pre');
+      if (!pre) return;
+      copyTextToClipboard(pre.textContent).then(() => {
+        showToast('Python-код скопирован!', 'success');
+      }).catch(() => {});
+    }
+
+    function verifyCodeSchema(showToastMsg = true) {
       const arch = inspectCanvasArchitecture();
       const checks = [
         {
           ok: arch.brainToAsmConnected && arch.hasChar && arch.hasPrompt,
-          label: 'Базовая схема Персонаж + Инструкция → Мозг → Терминал собрана',
-          hint: 'Соедини базовые 4 ноды на холсте.'
+          label: 'Базовая связка Персонаж + Инструкция → Мозг → Терминал собрана',
+          hint: 'Соедини базовые блоки на холсте.'
         },
         {
-          ok: arch.hasFormat && arch.formatType === 'json',
-          label: 'Модуль «Формат Данных» подключён в режиме «Строгий JSON»',
-          hint: 'Добавь 📊 Формат Данных к Мозгу и выбери «Строгий JSON».'
+          ok: arch.hasFormat && arch.formatType === 'code',
+          label: 'Подключён «Формат Данных» в режиме «Чистый код»',
+          hint: 'Добавь 📊 Формат Данных к Мозгу и выбери «Чистый код (Python)»!'
         },
         {
           ok: arch.hasParams && arch.tempVal <= 0.3,
-          label: 'Подключена «Креативность и Длина» с температурой ≤ 0.3',
-          hint: 'Подключи 🔥 Креативность к Мозгу и поставь Temp 0.1–0.3, чтобы не ломался синтаксис JSON.'
+          label: 'Подключена «Креативность и Длина» с Temp ≤ 0.3',
+          hint: 'Добавь 🔥 Креативность к Мозгу и поставь Temp ≤ 0.3 для точного синтаксиса.'
         },
         {
           ok: arch.hasFewshot && arch.fsFilled,
-          label: 'Подключён «Few-Shot (Примеры)» с эталонным примером',
-          hint: 'Добавь 🎯 Few-Shot к Мозгу и запиши хотя бы 1 пример ответа в формате JSON.'
+          label: 'Подключён «Few-Shot (Примеры)» с образцом кода',
+          hint: 'Добавь 🎯 Few-Shot к Мозгу и заполни хотя бы 1 пример с Python-кодом.'
         }
       ];
 
-      const allSchemaOk = checks.every(c => c.ok);
-      renderCodeBonusResults(checks, null);
+      const allSchemaOk = renderVerifyResult('verifyBox_code_schema', checks, null, showToastMsg);
+      if (!taskProgressState.bonusCode) taskProgressState.bonusCode = {};
+      taskProgressState.bonusCode.schemaChecks = checks;
+      taskProgressState.bonusCode.schemaPassed = allSchemaOk;
+      taskProgressState.bonusCode.snapshot = exportWorkflowSnapshot();
+      saveTaskProgress(true);
+      return allSchemaOk;
+    }
 
-      const btn = document.getElementById('btnVerifyCode');
-      const box = document.getElementById('verifyBox_code');
-      if (!allSchemaOk) {
-        taskProgressState.bonusCode.schemaChecks = checks;
-        taskProgressState.bonusCode.schemaPassed = false;
-        taskProgressState.bonusCode.passed = false;
-        saveTaskProgress(true);
+    async function runCodeTaskAI() {
+      const schemaOk = verifyCodeSchema(false);
+      if (!schemaOk) {
         showToast('Сначала исправьте красные пункты в схеме нод', 'info');
         return;
       }
+      const arch = inspectCanvasArchitecture();
+      const sel = document.getElementById('codeTaskSelector');
+      const taskId = sel ? sel.value : 'sum_pos';
+      const btn = document.getElementById('btnRunCodeTaskAI');
+      const box = document.getElementById('verifyBox_code_ai');
+      if (!box) return;
 
       if (btn) {
         btn.disabled = true;
-        btn.textContent = '⏳ Тестирую JSON-ответ модели...';
+        btn.textContent = '⏳ ИИ решает задачу и запускает тесты...';
       }
+      box.classList.add('active');
+      box.innerHTML = `<div class="verify-summary warn"><span>🧪 Генерация Python-кода и запуск unit-тестов...</span><span>⏳</span></div>`;
 
-      const testQ = 'Проанализируй обращение: Не открывается сайт в браузере и не проходит ping';
-      let answer = '';
       try {
-        const res = await fetch('/api/test-draft', {
+        const res = await fetch('/api/verify-code-task', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            message: testQ,
+            task_id: taskId,
             system_prompt: arch.compiledPrompt,
             temperature: arch.tempVal,
-            max_tokens: Math.max(arch.tokensVal || 350, 400),
-            kb_text: arch.kbText || null,
-            history: []
-          })
-        });
-        if (res.ok) {
-          const reader = res.body.getReader();
-          const decoder = new TextDecoder('utf-8');
-          while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            answer += decoder.decode(value, { stream: true });
-          }
-        } else {
-          answer = '[Ошибка связи с сервером]';
-        }
-      } catch (e) {
-        answer = '[Ошибка соединения: ' + e.message + ']';
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.textContent = '🔍 Проверить схему и валидность JSON по API';
-        }
-      }
-
-      answer = answer.trim();
-      let parsedObj = null;
-      let parseErr = '';
-      if (answer && !answer.startsWith('[Ошибка')) {
-        try {
-          const match = answer.match(/\{[\s\S]*\}/);
-          parsedObj = JSON.parse(match ? match[0] : answer);
-        } catch (e) {
-          parseErr = e.message;
-        }
-      }
-
-      const isOk = Boolean(parsedObj && typeof parsedObj === 'object');
-      const aiResult = {
-        title: 'Автопроверка JSON.parse()',
-        question: testQ,
-        answer: answer || 'Пустой ответ',
-        isOk,
-        verdictText: isOk
-          ? '✅ Валидный JSON распарсен успешно! Ключи: ' + Object.keys(parsedObj).join(', ')
-          : '❌ Не удалось распарсить JSON (' + (parseErr || 'нет ответа модели') + '). Проверь пример в Few-Shot!'
-      };
-
-      renderCodeBonusResults(checks, aiResult);
-
-      taskProgressState.bonusCode.schemaChecks = checks;
-      taskProgressState.bonusCode.schemaPassed = allSchemaOk;
-      taskProgressState.bonusCode.aiResult = aiResult;
-      taskProgressState.bonusCode.snapshot = exportWorkflowSnapshot();
-      taskProgressState.bonusCode.passed = Boolean(allSchemaOk && isOk);
-      updateTasksProgressSummaryUI();
-      saveTaskProgress(true);
-
-      if (isOk) {
-        showToast('JSON-микросервис проверен! Теперь протестируйте код в шаге 2 или Python.', 'success');
-      } else {
-        showToast('Модель ответила не в формате JSON. Уточните Few-Shot пример.', 'error');
-      }
-    }
-
-    function saveSandboxDraft() {
-      const el = document.getElementById('codeSandboxInput');
-      if (el) {
-        taskProgressState.bonusCode.savedCode = el.value;
-        saveTaskProgress();
-      }
-    }
-
-    function resetCodeSandbox() {
-      const el = document.getElementById('codeSandboxInput');
-      if (el) {
-        el.value = DEFAULT_SANDBOX_CODE;
-        saveSandboxDraft();
-      }
-      const con = document.getElementById('codeSandboxConsole');
-      if (con) con.textContent = 'Шаблон кода восстановлен. Нажмите «▶ Выполнить код».';
-    }
-
-    async function runCodeSandbox() {
-      const el = document.getElementById('codeSandboxInput');
-      const con = document.getElementById('codeSandboxConsole');
-      const btn = document.getElementById('btnRunSandbox');
-      if (!el || !con) return;
-
-      const code = el.value;
-      taskProgressState.bonusCode.savedCode = code;
-      saveTaskProgress();
-
-      con.textContent = '>>> Запуск скрипта...\n';
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = '⏳ Выполнение...';
-      }
-
-      const log = (...args) => {
-        const line = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
-        con.textContent += line + '\n';
-        con.scrollTop = con.scrollHeight;
-      };
-
-      let callsCount = 0;
-
-      const askCurrentBot = async (message) => {
-        const arch = inspectCanvasArchitecture();
-        if (!arch.brainToAsmConnected || !arch.hasPrompt) {
-          throw new Error('Схема на холсте не собрана (подключите Промпт → Мозг → Терминал)');
-        }
-        callsCount++;
-        const res = await fetch('/api/test-draft', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: String(message),
-            system_prompt: arch.compiledPrompt,
-            temperature: arch.tempVal,
-            max_tokens: Math.max(arch.tokensVal || 350, 400),
-            kb_text: arch.kbText || null,
-            history: []
+            kb_text: arch.kbText || null
           })
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder('utf-8');
-        let ans = '';
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          ans += decoder.decode(value, { stream: true });
-        }
-        return ans.trim();
-      };
+        const data = await res.json();
+        renderCodeTaskResultBox(box, data);
 
-      const askSavedBot = async (botId, message) => {
-        callsCount++;
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            bot_id: String(botId),
-            message: String(message),
-            history: []
-          })
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder('utf-8');
-        let ans = '';
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          ans += decoder.decode(value, { stream: true });
-        }
-        return ans.trim();
-      };
+        if (!taskProgressState.bonusCode) taskProgressState.bonusCode = {};
+        taskProgressState.bonusCode.aiResult = data;
+        taskProgressState.bonusCode.passed = Boolean(data.passed);
+        taskProgressState.bonusCode.snapshot = exportWorkflowSnapshot();
+        updateTasksProgressSummaryUI();
+        saveTaskProgress(true);
 
-      try {
-        const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
-        const fn = new AsyncFunction('askCurrentBot', 'askSavedBot', 'log', code);
-        await fn(askCurrentBot, askSavedBot, log);
-        if (callsCount >= 2) {
-          taskProgressState.bonusCode.sandboxPassed = true;
-          saveTaskProgress(true);
-          log('\n[УСПЕХ] Программа выполнена без ошибок. Обработано API-запросов: ' + callsCount);
-          showToast('Код успешно выполнен! Обработано запросов: ' + callsCount, 'success');
+        if (data.passed) {
+          showToast('🏆 Задача решена! Все тесты пройдены без ошибок!', 'success');
         } else {
-          log('\n[ПОДСКАЗКА] Выполнено запросов: ' + callsCount + '. Для зачёта цикла отправьте минимум 2 запроса.');
+          showToast('Код не прошёл тесты. Проверьте промпт и снизьте температуру.', 'error');
         }
       } catch (err) {
-        log('\n[ОШИБКА ВЫПОЛНЕНИЯ] ' + err.message);
-        showToast('Ошибка в коде: ' + err.message, 'error');
+        box.innerHTML = `<div class="verify-check-row fail"><span>❌</span><div>Ошибка связи с сервером: ${escapeHtml(err.message)}</div></div>`;
+        showToast('Ошибка при запуске кода: ' + err.message, 'error');
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = '▶ Выполнить код';
+          btn.textContent = '🤖 Сгенерировать решение через ИИ и запустить тесты';
         }
+      }
+    }
+
+    async function solveCustomTaskAI() {
+      const input = document.getElementById('customTaskInput');
+      const pre = document.getElementById('customTaskResultPre');
+      if (!input || !pre) return;
+      const q = input.value.trim();
+      if (!q) {
+        showToast('Введите условие задачи', 'info');
+        return;
+      }
+      const arch = inspectCanvasArchitecture();
+      if (!arch.brainToAsmConnected || !arch.hasPrompt) {
+        showToast('Сначала соберите схему бота (Промпт → Мозг → Терминал)', 'error');
+        return;
+      }
+
+      pre.style.display = 'block';
+      pre.textContent = '⏳ ИИ пишет решение...\n';
+
+      try {
+        const res = await fetch('/api/test-draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: q,
+            system_prompt: arch.compiledPrompt,
+            temperature: arch.tempVal,
+            max_tokens: 450,
+            kb_text: arch.kbText || null,
+            history: []
+          })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        pre.textContent = '';
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          pre.textContent += decoder.decode(value, { stream: true });
+        }
+      } catch (e) {
+        pre.textContent = '[Ошибка: ' + e.message + ']';
       }
     }
 
@@ -9569,62 +9481,92 @@
           </div>
         </div>
 
-        <!-- LEVEL 5 (БОНУС): Программирование и API-интеграция -->
+        <!-- LEVEL 5 (БОНУС): Программирование с помощью ИИ (Python Codegen) -->
         <div class="task-level-panel" id="taskPanel_code">
           <div class="guide-card">
             <div class="guide-card-head">
-              <span class="guide-card-title">💻 Бонус: Программирование и API</span>
-              <span class="guide-badge">Код + JSON</span>
+              <span class="guide-card-title">💻 Бонус: ИИ-Программист (Python)</span>
+              <span class="guide-badge">Код + Тесты</span>
             </div>
-            <p class="guide-desc">Сдали базовый экзамен? Переходите на уровень настоящего разработчика: настройте бота как <b>JSON-микросервис</b>, напишите код обработки ответов прямо здесь в песочнице и подключите к боту внешний <b>Python-скрипт</b> по HTTP API!</p>
+            <p class="guide-desc">Сдали базовый экзамен? Научите своего бота решать реальные задачи по программированию на Python! Настройте архитектуру ИИ-кодера, выберите алгоритмическую задачу и проверьте, сможет ли модель написать 100% рабочий код без ошибок.</p>
           </div>
 
+          <!-- ШАГ 1: Архитектура схемы -->
           <div class="step-card">
             <div class="step-num">1</div>
             <div class="step-body">
-              <div class="step-title">Собери JSON-API бота на холсте</div>
-              <div class="step-text">Собери схему (Персонаж + Инструкция → Мозг → Терминал), где бот выступает классификатором или анализатором текста (например, определяет категорию IT-проблемы или переводит текст в JSON).
+              <div class="step-title">Собери схему ИИ-Разработчика на холсте</div>
+              <div class="step-text">
+                Настрой на холсте специализированного бота по программированию:
                 <ul class="guide-list" style="margin-top:4px;">
-                  <li>Подключи к Мозгу <b>📊 Формат Данных</b> в режиме <code>Строгий JSON</code>.</li>
-                  <li>Подключи <b>🔥 Креативность и Длина</b> с температурой <code>≤ 0.3</code>.</li>
-                  <li>Подключи <b>🎯 Few-Shot</b> и напиши минимум 1 эталонный пример в формате валидного JSON (например: <code>{"status":"ok","response":{"category":"сеть"}}</code>).</li>
+                  <li>В <b>📝 Инструкции</b> задай роль Python-разработчика (например: <i>«Ты опытный программист. Пиши чистый, оптимизированный и рабочий код на Python без лишней воды»</i>).</li>
+                  <li>Подключи <b>📊 Формат Данных</b> в режиме <code>Чистый код (Python / C++ / Web)</code>.</li>
+                  <li>Подключи <b>🔥 Креативность и Длина</b> с температурой <code>≤ 0.3</code> (низкая температура исключает опечатки в синтаксисе).</li>
+                  <li>Подключи <b>🎯 Few-Shot (Примеры)</b> и приведи эталонный пример функции с кодом.</li>
                 </ul>
               </div>
             </div>
           </div>
 
-          <button type="button" class="btn-verify-task" id="btnVerifyCode" onclick="verifyCodeBonus()">🔍 Проверить схему и валидность JSON по API</button>
-          <div class="verify-results-box" id="verifyBox_code"></div>
-          <button type="button" class="btn-restore-task" id="btnRestore_code" onclick="restoreTaskSnapshot('code')" style="display:none;">📂 Загрузить сохранённую JSON-схему на холст</button>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <button type="button" class="btn-verify-task" id="btnVerifyCodeSchema" onclick="verifyCodeSchema()">1️⃣ Проверить схему ИИ-Кодера</button>
+            <div class="verify-results-box" id="verifyBox_code_schema"></div>
+            <button type="button" class="btn-restore-task" id="btnRestore_code" onclick="restoreTaskSnapshot('code')" style="display:none;">📂 Загрузить сохранённую схему ИИ-Кодера на холст</button>
+          </div>
 
-          <div class="step-card" style="margin-top:4px;">
+          <!-- ШАГ 2: Выбор задачи и автопроверка ИИ -->
+          <div class="step-card" style="margin-top:8px;">
             <div class="step-num">2</div>
             <div class="step-body" style="width:100%; min-width:0;">
-              <div class="step-title">Практика кода: JS API-песочница</div>
+              <div class="step-title">Автоматический тест решения через ИИ</div>
               <div class="step-text" style="margin-bottom:6px;">
-                Допиши скрипт ниже: добавь свои элементы в массив <code>requestsList</code> (минимум 2 запроса), вызови своего бота через <code>await askCurrentBot(text)</code>, распарси строку через <code>JSON.parse(...)</code> и выведи результат через <code>log(...)</code>.
+                Выбери задачу на Python. Платформа отправит ТЗ твоему боту, извлечёт сгенерированный код и автоматически запустит 4 unit-теста:
               </div>
-              <textarea id="codeSandboxInput" class="code-sandbox-editor" spellcheck="false" oninput="saveSandboxDraft()"></textarea>
-              <div style="display:flex; gap:6px; margin:6px 0; flex-wrap:wrap;">
-                <button type="button" class="btn-verify-task" id="btnRunSandbox" style="flex:1; padding:6px 10px; font-size:11px;" onclick="runCodeSandbox()">▶ Выполнить код</button>
-                <button type="button" class="btn-sm-action" style="padding:6px 10px; font-size:11px;" onclick="resetCodeSandbox()">↻ Сбросить шаблон</button>
+
+              <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
+                <label style="font-size:11px; font-weight:600; color:var(--text);">Выберите алгоритмическую задачу:</label>
+                <select id="codeTaskSelector" class="control-select" style="font-size:11px;" onchange="onCodeTaskChange()">
+                  <option value="sum_pos">🔢 Задача 1: Сумма положительных чисел solve(numbers)</option>
+                  <option value="vowels">🔤 Задача 2: Подсчет гласных букв count_vowels(text)</option>
+                  <option value="palindrome">🔄 Задача 3: Проверка палиндрома is_palindrome(s)</option>
+                </select>
+                <div id="codeTaskDescBox" style="font-size:11px; color:var(--text-dim); background:var(--bg-deep); border:1px solid var(--border-subtle); border-radius:5px; padding:6px 8px; line-height:1.4;">
+                  Функция <code>solve(numbers)</code> принимает список чисел и возвращает сумму всех положительных элементов (&gt; 0). Если таких чисел нет, возвращает 0.
+                </div>
               </div>
-              <pre id="codeSandboxConsole" class="code-sandbox-console">Нажмите «▶ Выполнить код», чтобы отправить запросы и увидеть вывод программы...</pre>
+
+              <button type="button" class="btn-verify-task" id="btnRunCodeTaskAI" style="width:100%; padding:8px 12px; font-size:11.5px;" onclick="runCodeTaskAI()">🤖 Сгенерировать решение через ИИ и запустить тесты</button>
+              <div class="verify-results-box" id="verifyBox_code_ai" style="margin-top:8px;"></div>
             </div>
           </div>
 
-          <div class="step-card">
+          <!-- ШАГ 3: Решение любой своей задачи с помощью созданного ИИ -->
+          <div class="step-card" style="margin-top:8px;">
             <div class="step-num">3</div>
             <div class="step-body" style="width:100%; min-width:0;">
-              <div class="step-title">Подключение на Python (без библиотек)</div>
+              <div class="step-title">Реши любую свою задачу с помощью ИИ</div>
               <div class="step-text" style="margin-bottom:6px;">
-                Опубликуй бота в Галерею (кнопка на Терминале), выбери его ниже, скопируй код в файл <code>client.py</code> на своём ПК и запусти в терминале/IDLE. <b>Задание:</b> допиши в коде цикл <code>while True:</code> с <code>input()</code> и массивом <code>history</code>!
+                Введи условие любой задачи по информатике или программированию, и твой настроенный бот напишет готовый код:
+              </div>
+              <textarea id="customTaskInput" class="control-textarea" style="min-height:55px; font-size:11px;" placeholder="Например: Напиши функцию для нахождения факториала числа N рекурсией..."></textarea>
+              <button type="button" class="btn-sm-action" style="margin-top:6px; width:100%; padding:6px 10px; font-size:11px; font-weight:bold;" onclick="solveCustomTaskAI()">⚡ Спросить моего ИИ-помощника</button>
+              <pre id="customTaskResultPre" class="python-snippet-pre" style="display:none; margin-top:8px;"></pre>
+            </div>
+          </div>
+
+          <!-- ШАГ 4: Готовый Python скрипт для запуска в IDLE/Thonny -->
+          <div class="step-card" style="margin-top:8px;">
+            <div class="step-num">4</div>
+            <div class="step-body" style="width:100%; min-width:0;">
+              <div class="step-title">Запуск бота в школьном Python (IDLE / Thonny)</div>
+              <div class="step-text" style="margin-bottom:6px;">
+                Опубликуй бота в Галерею (кнопка на Терминале), выбери его ниже и скопируй скрипт для запуска в консоли Python на своём компьютере:
               </div>
               <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
                 <select id="pythonBotSelect" class="control-select" style="flex:1; font-size:11px;" onchange="updatePythonSnippet()">
-                  <option value="">-- Сначала запустите бота в Галерею --</option>
+                  <option value="">-- Опубликуйте бота в Галерею --</option>
                 </select>
-                <button type="button" class="btn-sm-action" onclick="copyPythonSnippet()" style="white-space:nowrap; font-size:11px;">📋 Копировать Python</button>
+                <button type="button" class="btn-sm-action" onclick="copyPythonSnippet()" style="white-space:nowrap; font-size:11px;">📋 Копировать код</button>
               </div>
               <pre id="pythonSnippetBox" class="python-snippet-pre"></pre>
             </div>

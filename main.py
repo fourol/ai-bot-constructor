@@ -668,6 +668,151 @@ class TaskProgressPayload(BaseModel):
     progress: dict
 
 
+class CodeTaskRequest(BaseModel):
+    task_id: str
+    system_prompt: str
+    temperature: Optional[float] = 0.2
+    kb_text: Optional[str] = None
+
+
+CODE_TASKS = {
+    "sum_pos": {
+        "title": "Сумма положительных чисел",
+        "description": "Функция solve(numbers) принимает список чисел и возвращает сумму всех чисел > 0 (если положительных нет, верни 0).",
+        "prompt": "Напиши на Python функцию solve(numbers: list) -> int, которая возвращает сумму всех положительных чисел (> 0) из переданного списка. Если чисел > 0 нет, верни 0. Напиши только рабочий код функции в блоке ```python ... ``` без лишних вводных фраз.",
+        "test_code": """
+assert solve([1, -2, 3, 4, -5]) == 8
+assert solve([-1, -2, -3]) == 0
+assert solve([10, 20]) == 30
+assert solve([]) == 0
+print("OK")
+""",
+        "tests_labels": [
+            "solve([1, -2, 3, 4, -5]) == 8",
+            "solve([-1, -2, -3]) == 0",
+            "solve([10, 20]) == 30",
+            "solve([]) == 0"
+        ]
+    },
+    "vowels": {
+        "title": "Подсчет гласных букв",
+        "description": "Функция count_vowels(text) считает количество гласных русских букв (а, е, ё, и, о, у, ы, э, ю, я) без учета регистра.",
+        "prompt": "Напиши на Python функцию count_vowels(text: str) -> int, которая считает количество гласных русских букв (а, е, ё, и, о, у, ы, э, ю, я) в переданной строке без учета регистра. Напиши только рабочий код функции в блоке ```python ... ```.",
+        "test_code": """
+assert count_vowels("Привет") == 2
+assert count_vowels("КОЛЛЕДЖ 54") == 2
+assert count_vowels("бвгдж") == 0
+assert count_vowels("Ауе") == 3
+print("OK")
+""",
+        "tests_labels": [
+            'count_vowels("Привет") == 2',
+            'count_vowels("КОЛЛЕДЖ 54") == 2',
+            'count_vowels("бвгдж") == 0',
+            'count_vowels("Ауе") == 3'
+        ]
+    },
+    "palindrome": {
+        "title": "Проверка палиндрома",
+        "description": "Функция is_palindrome(s) проверяет, читается ли строка одинаково слева направо и справа налево (без пробелов и регистра).",
+        "prompt": "Напиши на Python функцию is_palindrome(s: str) -> bool, которая проверяет, читается ли строка одинаково слева направо и справа налево. Пробелы игнорируй, регистр не учитывай. Напиши только рабочий код функции в блоке ```python ... ```.",
+        "test_code": """
+assert is_palindrome("шалаш") is True
+assert is_palindrome("А роза упала на лапу Азора") is True
+assert is_palindrome("питон") is False
+assert is_palindrome("12321") is True
+print("OK")
+""",
+        "tests_labels": [
+            'is_palindrome("шалаш") == True',
+            'is_palindrome("А роза упала на лапу Азора") == True',
+            'is_palindrome("питон") == False',
+            'is_palindrome("12321") == True'
+        ]
+    }
+}
+
+
+@app.post("/api/verify-code-task")
+async def verify_code_task(payload: CodeTaskRequest):
+    import subprocess
+    import sys
+
+    task = CODE_TASKS.get(payload.task_id) or CODE_TASKS["sum_pos"]
+
+    sys_prompt = payload.system_prompt.strip() or "Ты опытный Python-разработчик."
+    if payload.kb_text and payload.kb_text.strip():
+        sys_prompt += f"\n\nФакты из базы знаний:\n{payload.kb_text.strip()}"
+
+    temp = float(payload.temperature if payload.temperature is not None else 0.2)
+
+    messages = [
+        {"role": "system", "content": sys_prompt},
+        {"role": "user", "content": task["prompt"]},
+    ]
+
+    try:
+        response = await client.chat.completions.create(
+            model="qwen2.5-3b-instruct",
+            messages=messages,
+            temperature=temp,
+            max_tokens=450,
+            stream=False,
+        )
+        answer = (response.choices[0].message.content or "").strip()
+    except Exception as e:
+        return {
+            "ok": False,
+            "raw_answer": f"[Ошибка соединения с моделью: {str(e)}]",
+            "extracted_code": "",
+            "passed": False,
+            "error": f"Ошибка вызова нейросети: {str(e)}",
+            "tests_labels": task["tests_labels"],
+            "title": task["title"]
+        }
+
+    match = re.search(r"```(?:python)?\s*(.*?)\s*```", answer, re.DOTALL)
+    code = match.group(1).strip() if match else answer.strip()
+
+    test_script = f"""
+{code}
+
+{task["test_code"]}
+"""
+
+    passed = False
+    err_msg = ""
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-c", test_script],
+            capture_output=True,
+            text=True,
+            timeout=4
+        )
+        if proc.returncode == 0:
+            passed = True
+        else:
+            raw_err = proc.stderr.strip() or proc.stdout.strip()
+            err_lines = [line for line in raw_err.split("\n") if line.strip() and not line.strip().startswith("File ")]
+            err_msg = err_lines[-1] if err_lines else "Ошибка при выполнении unit-тестов"
+    except subprocess.TimeoutExpired:
+        err_msg = "Превышено время выполнения (таймаут 4 сек). Возможно, в коде бесконечный цикл."
+    except Exception as ex:
+        err_msg = f"Системная ошибка запуска: {str(ex)}"
+
+    return {
+        "ok": True,
+        "task_id": payload.task_id,
+        "title": task["title"],
+        "description": task["description"],
+        "raw_answer": answer,
+        "extracted_code": code,
+        "passed": passed,
+        "error": err_msg,
+        "tests_labels": task["tests_labels"]
+    }
+
+
 @app.get("/api/progress/{user_id}")
 async def get_task_progress(user_id: str):
     clean_uid = user_id.strip() or "user_guest"
