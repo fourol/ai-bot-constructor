@@ -6,6 +6,9 @@ __pycache__/
 *.pyd
 .Python
 bots.db
+bots.db-wal
+bots.db-shm
+bots.db-journal
 .DS_Store
 *.log
 .idea/

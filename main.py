@@ -12,10 +12,18 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, DefaultAsyncHttpxClient
 from rank_bm25 import BM25Okapi
 from pypdf import PdfReader
 from docx import Document
+
+try:
+    import httpx as _httpx
+except ImportError:
+    try:
+        import httpx2 as _httpx
+    except ImportError:
+        _httpx = None
 
 # Конфигурация
 DB_PATH = os.getenv("DB_PATH", "bots.db")
@@ -24,19 +32,68 @@ STATIC_INDEX_PATH = os.path.join(os.path.dirname(__file__), "index.html")
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 os.makedirs(STATIC_DIR, exist_ok=True)
 
-# Клиент AsyncOpenAI для локального llama-server
-client = AsyncOpenAI(base_url=LLM_BASE_URL, api_key="none")
+# Клиент AsyncOpenAI с расширенным пулом соединений для 20+ одновременных пользователей
+http_client = (
+    DefaultAsyncHttpxClient(
+        limits=_httpx.Limits(max_connections=120, max_keepalive_connections=50),
+        timeout=_httpx.Timeout(180.0, connect=10.0),
+    )
+    if _httpx is not None
+    else None
+)
+client = (
+    AsyncOpenAI(base_url=LLM_BASE_URL, api_key="none", http_client=http_client, max_retries=1)
+    if http_client is not None
+    else AsyncOpenAI(base_url=LLM_BASE_URL, api_key="none", timeout=180.0, max_retries=1)
+)
+
+STARTER_BOTS = [
+    (
+        "dev001",
+        "DevMentor КС54",
+        "💻",
+        'Ты — опытный IT-наставник и ментор по программированию для студентов Колледжа связи №54. Твоя цель — помогать писать чистый и рабочий код на Python, объяснять алгоритмы и структуры данных. Отвечай чётко, структурированно, без шаблонной "воды". В примерах кода приводи краткие поясняющие комментарии.',
+        0.5,
+        350,
+        "Колледж связи №54 (КС54) готовит специалистов по IT, программированию и сетевой безопасности. В Python базовые структуры данных — list (список), dict (словарь), set (множество) и tuple (кортеж). Функция range(start, stop, step) генерирует последовательность чисел.",
+    ),
+    (
+        "net002",
+        "Сетевой Инженер",
+        "🌐",
+        "Ты — специалист по телекоммуникациям, Linux и сетевой инженерии КС54. Твоя область: модель OSI, протоколы TCP/IP, DNS, маршрутизация и базовые команды терминала Linux. Объясняй архитектуру сетей простыми и наглядными инженерными аналогиями без лишних сложностей.",
+        0.6,
+        350,
+        "Модель OSI имеет 7 уровней: физический, канальный, сетевой, транспортный, сеансовый, представления, прикладной. IP-адрес IPv4 состоит из 32 бит (4 октета). Протокол TCP обеспечивает надёжную доставку с подтверждением, а UDP — быструю без подтверждения.",
+    ),
+    (
+        "oge003",
+        "Тьютор ОГЭ Инфо",
+        "🎓",
+        "Ты — преподаватель информатики для подготовки к ОГЭ и экзаменам. Помогай разбирать задачи по системам счисления, логическим выражениям, графам и алгоритмам на Python. Не давай готовый ответ сразу — задавай наводящий вопрос, чтобы ученик сам дошёл до правильного решения!",
+        0.7,
+        300,
+        'Для перевода числа из двоичной системы в десятичную суммируются степени двойки. 1 Кбайт = 1024 байта = 8192 бита. Таблицы истинности: операция "И" (&, AND) истинна только если оба высказывания истинны. "ИЛИ" (|, OR) ложна только если оба ложны.',
+    ),
+]
 
 
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=30.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA busy_timeout = 30000")
     return conn
 
 
 def init_db():
     with get_db() as conn:
+        conn.execute("PRAGMA journal_mode = WAL")
+        conn.execute("PRAGMA synchronous = NORMAL")
+        is_fresh_db = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='bots'"
+        ).fetchone() is None
+
         conn.execute("""
             CREATE TABLE IF NOT EXISTS bots (
                 id TEXT PRIMARY KEY,
@@ -63,6 +120,18 @@ def init_db():
             )
         """)
         conn.execute("CREATE INDEX IF NOT EXISTS idx_chunks_bot_id ON knowledge_chunks(bot_id)")
+
+        if is_fresh_db:
+            for b_id, b_name, b_avatar, b_prompt, b_temp, b_tokens, b_kb in STARTER_BOTS:
+                cursor.execute(
+                    "INSERT OR IGNORE INTO bots (id, name, avatar, system_prompt, temperature, max_tokens) VALUES (?, ?, ?, ?, ?, ?)",
+                    (b_id, b_name, b_avatar, b_prompt, b_temp, b_tokens),
+                )
+                cursor.execute(
+                    "INSERT INTO knowledge_chunks (bot_id, chunk_text) VALUES (?, ?)",
+                    (b_id, b_kb),
+                )
+
         conn.commit()
 
 
@@ -70,11 +139,13 @@ def init_db():
 async def lifespan(app: FastAPI):
     init_db()
     yield
+    if http_client is not None:
+        await http_client.aclose()
 
 
 app = FastAPI(
-    title="Конструктор ИИ-ботов",
-    description="Веб-приложение для детского мастер-класса по созданию ИИ-персонажей",
+    title="КС54 • НейроКонструктор",
+    description="ИИ-Лаборатория Колледжа связи №54 для создания и тестирования ИИ-ботов (20+ одновременных пользователей)",
     lifespan=lifespan
 )
 
