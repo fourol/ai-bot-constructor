@@ -206,7 +206,6 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      user-select: none;
     }
 
     /* Top Bar */
@@ -1777,6 +1776,9 @@
       word-break: break-word;
       scrollbar-width: thin;
       scrollbar-color: var(--border-node) var(--terminal-screen-bg);
+      user-select: text !important;
+      -webkit-user-select: text !important;
+      cursor: text;
     }
 
     .terminal-response-screen::-webkit-scrollbar {
@@ -1805,6 +1807,9 @@
     .term-chat-msg {
       margin-bottom: 6px;
       line-height: 1.4;
+      user-select: text !important;
+      -webkit-user-select: text !important;
+      cursor: text;
     }
     .term-chat-msg:last-child {
       margin-bottom: 0;
@@ -2135,6 +2140,7 @@
       max-height: 100%;
       overflow: hidden;
       background: var(--chat-bg);
+      position: relative;
     }
 
     .chat-head {
@@ -2295,6 +2301,8 @@
       gap: 14px;
       scrollbar-width: thin;
       scrollbar-color: var(--border-node) var(--chat-bg);
+      user-select: text !important;
+      -webkit-user-select: text !important;
     }
 
     .chat-stream-box::-webkit-scrollbar {
@@ -2314,8 +2322,10 @@
     .msg-row {
       display: flex;
       gap: 10px;
-      max-width: 82%;
+      max-width: 86%;
       align-items: flex-start;
+      user-select: text !important;
+      -webkit-user-select: text !important;
     }
 
     .msg-row.user {
@@ -2326,6 +2336,72 @@
     .msg-row.bot {
       align-self: flex-start;
       flex-direction: row;
+    }
+
+    .msg-content-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-width: 100%;
+      user-select: text !important;
+      -webkit-user-select: text !important;
+    }
+
+    .msg-meta-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 4px 0 4px;
+      user-select: none;
+    }
+
+    .btn-msg-action {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-dim);
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .btn-msg-action:hover {
+      background: var(--bg-node);
+      border-color: var(--border-node);
+      color: var(--wire-char);
+    }
+
+    .btn-scroll-bottom {
+      position: absolute;
+      bottom: 70px;
+      right: 28px;
+      z-index: 50;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-node);
+      color: var(--text);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .btn-scroll-bottom:hover {
+      background: var(--wire-char);
+      color: #ffffff;
+      border-color: var(--wire-char);
+      transform: translateY(-2px);
     }
 
     .msg-icon {
@@ -2340,6 +2416,7 @@
       justify-content: center;
       flex-shrink: 0;
       box-shadow: var(--shadow-sm);
+      user-select: none;
     }
 
     .msg-row.user .msg-icon {
@@ -2356,6 +2433,14 @@
       word-break: break-word;
       white-space: normal;
       box-shadow: var(--shadow-sm);
+      user-select: text !important;
+      -webkit-user-select: text !important;
+      cursor: text;
+    }
+
+    .msg-text * {
+      user-select: text !important;
+      -webkit-user-select: text !important;
     }
 
     /* Markdown Rich Elements inside Chat Messages */
@@ -2504,17 +2589,24 @@
       background: #334155;
       color: #f8fafc;
       border: 1px solid #475569;
-      border-radius: 3px;
-      font-size: 10.5px;
-      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      padding: 3px 10px;
       cursor: pointer;
       transition: all 0.15s ease;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: inherit;
     }
 
     .msg-text .btn-copy-code:hover {
       background: #475569;
       color: #ffffff;
       border-color: var(--wire-char);
+    }
+
+    .msg-text .btn-copy-code:active {
+      transform: scale(0.96);
     }
 
     .msg-text .md-code-block pre {
@@ -2526,6 +2618,9 @@
       line-height: 1.55;
       color: var(--chat-code-text);
       background: transparent;
+      user-select: text !important;
+      -webkit-user-select: text !important;
+      cursor: text;
     }
 
     .msg-text .md-code-block code {
@@ -2535,6 +2630,9 @@
       padding: 0;
       border: none;
       white-space: pre;
+      user-select: text !important;
+      -webkit-user-select: text !important;
+      cursor: text;
     }
 
     .msg-text .md-table-wrap {
@@ -3498,7 +3596,8 @@
         </div>
       </div>
 
-      <div class="chat-stream-box" id="chatMessages"></div>
+      <div class="chat-stream-box" id="chatMessages" onscroll="onChatScroll()"></div>
+      <button type="button" class="btn-scroll-bottom" id="btnScrollBottom" onclick="scrollToChatBottom()" title="Прокрутить к новым сообщениям">↓ Вниз</button>
 
       <div class="typing-indicator" id="typingIndicator">
         <div class="typing-dot"></div>
@@ -3591,6 +3690,49 @@
 
   <!-- Interactive Logic -->
   <script>
+    // --- Universal Clipboard Copy Utility (Works over HTTP, LAN IP, and Secure Contexts) ---
+    function copyTextToClipboard(text) {
+      if (!text) return Promise.resolve();
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text).catch(() => fallbackExecCopy(text));
+      }
+      return fallbackExecCopy(text);
+    }
+
+    function fallbackExecCopy(text) {
+      return new Promise((resolve, reject) => {
+        try {
+          const textArea = document.createElement('textarea');
+          textArea.value = text;
+          textArea.style.position = 'fixed';
+          textArea.style.top = '0';
+          textArea.style.left = '0';
+          textArea.style.width = '2em';
+          textArea.style.height = '2em';
+          textArea.style.padding = '0';
+          textArea.style.border = 'none';
+          textArea.style.outline = 'none';
+          textArea.style.boxShadow = 'none';
+          textArea.style.background = 'transparent';
+          textArea.style.opacity = '0';
+          textArea.setAttribute('readonly', '');
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          textArea.setSelectionRange(0, textArea.value.length);
+          const successful = document.execCommand('copy');
+          document.body.removeChild(textArea);
+          if (successful) {
+            resolve();
+          } else {
+            reject(new Error('Копирование не поддерживается'));
+          }
+        } catch (err) {
+          reject(err);
+        }
+      });
+    }
+
     // --- Interactive Onboarding Tour (Обучение при первом запуске) ---
     const TOUR_STEPS = [
       {
@@ -4275,7 +4417,7 @@
       const textEl = card.querySelector('.attack-text');
       if (!textEl) return;
       const text = textEl.textContent.replace(/[«»]/g, '').trim();
-      navigator.clipboard.writeText(text).then(() => {
+      copyTextToClipboard(text).then(() => {
         const orig = btn.textContent;
         btn.textContent = 'Скопировано! ✓';
         btn.style.color = '#10b981';
@@ -6044,9 +6186,11 @@
           const { value, done } = await reader.read();
           if (done) break;
           result += decoder.decode(value, { stream: true });
+          const wasNearBottom = (screen.scrollHeight - screen.scrollTop - screen.clientHeight) <= 80;
           streamTarget.innerHTML = renderMarkdown(result);
-          // Continuous smooth auto-scrolling down
-          screen.scrollTop = screen.scrollHeight;
+          if (wasNearBottom) {
+            screen.scrollTop = screen.scrollHeight;
+          }
         }
 
         // Save turns into terminal chat history
@@ -6059,11 +6203,9 @@
         btnTest.disabled = false;
         input.disabled = false;
         input.focus();
-        // Pin to bottom at conclusion
-        screen.scrollTop = screen.scrollHeight;
-        requestAnimationFrame(() => {
+        if ((screen.scrollHeight - screen.scrollTop - screen.clientHeight) <= 100) {
           screen.scrollTop = screen.scrollHeight;
-        });
+        }
       }
     }
 
@@ -6941,7 +7083,7 @@
     function copyBotLink() {
       if (!currentBotId) return;
       const url = `${window.location.origin}${window.location.pathname}?bot=${currentBotId}`;
-      navigator.clipboard.writeText(url).then(() => {
+      copyTextToClipboard(url).then(() => {
         showToast('Ссылка скопирована', 'success');
       }).catch(() => prompt('Ссылка:', url));
     }
@@ -7020,6 +7162,7 @@
             <span>Начните диалог с <strong>${escapeHtml(name)}</strong></span>
           </div>
         `;
+        onChatScroll();
         return;
       }
 
@@ -7031,12 +7174,20 @@
         return `
           <div class="msg-row ${isUser ? 'user' : 'bot'}">
             <div class="msg-icon">${isUser ? '👤' : escapeHtml(avatar)}</div>
-            <div class="msg-text">${renderMarkdown(m.content)}</div>
+            <div class="msg-content-wrap">
+              <div class="msg-text">${renderMarkdown(m.content)}</div>
+              ${!isUser ? `
+                <div class="msg-meta-bar">
+                  <button type="button" class="btn-msg-action" onclick="copyMessageText(this)" title="Скопировать весь ответ в буфер обмена">📋 Скопировать ответ</button>
+                </div>
+              ` : ''}
+            </div>
           </div>
         `;
       }).join('');
 
       container.scrollTop = container.scrollHeight;
+      onChatScroll();
     }
 
     function quickSend(txt) {
@@ -7084,10 +7235,16 @@
       botRow.className = 'msg-row bot';
       botRow.innerHTML = `
         <div class="msg-icon">${escapeHtml(avatar)}</div>
-        <div class="msg-text" id="streamTarget"></div>
+        <div class="msg-content-wrap">
+          <div class="msg-text" id="streamTarget"></div>
+          <div class="msg-meta-bar" id="streamMetaBar" style="display:none;">
+            <button type="button" class="btn-msg-action" onclick="copyMessageText(this)" title="Скопировать весь ответ в буфер обмена">📋 Скопировать ответ</button>
+          </div>
+        </div>
       `;
       container.appendChild(botRow);
       const target = botRow.querySelector('#streamTarget');
+      const metaBar = botRow.querySelector('#streamMetaBar');
 
       let responseText = '';
 
@@ -7117,8 +7274,12 @@
           if (done) break;
           const chunk = decoder.decode(value, { stream: true });
           responseText += chunk;
+          
+          const wasNearBottom = (container.scrollHeight - container.scrollTop - container.clientHeight) <= 120;
           target.innerHTML = renderMarkdown(responseText);
-          container.scrollTop = container.scrollHeight;
+          if (wasNearBottom) {
+            container.scrollTop = container.scrollHeight;
+          }
         }
 
         chatHistories[currentBotId].push({
@@ -7133,12 +7294,37 @@
         showToast(err.message, 'error');
       } finally {
         target.removeAttribute('id');
+        if (metaBar) {
+          metaBar.removeAttribute('id');
+          metaBar.style.display = 'flex';
+        }
         isStreaming = false;
         document.getElementById('btnSend').disabled = false;
         document.getElementById('chatInput').disabled = false;
         document.getElementById('chatInput').focus();
-        container.scrollTop = container.scrollHeight;
+        if ((container.scrollHeight - container.scrollTop - container.clientHeight) <= 160) {
+          container.scrollTop = container.scrollHeight;
+        }
+        onChatScroll();
       }
+    }
+
+    function onChatScroll() {
+      const container = document.getElementById('chatMessages');
+      const btn = document.getElementById('btnScrollBottom');
+      if (!container || !btn) return;
+      const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+      if (distanceFromBottom > 160) {
+        btn.style.display = 'inline-flex';
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+
+    function scrollToChatBottom() {
+      const container = document.getElementById('chatMessages');
+      if (!container) return;
+      container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
     }
 
     function showToast(text, type = 'info') {
@@ -7324,7 +7510,7 @@
       const codeEl = block.querySelector('code');
       if (!codeEl) return;
       const text = codeEl.innerText;
-      navigator.clipboard.writeText(text).then(() => {
+      copyTextToClipboard(text).then(() => {
         const orig = btn.textContent;
         btn.textContent = 'Скопировано! ✓';
         btn.style.color = '#10b981';
@@ -7336,6 +7522,28 @@
         }, 2000);
       }).catch(() => {
         showToast('Не удалось скопировать код', 'error');
+      });
+    }
+
+    function copyMessageText(btn) {
+      const wrap = btn.closest('.msg-content-wrap') || btn.closest('.msg-row');
+      if (!wrap) return;
+      const textEl = wrap.querySelector('.msg-text');
+      if (!textEl) return;
+      const clone = textEl.cloneNode(true);
+      clone.querySelectorAll('.btn-copy-code, .md-code-header').forEach(el => el.remove());
+      const text = clone.innerText.trim();
+
+      copyTextToClipboard(text).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✓ Скопировано';
+        btn.style.color = '#10b981';
+        setTimeout(() => {
+          btn.innerHTML = orig;
+          btn.style.color = '';
+        }, 2000);
+      }).catch(() => {
+        showToast('Не удалось скопировать ответ', 'error');
       });
     }
   </script>
