@@ -3884,7 +3884,6 @@
       </div>
       <div class="gallery-filter-bar">
         <button type="button" class="gallery-filter-pill active" id="filterPillMy" onclick="setGalleryFilter('my')">👤 Мои боты</button>
-        <button type="button" class="gallery-filter-pill" id="filterPillKs" onclick="setGalleryFilter('ks54')">🏛️ КС54</button>
         <button type="button" class="gallery-filter-pill" id="filterPillAll" onclick="setGalleryFilter('all')">🌐 Все</button>
       </div>
       <div class="gallery-list" id="galleryList"></div>
@@ -7981,8 +7980,6 @@
 
       if (currentGalleryFilter === 'my') {
         filtered = allBots.filter(b => (b.user_id && b.user_id === myId));
-      } else if (currentGalleryFilter === 'ks54') {
-        filtered = allBots.filter(b => b.user_id === 'system');
       } else {
         filtered = allBots;
       }
@@ -7992,7 +7989,6 @@
           <div style="text-align:center; padding:32px 14px; color:var(--text-dim); font-size:12px; display:flex; flex-direction:column; gap:8px; align-items:center;">
             <span>${currentGalleryFilter === 'my' ? 'У вас пока нет своих ботов' : 'Ботов не найдено'}</span>
             <button type="button" class="btn-sm-action" onclick="createNewBotOnCanvas()" style="margin-top:2px; color:#0284c7; font-weight:700;">🧩 Собрать своего бота</button>
-            ${currentGalleryFilter === 'my' ? `<button type="button" class="btn-sm-action" onclick="setGalleryFilter('ks54')">🏛️ Посмотреть образцы КС54</button>` : ''}
           </div>
         `;
         return;
@@ -8039,7 +8035,7 @@
         msgEl.innerHTML = `
           <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-dim); gap:8px; font-size:13px; text-align:center; padding:20px;">
             <span>У вас пока нет активного чата.</span>
-            <span style="font-size:12px;">Соберите своего бота во вкладке <strong>«Схема нод»</strong> или выберите учебный образец во вкладке <strong>«🏛️ КС54»</strong> слева.</span>
+            <span style="font-size:12px;">Соберите своего бота во вкладке <strong>«Схема нод»</strong> и нажмите <strong>«🚀 Запустить бота»</strong>.</span>
           </div>
         `;
       }
