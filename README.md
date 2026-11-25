@@ -2,6 +2,12 @@
 
 Настоящий документ представляет собой исчерпывающее техническое руководство по развертыванию, администрированию и проведению учебных занятий на базе программного комплекса «КС54 AI-Интегратор».
 
+Публикация документации на платформе Telegraph:
+- Главное оглавление: https://telegra.ph/KS54-AI-Integrator-Tehnicheskaya-dokumentaciya-11-25
+- Часть 1 (Архитектура, развертывание, база данных и API): https://telegra.ph/KS54-AI-Integrator-Arhitektura-razvertyvanie-i-API-CHast-1-11-25
+- Часть 2 (Визуальный конструктор и спецификация 11 модулей): https://telegra.ph/KS54-AI-Integrator-Konstruktor-shem-i-11-modulej-CHast-2-11-25
+- Часть 3 (Практикум, аттестация, регламент урока и диагностика): https://telegra.ph/KS54-AI-Integrator-Praktikum-ehkzamen-i-reglament-CHast-3-11-25
+
 ---
 
 ## Содержание
