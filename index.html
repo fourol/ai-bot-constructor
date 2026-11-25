@@ -3121,8 +3121,8 @@
     /* Interactive Tasks & Step-by-step Guide CSS */
     .task-level-bar {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 4px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 3px;
       background: var(--bg-deep);
       padding: 4px;
       border-radius: 7px;
@@ -3133,17 +3133,75 @@
       background: transparent;
       border: 1px solid transparent;
       color: var(--text-dim);
-      padding: 5px 4px;
-      font-size: 10.5px;
+      padding: 5px 2px;
+      font-size: 9.8px;
       font-weight: 700;
       border-radius: 5px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 3px;
+      gap: 2px;
       transition: all 0.15s ease;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .code-sandbox-editor {
+      width: 100%;
+      min-height: 155px;
+      background: var(--bg-deep);
+      color: var(--text);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.45;
+      resize: vertical;
+      tab-size: 2;
+      user-select: text;
+    }
+    .code-sandbox-editor:focus {
+      outline: none;
+      border-color: var(--wire-char);
+    }
+
+    .code-sandbox-console {
+      width: 100%;
+      min-height: 64px;
+      max-height: 180px;
+      overflow-y: auto;
+      background: #0f172a;
+      color: #e2e8f0;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 0;
+      user-select: text;
+    }
+
+    .python-snippet-pre {
+      width: 100%;
+      max-height: 200px;
+      overflow: auto;
+      background: #0f172a;
+      color: #93c5fd;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 10.5px;
+      line-height: 1.4;
+      white-space: pre;
+      margin: 0;
+      user-select: text;
     }
     .task-level-btn:hover {
       background: var(--bg-node);
@@ -4623,6 +4681,7 @@
           college: { passed: false, schemaPassed: false, schemaChecks: null, aiPassed: false, aiResults: null, snapshot: null },
           socratic: { passed: false, schemaPassed: false, schemaChecks: null, aiPassed: false, aiResults: null, snapshot: null }
         },
+        bonusCode: { passed: false, schemaPassed: false, schemaChecks: null, aiResult: null, sandboxPassed: false, snapshot: null, savedCode: null },
         auditChecked: []
       };
     }
@@ -4676,6 +4735,7 @@
           college: Object.assign({}, def.exams.college, saved.exams?.college || {}),
           socratic: Object.assign({}, def.exams.socratic, saved.exams?.socratic || {})
         },
+        bonusCode: Object.assign({}, def.bonusCode, saved.bonusCode || {}),
         auditChecked: Array.isArray(saved.auditChecked) ? saved.auditChecked : []
       };
     }
@@ -4769,7 +4829,16 @@
       const examTabBtn = document.getElementById('taskBtn_exam');
       if (examTabBtn) examTabBtn.classList.toggle('passed', anyExamPassed);
 
-      const totalTasks = lvlIds.length + examIds.length;
+      const codeBonusPassed = Boolean(taskProgressState.bonusCode?.passed);
+      if (codeBonusPassed) passedTotal++;
+      const codeTabBtn = document.getElementById('taskBtn_code');
+      if (codeTabBtn) codeTabBtn.classList.toggle('passed', codeBonusPassed);
+      const codeRestBtn = document.getElementById('btnRestore_code');
+      if (codeRestBtn) {
+        codeRestBtn.style.display = taskProgressState.bonusCode?.snapshot ? 'inline-flex' : 'none';
+      }
+
+      const totalTasks = lvlIds.length + examIds.length + 1;
       const counterEl = document.getElementById('tasksProgressCounter');
       const barEl = document.getElementById('tasksProgressBar');
       const hintEl = document.getElementById('tasksProgressHint');
@@ -4777,7 +4846,7 @@
       if (barEl) barEl.style.width = `${Math.round((passedTotal / totalTasks) * 100)}%`;
       if (hintEl) {
         hintEl.textContent = passedTotal === totalTasks
-          ? '🏆 Все уровни и экзамены пройдены!'
+          ? '🏆 Все уровни, экзамены и API-код пройдены!'
           : (passedTotal > 0 ? 'Прогресс и схемы сохранены' : 'Сохраняется автоматически');
       }
     }
@@ -4817,6 +4886,19 @@
         }
       });
 
+      // Restore Code/API Bonus UI
+      const bonusData = taskProgressState.bonusCode;
+      const codeBox = document.getElementById('verifyBox_code');
+      if (bonusData && Array.isArray(bonusData.schemaChecks) && bonusData.schemaChecks.length > 0) {
+        renderCodeBonusResults(bonusData.schemaChecks, bonusData.aiResult);
+      } else if (codeBox) {
+        codeBox.classList.remove('active');
+      }
+      const sandboxEl = document.getElementById('codeSandboxInput');
+      if (sandboxEl) {
+        sandboxEl.value = (bonusData && bonusData.savedCode) ? bonusData.savedCode : DEFAULT_SANDBOX_CODE;
+      }
+
       // 2. Restore active guide tab, task level & exam variant
       switchGuideTab(taskProgressState.activeGuideTab || 'about', true);
       switchTaskLevel(taskProgressState.activeTaskLevel || 'lvl1', true);
@@ -4832,6 +4914,7 @@
       }
 
       updateTasksProgressSummaryUI();
+      if (typeof refreshPythonBotOptions === 'function') refreshPythonBotOptions();
     }
 
     function restoreTaskSnapshot(key) {
@@ -4840,6 +4923,9 @@
       if (key === 'exam') {
         snapshot = taskProgressState.exams[currentExamVariant]?.snapshot || null;
         label = `Экзамена (${currentExamVariant})`;
+      } else if (key === 'code') {
+        snapshot = taskProgressState.bonusCode?.snapshot || null;
+        label = 'JSON-API бота';
       } else {
         snapshot = taskProgressState.levels[key]?.snapshot || null;
         label = key === 'lvl1' ? 'Уровня 1' : (key === 'lvl2' ? 'Уровня 2' : 'Уровня 3');
@@ -5418,6 +5504,356 @@
           btn.textContent = '🧪 Запустить живой AI-экзамен';
         }
       }
+    }
+
+    // --- Bonus Level: Programming & JSON API Integration ---
+    const DEFAULT_SANDBOX_CODE = [
+      '// 1. Задайте массив запросов для пакетной обработки',
+      'const requestsList = [',
+      '  "Не открывается сайт и не проходит ping",',
+      '  "Как создать словарь dict в Python?"',
+      '];',
+      '',
+      '// 2. Отправляем запросы боту по API и разбираем JSON-ответ',
+      'for (const text of requestsList) {',
+      '  log(">>> Запрос: " + text);',
+      '  const raw = await askCurrentBot(text);',
+      '  try {',
+      '    const match = raw.match(/\\{[\\s\\S]*\\}/);',
+      '    const data = JSON.parse(match ? match[0] : raw);',
+      '    log("JSON OK -> ключи: " + Object.keys(data).join(", "));',
+      '    log("Ответ: " + JSON.stringify(data));',
+      '  } catch (err) {',
+      '    log("Ошибка JSON: " + raw);',
+      '  }',
+      '}'
+    ].join('\n');
+
+    function renderCodeBonusResults(checks, aiResult) {
+      const box = document.getElementById('verifyBox_code');
+      if (!box) return;
+      renderVerifyResult('verifyBox_code', checks, null, false);
+      if (aiResult) {
+        const div = document.createElement('div');
+        div.className = 'ai-exam-box';
+        div.style.marginTop = '6px';
+        div.innerHTML = `
+          <div class="ai-exam-q">${escapeHtml(aiResult.title || 'Живой тест JSON API')}</div>
+          <div style="color:var(--text-dim); font-style:italic;">Запрос: «${escapeHtml(aiResult.question)}»</div>
+          <div class="ai-exam-a">${escapeHtml(aiResult.answer || 'Пустой ответ')}</div>
+          <div class="ai-exam-verdict ${aiResult.isOk ? 'ok' : 'fail'}">${escapeHtml(aiResult.verdictText)}</div>
+        `;
+        box.appendChild(div);
+      }
+      const passedBtn = Boolean(checks.every(c => c.ok) && aiResult && aiResult.isOk);
+      const tabBtn = document.getElementById('taskBtn_code');
+      if (tabBtn && passedBtn) tabBtn.classList.add('passed');
+    }
+
+    async function verifyCodeBonus() {
+      const arch = inspectCanvasArchitecture();
+      const checks = [
+        {
+          ok: arch.brainToAsmConnected && arch.hasChar && arch.hasPrompt,
+          label: 'Базовая схема Персонаж + Инструкция → Мозг → Терминал собрана',
+          hint: 'Соедини базовые 4 ноды на холсте.'
+        },
+        {
+          ok: arch.hasFormat && arch.formatType === 'json',
+          label: 'Модуль «Формат Данных» подключён в режиме «Строгий JSON»',
+          hint: 'Добавь 📊 Формат Данных к Мозгу и выбери «Строгий JSON».'
+        },
+        {
+          ok: arch.hasParams && arch.tempVal <= 0.3,
+          label: 'Подключена «Креативность и Длина» с температурой ≤ 0.3',
+          hint: 'Подключи 🔥 Креативность к Мозгу и поставь Temp 0.1–0.3, чтобы не ломался синтаксис JSON.'
+        },
+        {
+          ok: arch.hasFewshot && arch.fsFilled,
+          label: 'Подключён «Few-Shot (Примеры)» с эталонным примером',
+          hint: 'Добавь 🎯 Few-Shot к Мозгу и запиши хотя бы 1 пример ответа в формате JSON.'
+        }
+      ];
+
+      const allSchemaOk = checks.every(c => c.ok);
+      renderCodeBonusResults(checks, null);
+
+      const btn = document.getElementById('btnVerifyCode');
+      const box = document.getElementById('verifyBox_code');
+      if (!allSchemaOk) {
+        taskProgressState.bonusCode.schemaChecks = checks;
+        taskProgressState.bonusCode.schemaPassed = false;
+        taskProgressState.bonusCode.passed = false;
+        saveTaskProgress(true);
+        showToast('Сначала исправьте красные пункты в схеме нод', 'info');
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Тестирую JSON-ответ модели...';
+      }
+
+      const testQ = 'Проанализируй обращение: Не открывается сайт в браузере и не проходит ping';
+      let answer = '';
+      try {
+        const res = await fetch('/api/test-draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: testQ,
+            system_prompt: arch.compiledPrompt,
+            temperature: arch.tempVal,
+            max_tokens: 180,
+            kb_text: arch.kbText || null,
+            history: []
+          })
+        });
+        if (res.ok) {
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder('utf-8');
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            answer += decoder.decode(value, { stream: true });
+          }
+        } else {
+          answer = '[Ошибка связи с сервером]';
+        }
+      } catch (e) {
+        answer = '[Ошибка соединения: ' + e.message + ']';
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '🔍 Проверить схему и валидность JSON по API';
+        }
+      }
+
+      answer = answer.trim();
+      let parsedObj = null;
+      let parseErr = '';
+      if (answer && !answer.startsWith('[Ошибка')) {
+        try {
+          const match = answer.match(/\{[\s\S]*\}/);
+          parsedObj = JSON.parse(match ? match[0] : answer);
+        } catch (e) {
+          parseErr = e.message;
+        }
+      }
+
+      const isOk = Boolean(parsedObj && typeof parsedObj === 'object');
+      const aiResult = {
+        title: 'Автопроверка JSON.parse()',
+        question: testQ,
+        answer: answer || 'Пустой ответ',
+        isOk,
+        verdictText: isOk
+          ? '✅ Валидный JSON распарсен успешно! Ключи: ' + Object.keys(parsedObj).join(', ')
+          : '❌ Не удалось распарсить JSON (' + (parseErr || 'нет ответа модели') + '). Проверь пример в Few-Shot!'
+      };
+
+      renderCodeBonusResults(checks, aiResult);
+
+      taskProgressState.bonusCode.schemaChecks = checks;
+      taskProgressState.bonusCode.schemaPassed = allSchemaOk;
+      taskProgressState.bonusCode.aiResult = aiResult;
+      taskProgressState.bonusCode.snapshot = exportWorkflowSnapshot();
+      taskProgressState.bonusCode.passed = Boolean(allSchemaOk && isOk);
+      updateTasksProgressSummaryUI();
+      saveTaskProgress(true);
+
+      if (isOk) {
+        showToast('JSON-микросервис проверен! Теперь протестируйте код в шаге 2 или Python.', 'success');
+      } else {
+        showToast('Модель ответила не в формате JSON. Уточните Few-Shot пример.', 'error');
+      }
+    }
+
+    function saveSandboxDraft() {
+      const el = document.getElementById('codeSandboxInput');
+      if (el) {
+        taskProgressState.bonusCode.savedCode = el.value;
+        saveTaskProgress();
+      }
+    }
+
+    function resetCodeSandbox() {
+      const el = document.getElementById('codeSandboxInput');
+      if (el) {
+        el.value = DEFAULT_SANDBOX_CODE;
+        saveSandboxDraft();
+      }
+      const con = document.getElementById('codeSandboxConsole');
+      if (con) con.textContent = 'Шаблон кода восстановлен. Нажмите «▶ Выполнить код».';
+    }
+
+    async function runCodeSandbox() {
+      const el = document.getElementById('codeSandboxInput');
+      const con = document.getElementById('codeSandboxConsole');
+      const btn = document.getElementById('btnRunSandbox');
+      if (!el || !con) return;
+
+      const code = el.value;
+      taskProgressState.bonusCode.savedCode = code;
+      saveTaskProgress();
+
+      con.textContent = '>>> Запуск скрипта...\n';
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Выполнение...';
+      }
+
+      const log = (...args) => {
+        const line = args.map(a => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
+        con.textContent += line + '\n';
+        con.scrollTop = con.scrollHeight;
+      };
+
+      let callsCount = 0;
+
+      const askCurrentBot = async (message) => {
+        const arch = inspectCanvasArchitecture();
+        if (!arch.brainToAsmConnected || !arch.hasPrompt) {
+          throw new Error('Схема на холсте не собрана (подключите Промпт → Мозг → Терминал)');
+        }
+        callsCount++;
+        const res = await fetch('/api/test-draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: String(message),
+            system_prompt: arch.compiledPrompt,
+            temperature: arch.tempVal,
+            max_tokens: arch.tokensVal || 200,
+            kb_text: arch.kbText || null,
+            history: []
+          })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let ans = '';
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          ans += decoder.decode(value, { stream: true });
+        }
+        return ans.trim();
+      };
+
+      const askSavedBot = async (botId, message) => {
+        callsCount++;
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bot_id: String(botId),
+            message: String(message),
+            history: []
+          })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let ans = '';
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          ans += decoder.decode(value, { stream: true });
+        }
+        return ans.trim();
+      };
+
+      try {
+        const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+        const fn = new AsyncFunction('askCurrentBot', 'askSavedBot', 'log', code);
+        await fn(askCurrentBot, askSavedBot, log);
+        if (callsCount >= 2) {
+          taskProgressState.bonusCode.sandboxPassed = true;
+          saveTaskProgress(true);
+          log('\n[УСПЕХ] Программа выполнена без ошибок. Обработано API-запросов: ' + callsCount);
+          showToast('Код успешно выполнен! Обработано запросов: ' + callsCount, 'success');
+        } else {
+          log('\n[ПОДСКАЗКА] Выполнено запросов: ' + callsCount + '. Для зачёта цикла отправьте минимум 2 запроса.');
+        }
+      } catch (err) {
+        log('\n[ОШИБКА ВЫПОЛНЕНИЯ] ' + err.message);
+        showToast('Ошибка в коде: ' + err.message, 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '▶ Выполнить код';
+        }
+      }
+    }
+
+    function refreshPythonBotOptions() {
+      const sel = document.getElementById('pythonBotSelect');
+      if (!sel) return;
+      const myId = typeof getOrCreateUserId === 'function' ? getOrCreateUserId() : '';
+      const myBots = allBots.filter(b => b.user_id === myId);
+      const otherBots = allBots.filter(b => b.user_id !== myId);
+      const sorted = [...myBots, ...otherBots];
+      const prevVal = sel.value;
+
+      if (sorted.length === 0) {
+        sel.innerHTML = '<option value="ВАШ_BOT_ID">-- Опубликуйте бота в Галерею --</option>';
+      } else {
+        sel.innerHTML = sorted.map(b => {
+          const tag = b.user_id === myId ? ' (Мой)' : '';
+          return `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}${tag} [${escapeHtml(b.id)}]</option>`;
+        }).join('');
+        if (prevVal && sorted.some(b => b.id === prevVal)) {
+          sel.value = prevVal;
+        }
+      }
+      updatePythonSnippet();
+    }
+
+    function updatePythonSnippet() {
+      const sel = document.getElementById('pythonBotSelect');
+      const pre = document.getElementById('pythonSnippetBox');
+      if (!pre) return;
+      const botId = (sel && sel.value) ? sel.value : 'ВАШ_BOT_ID';
+      const baseUrl = window.location.origin;
+      pre.textContent = [
+        'import json',
+        'import urllib.request',
+        '',
+        `SERVER_URL = "${baseUrl}/api/chat"`,
+        `BOT_ID = "${botId}"`,
+        'history = []',
+        '',
+        'def ask_bot(message: str) -> str:',
+        '    payload = json.dumps({',
+        '        "bot_id": BOT_ID,',
+        '        "message": message,',
+        '        "history": history',
+        '    }).encode("utf-8")',
+        '    req = urllib.request.Request(',
+        '        SERVER_URL,',
+        '        data=payload,',
+        '        headers={"Content-Type": "application/json"}',
+        '    )',
+        '    with urllib.request.urlopen(req, timeout=60) as resp:',
+        '        return resp.read().decode("utf-8")',
+        '',
+        'if __name__ == "__main__":',
+        '    q = "Привет! Ответь строго в формате JSON."',
+        '    raw = ask_bot(q)',
+        '    print("Ответ:", raw)',
+        '    # Задание: оберните в цикл while True: и парсинг json.loads(raw)'
+      ].join('\n');
+    }
+
+    function copyPythonSnippet() {
+      const pre = document.getElementById('pythonSnippetBox');
+      if (!pre) return;
+      copyTextToClipboard(pre.textContent).then(() => {
+        showToast('Python-скрипт скопирован в буфер обмена!', 'success');
+      }).catch(() => {
+        showToast('Выделите код и нажмите Ctrl+C', 'info');
+      });
     }
 
     function copyAttackText(btn) {
@@ -7880,6 +8316,7 @@
         const myBots = allBots.filter(b => b.user_id && b.user_id === myId);
         document.getElementById('botsBadge').textContent = myBots.length;
         renderGallery();
+        if (typeof refreshPythonBotOptions === 'function') refreshPythonBotOptions();
       } catch (e) {
         if (!silent) showToast(e.message, 'error');
       }
@@ -8881,6 +9318,7 @@
           <button type="button" class="task-level-btn" id="taskBtn_lvl2" onclick="switchTaskLevel('lvl2')">🟡 Ур. 2</button>
           <button type="button" class="task-level-btn" id="taskBtn_lvl3" onclick="switchTaskLevel('lvl3')">🔴 Ур. 3</button>
           <button type="button" class="task-level-btn" id="taskBtn_exam" onclick="switchTaskLevel('exam')">🏆 Экзамен</button>
+          <button type="button" class="task-level-btn" id="taskBtn_code" onclick="switchTaskLevel('code')">💻 Код/API</button>
         </div>
 
         <!-- LEVEL 1: Новичок -->
@@ -9114,6 +9552,68 @@
             <div class="verify-results-box" id="verifyBox_exam_ai"></div>
 
             <button type="button" class="btn-restore-task" id="btnRestore_exam" onclick="restoreTaskSnapshot('exam')" style="display:none;">📂 Загрузить сохранённую схему этого варианта</button>
+          </div>
+        </div>
+
+        <!-- LEVEL 5 (БОНУС): Программирование и API-интеграция -->
+        <div class="task-level-panel" id="taskPanel_code">
+          <div class="guide-card">
+            <div class="guide-card-head">
+              <span class="guide-card-title">💻 Бонус: Программирование и API</span>
+              <span class="guide-badge">Код + JSON</span>
+            </div>
+            <p class="guide-desc">Сдали базовый экзамен? Переходите на уровень настоящего разработчика: настройте бота как <b>JSON-микросервис</b>, напишите код обработки ответов прямо здесь в песочнице и подключите к боту внешний <b>Python-скрипт</b> по HTTP API!</p>
+          </div>
+
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <div class="step-title">Собери JSON-API бота на холсте</div>
+              <div class="step-text">Собери схему (Персонаж + Инструкция → Мозг → Терминал), где бот выступает классификатором или анализатором текста (например, определяет категорию IT-проблемы или переводит текст в JSON).
+                <ul class="guide-list" style="margin-top:4px;">
+                  <li>Подключи к Мозгу <b>📊 Формат Данных</b> в режиме <code>Строгий JSON</code>.</li>
+                  <li>Подключи <b>🔥 Креативность и Длина</b> с температурой <code>≤ 0.3</code>.</li>
+                  <li>Подключи <b>🎯 Few-Shot</b> и напиши минимум 1 эталонный пример в формате валидного JSON (например: <code>{"status":"ok","response":{"category":"сеть"}}</code>).</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="btn-verify-task" id="btnVerifyCode" onclick="verifyCodeBonus()">🔍 Проверить схему и валидность JSON по API</button>
+          <div class="verify-results-box" id="verifyBox_code"></div>
+          <button type="button" class="btn-restore-task" id="btnRestore_code" onclick="restoreTaskSnapshot('code')" style="display:none;">📂 Загрузить сохранённую JSON-схему на холст</button>
+
+          <div class="step-card" style="margin-top:4px;">
+            <div class="step-num">2</div>
+            <div class="step-body" style="width:100%; min-width:0;">
+              <div class="step-title">Практика кода: JS API-песочница</div>
+              <div class="step-text" style="margin-bottom:6px;">
+                Допиши скрипт ниже: добавь свои элементы в массив <code>requestsList</code> (минимум 2 запроса), вызови своего бота через <code>await askCurrentBot(text)</code>, распарси строку через <code>JSON.parse(...)</code> и выведи результат через <code>log(...)</code>.
+              </div>
+              <textarea id="codeSandboxInput" class="code-sandbox-editor" spellcheck="false" oninput="saveSandboxDraft()"></textarea>
+              <div style="display:flex; gap:6px; margin:6px 0; flex-wrap:wrap;">
+                <button type="button" class="btn-verify-task" id="btnRunSandbox" style="flex:1; padding:6px 10px; font-size:11px;" onclick="runCodeSandbox()">▶ Выполнить код</button>
+                <button type="button" class="btn-sm-action" style="padding:6px 10px; font-size:11px;" onclick="resetCodeSandbox()">↻ Сбросить шаблон</button>
+              </div>
+              <pre id="codeSandboxConsole" class="code-sandbox-console">Нажмите «▶ Выполнить код», чтобы отправить запросы и увидеть вывод программы...</pre>
+            </div>
+          </div>
+
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body" style="width:100%; min-width:0;">
+              <div class="step-title">Подключение на Python (без библиотек)</div>
+              <div class="step-text" style="margin-bottom:6px;">
+                Опубликуй бота в Галерею (кнопка на Терминале), выбери его ниже, скопируй код в файл <code>client.py</code> на своём ПК и запусти в терминале/IDLE. <b>Задание:</b> допиши в коде цикл <code>while True:</code> с <code>input()</code> и массивом <code>history</code>!
+              </div>
+              <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
+                <select id="pythonBotSelect" class="control-select" style="flex:1; font-size:11px;" onchange="updatePythonSnippet()">
+                  <option value="">-- Сначала запустите бота в Галерею --</option>
+                </select>
+                <button type="button" class="btn-sm-action" onclick="copyPythonSnippet()" style="white-space:nowrap; font-size:11px;">📋 Копировать Python</button>
+              </div>
+              <pre id="pythonSnippetBox" class="python-snippet-pre"></pre>
+            </div>
           </div>
         </div>
 
