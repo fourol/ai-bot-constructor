@@ -435,6 +435,102 @@ async def get_bot(bot_id: str):
     }
 
 
+# Обновление существующего бота
+@app.put("/api/bots/{bot_id}")
+async def update_bot(
+    bot_id: str,
+    name: str = Form(...),
+    avatar: str = Form(...),
+    system_prompt: str = Form(...),
+    kb_text: Optional[str] = Form(None),
+    kb_file: Optional[UploadFile] = File(None),
+    temperature: Optional[float] = Form(0.7),
+    max_tokens: Optional[int] = Form(350),
+    user_id: Optional[str] = Form(None),
+):
+    bot_id = bot_id.strip()
+    name = name.strip()
+    avatar = avatar.strip()
+    system_prompt = system_prompt.strip()
+
+    if not name:
+        raise HTTPException(status_code=400, detail="Имя бота обязательно")
+    if not avatar:
+        avatar = "🤖"
+    if not system_prompt:
+        raise HTTPException(status_code=400, detail="Системный промпт обязателен")
+
+    file_text = ""
+    if kb_file and kb_file.filename:
+        file_text = await extract_text_from_file(kb_file)
+
+    combined_kb = ""
+    if kb_text and kb_text.strip():
+        combined_kb += kb_text.strip() + " "
+    if file_text and file_text.strip():
+        combined_kb += file_text.strip()
+
+    chunks = chunk_text(combined_kb)
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, user_id FROM bots WHERE id = ?", (bot_id,))
+        existing = cursor.fetchone()
+        if not existing:
+            raise HTTPException(status_code=404, detail="Бот не найден")
+
+        cursor.execute(
+            """
+            UPDATE bots 
+            SET name = ?, avatar = ?, system_prompt = ?, temperature = ?, max_tokens = ?
+            WHERE id = ?
+            """,
+            (
+                name,
+                avatar,
+                system_prompt,
+                float(temperature if temperature is not None else 0.7),
+                int(max_tokens if max_tokens is not None else 350),
+                bot_id
+            )
+        )
+
+        # Если передана база знаний (или строка kb_text была задана), обновляем чанки
+        if combined_kb.strip() or kb_text is not None:
+            cursor.execute("DELETE FROM knowledge_chunks WHERE bot_id = ?", (bot_id,))
+            for chunk in chunks:
+                cursor.execute(
+                    "INSERT INTO knowledge_chunks (bot_id, chunk_text) VALUES (?, ?)",
+                    (bot_id, chunk)
+                )
+
+        cursor.execute(
+            """
+            SELECT b.id, b.name, b.avatar, b.system_prompt, b.temperature, b.max_tokens, b.created_at, b.user_id,
+                   COUNT(k.id) as chunks_count
+            FROM bots b
+            LEFT JOIN knowledge_chunks k ON b.id = k.bot_id
+            WHERE b.id = ?
+            GROUP BY b.id
+            """,
+            (bot_id,)
+        )
+        row = cursor.fetchone()
+        conn.commit()
+
+    return {
+        "id": row["id"],
+        "name": row["name"],
+        "avatar": row["avatar"],
+        "system_prompt": row["system_prompt"],
+        "temperature": row["temperature"] if row["temperature"] is not None else 0.7,
+        "max_tokens": row["max_tokens"] if row["max_tokens"] is not None else 350,
+        "created_at": row["created_at"],
+        "user_id": row["user_id"] or "anon",
+        "chunks_count": row["chunks_count"]
+    }
+
+
 # Удаление бота и его базы знаний
 @app.delete("/api/bots/{bot_id}")
 async def delete_bot(bot_id: str):

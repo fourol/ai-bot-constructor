@@ -1965,6 +1965,41 @@
       box-shadow: var(--shadow-sm);
     }
 
+    .canvas-editing-banner {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 60;
+      background: var(--bg-node);
+      border: 1px solid var(--wire-char);
+      border-radius: 20px;
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.18);
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .btn-canvas-banner-action {
+      background: rgba(2, 132, 199, 0.1);
+      border: 1px solid rgba(2, 132, 199, 0.3);
+      color: #0284c7;
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-canvas-banner-action:hover {
+      background: #0284c7;
+      color: #fff;
+    }
+
     /* VIEW 2: Chat & Gallery */
     #chatGalleryView {
       width: 100%;
@@ -3229,6 +3264,12 @@
   <!-- VIEW 1: Infinite Canvas Viewport (Zoomable, Pannable, Port Dragging) -->
   <div class="view-panel active" id="canvasView">
     
+    <!-- Editing indicator banner -->
+    <div id="canvasEditingBanner" class="canvas-editing-banner" style="display:none;">
+      <span id="canvasEditingText">✏️ Редактирование: <strong>Бот</strong></span>
+      <button type="button" class="btn-canvas-banner-action" onclick="createNewBotOnCanvas()">➕ Собрать нового с нуля</button>
+    </div>
+
     <!-- Left Floating Add Node Toolbar -->
     <div class="add-node-bar">
       <button class="btn-add-node" id="btnAddNode" onclick="toggleNodeMenu(event)" title="Добавить новую ноду">
@@ -3421,8 +3462,11 @@
   <div class="view-panel" id="chatGalleryView">
     <div class="gallery-pane">
       <div class="gallery-head">
-        <span class="gallery-title">Галерея ботов КС54</span>
-        <button class="btn-sm-action" onclick="fetchBotsList()" title="Обновить список ботов">↻</button>
+        <span class="gallery-title">Галерея ботов</span>
+        <div style="display:flex; gap:6px;">
+          <button type="button" class="btn-sm-action" onclick="createNewBotOnCanvas()" title="Собрать нового бота с нуля на схеме" style="color:#0284c7; font-weight:700;">➕ Новый</button>
+          <button class="btn-sm-action" onclick="fetchBotsList()" title="Обновить список ботов">↻</button>
+        </div>
       </div>
       <div class="gallery-filter-bar">
         <button type="button" class="gallery-filter-pill active" id="filterPillMy" onclick="setGalleryFilter('my')">👤 Мои боты</button>
@@ -3444,11 +3488,13 @@
 
         <div class="chat-head-actions">
           <button type="button" class="btn-sm-action btn-edit-nodes" id="btnEditBotNodes" onclick="editCurrentBotOnCanvas()" title="Открыть схему и параметры этого бота на холсте нод">
-            🧩 Настроить ноды
+            🧩 Настроить схему нод
           </button>
-          <button class="btn-sm-action" onclick="copyBotLink()">Ссылка на бота</button>
-          <button class="btn-sm-action" onclick="clearCurrentChat()">Очистить переписку</button>
-          <button class="btn-sm-action btn-delete-chat" onclick="deleteCurrentBot()" title="Удалить чат и бота">🗑️ Удалить чат</button>
+          <button type="button" class="btn-sm-action" onclick="startNewChatDialog()" title="Начать чистый диалог с этим ботом с самого начала">
+            🔄 Новый диалог
+          </button>
+          <button class="btn-sm-action" onclick="copyBotLink()" title="Скопировать ссылку на этого бота">🔗 Ссылка</button>
+          <button class="btn-sm-action btn-delete-chat" onclick="deleteCurrentBot()" title="Удалить бота">🗑️</button>
         </div>
       </div>
 
@@ -4209,7 +4255,16 @@
         saveWorkflowState();
       }, 60);
 
+      const starterMap = { gid: 'gid004', kvant: 'kvant005', elian: 'elian006', shield: 'shield007' };
+      const starterId = starterMap[scenarioKey];
+      if (starterId && allBots.some(b => b.id === starterId)) {
+        editingBotId = starterId;
+      } else {
+        editingBotId = null;
+      }
+
       switchTab('nodes');
+      updateEditingBanner();
       toggleProjectGuide();
       showToast(`Сценарий «${sc.name}» загружен на холст! ⚡`, 'success');
     }
@@ -4340,6 +4395,7 @@
         if (lastTab === 'chat') switchTab('chat');
       }
 
+      updateEditingBanner();
       setInterval(() => fetchBotsList(true), 10000);
 
       // Auto-launch onboarding on first visit
@@ -4602,10 +4658,11 @@
       }
     }
 
-    function resetWorkflowToDefault() {
-      if (!confirm('Сбросить схему и расположение модулей к начальному шаблону?')) {
+    function resetWorkflowToDefault(force = false) {
+      if (!force && !confirm('Сбросить схему и расположение модулей к начальному шаблону?')) {
         return;
       }
+      editingBotId = null;
       try {
         localStorage.removeItem('bot_workflow_canvas');
       } catch(e) {}
@@ -4617,6 +4674,7 @@
       scale = 1.0;
       applyTransform();
       setupInitialDefaultWorkflow();
+      updateEditingBanner();
       showToast('Схема сброшена к начальному шаблону', 'info');
     }
 
@@ -6362,35 +6420,50 @@
       if (fileToUpload) fd.append('kb_file', fileToUpload);
 
       try {
-        const res = await fetch('/api/bots', { method: 'POST', body: fd });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err.detail || 'Ошибка сборки бота');
-        }
+        let savedBot = null;
+        const isEditing = Boolean(editingBotId);
 
-        const newBot = await res.json();
+        if (isEditing) {
+          // UPDATE EXISTING BOT - NO NEW DUPLICATE BOT!
+          const res = await fetch(`/api/bots/${editingBotId}`, { method: 'PUT', body: fd });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Ошибка обновления бота');
+          }
+          savedBot = await res.json();
+          showToast(`Бот «${savedBot.name}» успешно обновлен! 💾`, 'success');
+        } else {
+          // CREATE NEW BOT
+          const res = await fetch('/api/bots', { method: 'POST', body: fd });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.detail || 'Ошибка сборки бота');
+          }
+          savedBot = await res.json();
+          editingBotId = savedBot.id;
+          showToast(`Бот «${savedBot.name}» запущен в Галерею! 🚀`, 'success');
+        }
 
         // Store dedicated scheme snapshot for this bot so we can restore its exact nodes anytime!
         try {
           const currentCanvas = localStorage.getItem('bot_workflow_canvas');
           if (currentCanvas) {
-            localStorage.setItem(`bot_scheme_${newBot.id}`, currentCanvas);
+            localStorage.setItem(`bot_scheme_${savedBot.id}`, currentCanvas);
           }
         } catch(e) {}
 
         // Store custom UI greeting & chips in localStorage if provided
         if (customGreeting || customChips.length > 0) {
-          localStorage.setItem(`bot_ui_${newBot.id}`, JSON.stringify({
+          localStorage.setItem(`bot_ui_${savedBot.id}`, JSON.stringify({
             greeting: customGreeting,
             chips: customChips
           }));
         }
 
-        showToast(`Бот «${newBot.name}» запущен в Галерею!`, 'success');
-
         await fetchBotsList();
-        selectBot(newBot.id, true);
+        selectBot(savedBot.id, false);
         switchTab('chat');
+        updateEditingBanner();
 
       } catch (err) {
         showToast(err.message, 'error');
@@ -6400,7 +6473,67 @@
       }
     }
 
-    // 10. Tab Switching
+    // 10. Tab Switching & Editing Context
+    let editingBotId = null;
+
+    function updateEditingBanner() {
+      const banner = document.getElementById('canvasEditingBanner');
+      const textEl = document.getElementById('canvasEditingText');
+      const btnTop = document.getElementById('btnQueue');
+      const canvasView = document.getElementById('canvasView');
+      const isNodesTab = canvasView && canvasView.classList.contains('active');
+
+      if (!isNodesTab) {
+        // We are on Chat & Gallery view!
+        if (btnTop) {
+          btnTop.innerHTML = '<span>🧩 Настроить схему нод</span>';
+          btnTop.title = 'Перейти к настройке модулей и промпта текущего бота на холсте';
+          btnTop.onclick = () => editCurrentBotOnCanvas();
+        }
+        return;
+      }
+
+      // We are on Nodes view!
+      if (editingBotId) {
+        const bot = allBots.find(b => b.id === editingBotId);
+        const bName = bot ? bot.name : 'бота';
+        if (banner) {
+          banner.style.display = 'flex';
+          if (textEl) {
+            textEl.innerHTML = `✏️ Настройка бота: <strong>${escapeHtml(bName)}</strong>`;
+          }
+        }
+        if (btnTop) {
+          btnTop.innerHTML = '<span>💾 Сохранить бота</span>';
+          btnTop.title = `Сохранить изменения в боте «${bName}» и перейти в диалог`;
+          btnTop.onclick = () => queueBotAssembly(null);
+        }
+        document.querySelectorAll('.btn-assemble-node').forEach(b => {
+          b.innerHTML = '💾 Сохранить и перейти в чат';
+        });
+      } else {
+        if (banner) {
+          banner.style.display = 'none';
+        }
+        if (btnTop) {
+          btnTop.innerHTML = '<span>🚀 Запустить бота</span>';
+          btnTop.title = 'Скомпилировать схему и открыть диалог с новым ботом';
+          btnTop.onclick = () => queueBotAssembly(null);
+        }
+        document.querySelectorAll('.btn-assemble-node').forEach(b => {
+          b.innerHTML = '🚀 Запустить бота в Галерею';
+        });
+      }
+    }
+
+    function createNewBotOnCanvas() {
+      editingBotId = null;
+      resetWorkflowToDefault(true);
+      switchTab('nodes');
+      updateEditingBanner();
+      showToast('Режим сборки нового бота. Настройте схему и нажмите «Запустить бота»!', 'info');
+    }
+
     function switchTab(name) {
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.view-panel').forEach(v => v.classList.remove('active'));
@@ -6417,6 +6550,8 @@
         document.getElementById('tabBtnChat').classList.add('active');
         document.getElementById('chatGalleryView').classList.add('active');
       }
+
+      updateEditingBanner();
     }
 
     // --- Return to Canvas to Edit Specific Bot Nodes (Настройка нод выбранного бота) ---
@@ -6442,6 +6577,8 @@
         showToast('Бот не найден', 'error');
         return;
       }
+
+      editingBotId = bot.id;
 
       // 1. Try to load dedicated saved scheme from localStorage
       let loaded = false;
@@ -6735,7 +6872,7 @@
       }
     }
 
-    function clearCurrentChat() {
+    function startNewChatDialog() {
       if (!currentBotId) return;
       const uId = getOrCreateUserId();
       chatHistories[currentBotId] = [];
@@ -6744,8 +6881,9 @@
         localStorage.removeItem(`bot_chat_history_${currentBotId}`);
       } catch(e) {}
       renderMessages();
-      showToast('История переписки очищена', 'info');
+      showToast('Начат новый чистый диалог с ботом', 'info');
     }
+    const clearCurrentChat = startNewChatDialog;
 
     function selectBot(id, updateUrl = true) {
       const bot = allBots.find(b => b.id === id);
@@ -6838,6 +6976,10 @@
         } catch(err) {}
 
         delete chatHistories[targetId];
+        if (editingBotId === targetId) {
+          editingBotId = null;
+          updateEditingBanner();
+        }
         showToast(`Чат с «${botName}» удалён`, 'info');
 
         await fetchBotsList(true);
@@ -6864,16 +7006,6 @@
     function deleteCurrentBot() {
       if (!currentBotId) return;
       deleteBotById(null, currentBotId);
-    }
-
-    function clearCurrentChat() {
-      if (!currentBotId) return;
-      chatHistories[currentBotId] = [];
-      try {
-        localStorage.removeItem(`bot_chat_history_${currentBotId}`);
-      } catch(e) {}
-      renderMessages();
-      showToast('Диалог очищен', 'info');
     }
 
     function renderMessages() {
