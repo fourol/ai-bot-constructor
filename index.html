@@ -3241,7 +3241,7 @@
     </div>
 
     <div class="top-actions">
-      <button type="button" class="btn-user-profile" id="btnUserProfile" onclick="openUserProfileModal()" title="Рабочее место: изолированная сессия настроена автоматически">
+      <button type="button" class="btn-user-profile" id="btnUserProfile" onclick="openUserProfileModal()" title="Рабочее место">
         <span>🖥️</span> <span id="userProfileName">ПК-01</span>
       </button>
 
@@ -6769,7 +6769,7 @@
     }
 
     function resetUserSession() {
-      if (!confirm('Создать новую сессию? Будет сгенерирован новый ID пользователя и номер ПК, ваши старые чаты останутся сохранены под прежним ID.')) return;
+      if (!confirm('Сбросить сессию и сгенерировать новый номер ПК?')) return;
       try {
         const newUId = 'user_' + Math.random().toString(36).substring(2, 10);
         const randNum = Math.floor(1 + Math.random() * 30);
@@ -6779,7 +6779,7 @@
       } catch(e) {}
       updateProfileBadge();
       closeUserProfileModal();
-      showToast('Новая изолированная сессия активирована', 'info');
+      showToast('Сессия обновлена', 'info');
       fetchBotsList();
     }
 
@@ -7572,37 +7572,26 @@
     </div>
   </aside>
 
-  <!-- USER PROFILE MODAL (Изоляция чатов и ботов) -->
+  <!-- USER PROFILE MODAL -->
   <div class="modal-overlay" id="userProfileModal">
-    <div class="modal-card" style="max-width: 440px;">
+    <div class="modal-card" style="max-width: 380px;">
       <div class="modal-head">
         <div class="modal-head-title">
           <div class="modal-icon">🖥️</div>
           <div>
-            <div class="modal-name">Рабочее место (Сессия)</div>
-            <div class="modal-badge" style="background:#10b981; color:#fff;">Автоматически активно</div>
+            <div class="modal-name">Рабочее место</div>
           </div>
         </div>
         <button type="button" class="btn-modal-close" onclick="closeUserProfileModal()">✕</button>
       </div>
       <div class="modal-body">
-        <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:10px 12px; margin-bottom:12px; font-size:12px; color:var(--text); display:flex; align-items:flex-start; gap:8px; line-height:1.4;">
-          <span style="font-size:15px;">⚡</span>
-          <div><strong>Настроено автоматически!</strong> Для этого браузера выделен изолированный профиль. Боты и чаты сохраняются раздельно для каждого ПК. Менять параметры не требуется.</div>
-        </div>
         <div class="info-section">
-          <div class="info-label">👤 Номер ПК или имя (можно изменить при желании):</div>
-          <input type="text" class="control-input" id="inputUserName" placeholder="Например: ПК-07 или Иван" style="margin-top:6px; font-size:13px; font-weight:600;">
-        </div>
-        <div class="info-section highlight">
-          <div class="info-label">🔒 Полная изоляция чатов и ботов:</div>
-          <div class="info-text">
-            Все созданные на этом компьютере боты и история диалогов сохраняются под вашим профилем и <strong>не смешиваются с другими 20+ студентами</strong> в локальной сети.
-          </div>
+          <div class="info-label">👤 Номер ПК или имя:</div>
+          <input type="text" class="control-input" id="inputUserName" placeholder="Например: ПК-07" style="margin-top:6px; font-size:13px; font-weight:600;">
         </div>
       </div>
       <div class="modal-footer" style="gap:8px;">
-        <button type="button" class="btn-sm-action" onclick="resetUserSession()">Сбросить сессию</button>
+        <button type="button" class="btn-sm-action" onclick="resetUserSession()">Сбросить</button>
         <button type="button" class="btn-modal-ok" onclick="saveUserProfile()">Сохранить</button>
       </div>
     </div>
