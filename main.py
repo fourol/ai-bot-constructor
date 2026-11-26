@@ -29,6 +29,7 @@ except ImportError:
 # Конфигурация
 DB_PATH = os.getenv("DB_PATH", "bots.db")
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "http://127.0.0.1:8000/v1")
+DEFAULT_MAX_TOKENS = int(os.getenv("DEFAULT_MAX_TOKENS", "1024"))
 STATIC_INDEX_PATH = os.path.join(os.path.dirname(__file__), "index.html")
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 os.makedirs(STATIC_DIR, exist_ok=True)
@@ -83,7 +84,7 @@ def init_db():
         if "temperature" not in existing_cols:
             cursor.execute("ALTER TABLE bots ADD COLUMN temperature REAL DEFAULT 0.7")
         if "max_tokens" not in existing_cols:
-            cursor.execute("ALTER TABLE bots ADD COLUMN max_tokens INTEGER DEFAULT 350")
+            cursor.execute(f"ALTER TABLE bots ADD COLUMN max_tokens INTEGER DEFAULT {DEFAULT_MAX_TOKENS}")
         if "user_id" not in existing_cols:
             cursor.execute("ALTER TABLE bots ADD COLUMN user_id TEXT DEFAULT 'system'")
 
@@ -254,7 +255,7 @@ async def create_bot(
     kb_text: Optional[str] = Form(None),
     kb_file: Optional[UploadFile] = File(None),
     temperature: Optional[float] = Form(0.7),
-    max_tokens: Optional[int] = Form(350),
+    max_tokens: Optional[int] = Form(DEFAULT_MAX_TOKENS),
     user_id: Optional[str] = Form("anon"),
 ):
     name = name.strip()
@@ -293,7 +294,7 @@ async def create_bot(
         clean_user_id = (user_id or "anon").strip() or "anon"
         cursor.execute(
             "INSERT INTO bots (id, name, avatar, system_prompt, temperature, max_tokens, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (bot_id, name, avatar, system_prompt, float(temperature if temperature is not None else 0.7), int(max_tokens if max_tokens is not None else 350), clean_user_id)
+            (bot_id, name, avatar, system_prompt, float(temperature if temperature is not None else 0.7), int(max_tokens if max_tokens is not None else DEFAULT_MAX_TOKENS), clean_user_id)
         )
 
         for chunk in chunks:
@@ -313,7 +314,7 @@ async def create_bot(
         "avatar": avatar,
         "system_prompt": system_prompt,
         "temperature": float(temperature if temperature is not None else 0.7),
-        "max_tokens": int(max_tokens if max_tokens is not None else 350),
+        "max_tokens": int(max_tokens if max_tokens is not None else DEFAULT_MAX_TOKENS),
         "user_id": clean_user_id,
         "chunks_count": len(chunks),
         "created_at": created_at
@@ -342,7 +343,7 @@ async def list_bots():
             "avatar": row["avatar"],
             "system_prompt": row["system_prompt"],
             "temperature": row["temperature"] if row["temperature"] is not None else 0.7,
-            "max_tokens": row["max_tokens"] if row["max_tokens"] is not None else 350,
+            "max_tokens": row["max_tokens"] if row["max_tokens"] is not None else DEFAULT_MAX_TOKENS,
             "created_at": row["created_at"],
             "user_id": row["user_id"] or "anon",
             "chunks_count": row["chunks_count"]
@@ -375,7 +376,7 @@ async def get_bot(bot_id: str):
         "avatar": row["avatar"],
         "system_prompt": row["system_prompt"],
         "temperature": row["temperature"] if row["temperature"] is not None else 0.7,
-        "max_tokens": row["max_tokens"] if row["max_tokens"] is not None else 350,
+        "max_tokens": row["max_tokens"] if row["max_tokens"] is not None else DEFAULT_MAX_TOKENS,
         "created_at": row["created_at"],
         "chunks_count": row["chunks_count"]
     }
@@ -391,7 +392,7 @@ async def update_bot(
     kb_text: Optional[str] = Form(None),
     kb_file: Optional[UploadFile] = File(None),
     temperature: Optional[float] = Form(0.7),
-    max_tokens: Optional[int] = Form(350),
+    max_tokens: Optional[int] = Form(DEFAULT_MAX_TOKENS),
     user_id: Optional[str] = Form(None),
 ):
     bot_id = bot_id.strip()
@@ -438,7 +439,7 @@ async def update_bot(
                 avatar,
                 system_prompt,
                 float(temperature if temperature is not None else 0.7),
-                int(max_tokens if max_tokens is not None else 350),
+                int(max_tokens if max_tokens is not None else DEFAULT_MAX_TOKENS),
                 bot_id
             )
         )
@@ -472,7 +473,7 @@ async def update_bot(
         "avatar": row["avatar"],
         "system_prompt": row["system_prompt"],
         "temperature": row["temperature"] if row["temperature"] is not None else 0.7,
-        "max_tokens": row["max_tokens"] if row["max_tokens"] is not None else 350,
+        "max_tokens": row["max_tokens"] if row["max_tokens"] is not None else DEFAULT_MAX_TOKENS,
         "created_at": row["created_at"],
         "user_id": row["user_id"] or "anon",
         "chunks_count": row["chunks_count"]
@@ -516,7 +517,9 @@ async def chat_with_bot(payload: ChatRequest):
 
         system_prompt = bot["system_prompt"]
         bot_temp = float(bot["temperature"]) if bot["temperature"] is not None else 0.7
-        bot_max_tokens = int(bot["max_tokens"]) if bot["max_tokens"] is not None else 350
+        bot_max_tokens = int(bot["max_tokens"]) if bot["max_tokens"] is not None else DEFAULT_MAX_TOKENS
+        if bot_max_tokens <= 0:
+            bot_max_tokens = DEFAULT_MAX_TOKENS
 
         cursor.execute("SELECT chunk_text FROM knowledge_chunks WHERE bot_id = ?", (bot_id,))
         chunk_rows = cursor.fetchall()
@@ -588,7 +591,7 @@ class TestDraftRequest(BaseModel):
     message: str
     system_prompt: str
     temperature: Optional[float] = 0.7
-    max_tokens: Optional[int] = 350
+    max_tokens: Optional[int] = DEFAULT_MAX_TOKENS
     kb_text: Optional[str] = None
     history: Optional[List[dict]] = None
 
@@ -601,8 +604,8 @@ async def test_draft(payload: TestDraftRequest):
 
     system_prompt = payload.system_prompt.strip() or "Ты дружелюбный ИИ-помощник."
     bot_temp = float(payload.temperature if payload.temperature is not None else 0.7)
-    bot_max_tokens = int(payload.max_tokens if payload.max_tokens is not None else 350)
-    bot_max_tokens = min(max(bot_max_tokens, 50), 1024)
+    bot_max_tokens = int(payload.max_tokens if payload.max_tokens is not None else DEFAULT_MAX_TOKENS)
+    bot_max_tokens = min(max(bot_max_tokens, 50), 4096)
 
     relevant_chunks = []
     if payload.kb_text and payload.kb_text.strip():
@@ -677,60 +680,95 @@ class CodeTaskRequest(BaseModel):
 
 CODE_TASKS = {
     "sum_pos": {
-        "title": "Сумма положительных чисел",
+        "title": "1. Сумма положительных чисел",
+        "difficulty": "Лёгкая",
+        "est_minutes": 2,
         "description": "Функция solve(numbers) принимает список чисел и возвращает сумму всех чисел > 0 (если положительных нет, верни 0).",
-        "prompt": "Напиши на Python функцию solve(numbers: list) -> int, которая возвращает сумму всех положительных чисел (> 0) из переданного списка. Если чисел > 0 нет, верни 0. Напиши только рабочий код функции в блоке ```python ... ``` без лишних вводных фраз.",
-        "test_code": """
-assert solve([1, -2, 3, 4, -5]) == 8
-assert solve([-1, -2, -3]) == 0
-assert solve([10, 20]) == 30
-assert solve([]) == 0
-print("OK")
-""",
-        "tests_labels": [
-            "solve([1, -2, 3, 4, -5]) == 8",
-            "solve([-1, -2, -3]) == 0",
-            "solve([10, 20]) == 30",
-            "solve([]) == 0"
-        ]
+        "prompt": "Напиши на Python функцию solve(numbers: list) -> int, которая возвращает сумму всех положительных чисел (> 0) из переданного списка. Если чисел > 0 нет, верни 0. Напиши только рабочий код функции в блоке ```python ... ``` без лишних объяснений.",
+        "tests": [
+            {"label": "solve([1, -2, 3, 4, -5]) == 8", "call": "solve([1, -2, 3, 4, -5])", "expected": 8},
+            {"label": "solve([-1, -2, -3]) == 0", "call": "solve([-1, -2, -3])", "expected": 0},
+            {"label": "solve([10, 20]) == 30", "call": "solve([10, 20])", "expected": 30},
+            {"label": "solve([]) == 0", "call": "solve([])", "expected": 0},
+        ],
     },
     "vowels": {
-        "title": "Подсчет гласных букв",
+        "title": "2. Счётчик русских гласных",
+        "difficulty": "Лёгкая",
+        "est_minutes": 3,
         "description": "Функция count_vowels(text) считает количество гласных русских букв (а, е, ё, и, о, у, ы, э, ю, я) без учета регистра.",
-        "prompt": "Напиши на Python функцию count_vowels(text: str) -> int, которая считает количество гласных русских букв (а, е, ё, и, о, у, ы, э, ю, я) в переданной строке без учета регистра. Напиши только рабочий код функции в блоке ```python ... ```.",
-        "test_code": """
-assert count_vowels("Привет") == 2
-assert count_vowels("КОЛЛЕДЖ 54") == 2
-assert count_vowels("бвгдж") == 0
-assert count_vowels("Ауе") == 3
-print("OK")
-""",
-        "tests_labels": [
-            'count_vowels("Привет") == 2',
-            'count_vowels("КОЛЛЕДЖ 54") == 2',
-            'count_vowels("бвгдж") == 0',
-            'count_vowels("Ауе") == 3'
-        ]
+        "prompt": "Напиши на Python функцию count_vowels(text: str) -> int, которая считает количество гласных русских букв (а, е, ё, и, о, у, ы, э, ю, я) в переданной строке без учета регистра. Обязательно учти букву 'ё' и заглавные буквы. Напиши только рабочий код функции в блоке ```python ... ```.",
+        "tests": [
+            {"label": 'count_vowels("Привет") == 2', "call": 'count_vowels("Привет")', "expected": 2},
+            {"label": 'count_vowels("Ёжик в тумане") == 5', "call": 'count_vowels("Ёжик в тумане")', "expected": 5},
+            {"label": 'count_vowels("КОЛЛЕДЖ 54") == 2', "call": 'count_vowels("КОЛЛЕДЖ 54")', "expected": 2},
+            {"label": 'count_vowels("бвгдж") == 0', "call": 'count_vowels("бвгдж")', "expected": 0},
+        ],
     },
     "palindrome": {
-        "title": "Проверка палиндрома",
-        "description": "Функция is_palindrome(s) проверяет, читается ли строка одинаково слева направо и справа налево (без пробелов и регистра).",
-        "prompt": "Напиши на Python функцию is_palindrome(s: str) -> bool, которая проверяет, читается ли строка одинаково слева направо и справа налево. Пробелы игнорируй, регистр не учитывай. Напиши только рабочий код функции в блоке ```python ... ```.",
-        "test_code": """
-assert is_palindrome("шалаш") is True
-assert is_palindrome("А роза упала на лапу Азора") is True
-assert is_palindrome("питон") is False
-assert is_palindrome("12321") is True
-print("OK")
-""",
-        "tests_labels": [
-            'is_palindrome("шалаш") == True',
-            'is_palindrome("А роза упала на лапу Азора") == True',
-            'is_palindrome("питон") == False',
-            'is_palindrome("12321") == True'
-        ]
-    }
+        "title": "3. Умный палиндром",
+        "difficulty": "Средняя",
+        "est_minutes": 3,
+        "description": "Функция is_palindrome(s) проверяет, читается ли строка одинаково слева направо и справа налево, игнорируя пробелы, знаки препинания (.,!?:;-) и регистр.",
+        "prompt": "Напиши на Python функцию is_palindrome(s: str) -> bool, которая проверяет, является ли строка палиндромом. Игнорируй пробелы, знаки препинания (.,!?:;-) и регистр букв (оставляй только буквы и цифры). Напиши только рабочий код функции в блоке ```python ... ```.",
+        "tests": [
+            {"label": 'is_palindrome("шалаш") is True', "call": 'is_palindrome("шалаш")', "expected": True},
+            {"label": 'is_palindrome("А роза упала на лапу Азора!") is True', "call": 'is_palindrome("А роза упала на лапу Азора!")', "expected": True},
+            {"label": 'is_palindrome("питон") is False', "call": 'is_palindrome("питон")', "expected": False},
+            {"label": 'is_palindrome("12 3 21") is True', "call": 'is_palindrome("12 3 21")', "expected": True},
+        ],
+    },
+    "password_check": {
+        "title": "4. Валидатор надёжного пароля",
+        "difficulty": "Средняя",
+        "est_minutes": 4,
+        "description": "Функция check_password(pwd) возвращает True, только если длина пароля >= 8 символов и в нём есть минимум 1 заглавная буква, 1 строчная буква и 1 цифра.",
+        "prompt": "Напиши на Python функцию check_password(pwd: str) -> bool, которая возвращает True, только если длина строки >= 8 символов И в ней есть хотя бы одна заглавная буква, хотя бы одна строчная буква и хотя бы одна цифра. Иначе верни False. Напиши только рабочий код функции в блоке ```python ... ```.",
+        "tests": [
+            {"label": 'check_password("Qwerty12") is True', "call": 'check_password("Qwerty12")', "expected": True},
+            {"label": 'check_password("qwerty12") is False', "call": 'check_password("qwerty12")', "expected": False},
+            {"label": 'check_password("QWERTY12") is False', "call": 'check_password("QWERTY12")', "expected": False},
+            {"label": 'check_password("Qwertyui") is False', "call": 'check_password("Qwertyui")', "expected": False},
+            {"label": 'check_password("Ab1") is False', "call": 'check_password("Ab1")', "expected": False},
+        ],
+    },
+    "parse_orders": {
+        "title": "5. Парсер выручки из логов",
+        "difficulty": "Продвинутая",
+        "est_minutes": 4,
+        "description": "Функция calc_revenue(logs) получает список строк вида 'Заказ #12: 450 руб', 'Отмена: 200 руб'. Нужно просуммировать суммы только из строк, начинающихся с 'Заказ', игнорируя отмены и битые строки.",
+        "prompt": "Напиши на Python функцию calc_revenue(logs: list) -> int. Она принимает список строк. Учитывай только строки, которые начинаются со слова 'Заказ' (с учётом пробелов по краям). Из каждой такой строки извлеки целое число (сумму заказа перед словом 'руб', например из 'Заказ #12: 450 руб' нужно взять 450, а не 12!) и верни общую сумму. Отмены и некорректные строки без суммы игнорируй. Напиши только рабочий код функции в блоке ```python ... ```.",
+        "tests": [
+            {"label": 'calc_revenue(["Заказ #1: 500 руб", "Отмена: 200 руб", "Заказ #2: 300 руб"]) == 800', "call": 'calc_revenue(["Заказ #1: 500 руб", "Отмена: 200 руб", "Заказ #2: 300 руб"])', "expected": 800},
+            {"label": 'calc_revenue(["Отмена: 100 руб"]) == 0', "call": 'calc_revenue(["Отмена: 100 руб"])', "expected": 0},
+            {"label": 'calc_revenue([]) == 0', "call": 'calc_revenue([])', "expected": 0},
+            {"label": 'calc_revenue(["Заказ #9: 1200 руб", "Ошибка чтения", "Заказ #10: 50 руб"]) == 1250', "call": 'calc_revenue(["Заказ #9: 1200 руб", "Ошибка чтения", "Заказ #10: 50 руб"])', "expected": 1250},
+        ],
+    },
+    "rate_limiter": {
+        "title": "6. Анти-спам фильтр для бота",
+        "difficulty": "Продвинутая",
+        "est_minutes": 4,
+        "description": "Функция filter_spam(messages, max_len) очищает пробелы по краям, удаляет пустые сообщения и строки длиннее max_len, а также убирает подряд идущие дубликаты (без учета регистра).",
+        "prompt": "Напиши на Python функцию filter_spam(messages: list, max_len: int) -> list. Для каждой строки: 1) обрежь пробелы по краям (.strip()); 2) пропусти пустые строки и строки длиной больше max_len; 3) если текущее сообщение совпадает с предыдущим добавленным в результат без учёта регистра (.lower()), не добавляй его (удали подряд идущие дубликаты, оставив первое вхождение). Верни отфильтрованный список строк. Напиши только рабочий код функции в блоке ```python ... ```.",
+        "tests": [
+            {"label": 'filter_spam(["Привет", "привет", "Как дела?", "   ", "Очень длинное сообщение"], 12) == ["Привет", "Как дела?"]', "call": 'filter_spam(["Привет", "привет", "Как дела?", "   ", "Очень длинное сообщение"], 12)', "expected": ["Привет", "Как дела?"]},
+            {"label": 'filter_spam(["  Ок  ", "ок", "Ок"], 10) == ["Ок"]', "call": 'filter_spam(["  Ок  ", "ок", "Ок"], 10)', "expected": ["Ок"]},
+            {"label": 'filter_spam(["a", "b", "a"], 5) == ["a", "b", "a"]', "call": 'filter_spam(["a", "b", "a"], 5)', "expected": ["a", "b", "a"]},
+            {"label": 'filter_spam([], 10) == []', "call": 'filter_spam([], 10)', "expected": []},
+        ],
+    },
 }
+
+
+def extract_python_code(answer: str) -> str:
+    match = re.search(r"```(?:python|py)?\s*\n?(.*?)```", answer, re.DOTALL | re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
+    unclosed = re.search(r"```(?:python|py)?\s*\n(.*)", answer, re.DOTALL | re.IGNORECASE)
+    if unclosed:
+        return unclosed.group(1).strip()
+    return answer.strip()
 
 
 @app.post("/api/verify-code-task")
@@ -739,6 +777,8 @@ async def verify_code_task(payload: CodeTaskRequest):
     import sys
 
     task = CODE_TASKS.get(payload.task_id) or CODE_TASKS["sum_pos"]
+    tests_spec = task["tests"]
+    tests_labels = [t["label"] for t in tests_spec]
 
     sys_prompt = payload.system_prompt.strip() or "Ты опытный Python-разработчик."
     if payload.kb_text and payload.kb_text.strip():
@@ -756,60 +796,124 @@ async def verify_code_task(payload: CodeTaskRequest):
             model="qwen2.5-3b-instruct",
             messages=messages,
             temperature=temp,
-            max_tokens=450,
+            max_tokens=DEFAULT_MAX_TOKENS,
             stream=False,
         )
         answer = (response.choices[0].message.content or "").strip()
     except Exception as e:
         return {
             "ok": False,
+            "task_id": payload.task_id,
+            "title": task["title"],
+            "difficulty": task["difficulty"],
+            "est_minutes": task["est_minutes"],
+            "description": task["description"],
             "raw_answer": f"[Ошибка соединения с моделью: {str(e)}]",
             "extracted_code": "",
             "passed": False,
+            "passed_count": 0,
+            "total_count": len(tests_spec),
             "error": f"Ошибка вызова нейросети: {str(e)}",
-            "tests_labels": task["tests_labels"],
-            "title": task["title"]
+            "tests_labels": tests_labels,
+            "tests_results": [
+                {"label": t["label"], "passed": False, "actual": "", "expected": repr(t["expected"]), "error": "Нет ответа от модели"}
+                for t in tests_spec
+            ],
         }
 
-    match = re.search(r"```(?:python)?\s*(.*?)\s*```", answer, re.DOTALL)
-    code = match.group(1).strip() if match else answer.strip()
+    code = extract_python_code(answer)
 
-    test_script = f"""
-{code}
-
-{task["test_code"]}
-"""
+    runner_script = (
+        "import json, io, contextlib\n"
+        f"USER_CODE = json.loads({json.dumps(json.dumps(code, ensure_ascii=False))})\n"
+        f"TESTS = json.loads({json.dumps(json.dumps(tests_spec, ensure_ascii=False))})\n"
+        "results = []\n"
+        "ns = {}\n"
+        "compile_err = ''\n"
+        "try:\n"
+        "    buf = io.StringIO()\n"
+        "    with contextlib.redirect_stdout(buf):\n"
+        "        exec(compile(USER_CODE, '<ai_code>', 'exec'), ns, ns)\n"
+        "except Exception as e:\n"
+        "    compile_err = f'{type(e).__name__}: {e}'\n"
+        "for t in TESTS:\n"
+        "    if compile_err:\n"
+        "        results.append({'label': t['label'], 'passed': False, 'actual': '', 'expected': repr(t['expected']), 'error': compile_err})\n"
+        "        continue\n"
+        "    try:\n"
+        "        buf = io.StringIO()\n"
+        "        with contextlib.redirect_stdout(buf):\n"
+        "            actual = eval(t['call'], ns, ns)\n"
+        "        exp = t['expected']\n"
+        "        ok = (actual == exp) and (type(actual) is type(exp))\n"
+        "        results.append({'label': t['label'], 'passed': ok, 'actual': repr(actual), 'expected': repr(exp), 'error': '' if ok else f'Получено {repr(actual)}, ожидалось {repr(exp)}'})\n"
+        "    except Exception as e:\n"
+        "        results.append({'label': t['label'], 'passed': False, 'actual': '', 'expected': repr(t['expected']), 'error': f'{type(e).__name__}: {e}'})\n"
+        "print('__CODE_TEST_JSON__:' + json.dumps({'compile_error': compile_err, 'results': results}, ensure_ascii=False))\n"
+    )
 
     passed = False
+    passed_count = 0
     err_msg = ""
+    tests_results = []
+
     try:
         proc = subprocess.run(
-            [sys.executable, "-c", test_script],
+            [sys.executable, "-c", runner_script],
             capture_output=True,
             text=True,
-            timeout=4
+            timeout=4,
         )
-        if proc.returncode == 0:
-            passed = True
+        marker_line = None
+        for line in reversed((proc.stdout or "").splitlines()):
+            if line.startswith("__CODE_TEST_JSON__:"):
+                marker_line = line[len("__CODE_TEST_JSON__:"):]
+                break
+        if marker_line:
+            parsed = json.loads(marker_line)
+            tests_results = parsed.get("results", [])
+            err_msg = parsed.get("compile_error", "")
+            passed_count = sum(1 for r in tests_results if r.get("passed"))
+            passed = len(tests_results) == len(tests_spec) and passed_count == len(tests_spec)
+            if not passed and not err_msg:
+                first_err = next((r.get("error") for r in tests_results if not r.get("passed") and r.get("error")), "")
+                err_msg = first_err or "Не все unit-тесты пройдены"
         else:
-            raw_err = proc.stderr.strip() or proc.stdout.strip()
-            err_lines = [line for line in raw_err.split("\n") if line.strip() and not line.strip().startswith("File ")]
+            raw_err = (proc.stderr or proc.stdout or "").strip()
+            err_lines = [l for l in raw_err.splitlines() if l.strip()]
             err_msg = err_lines[-1] if err_lines else "Ошибка при выполнении unit-тестов"
+            tests_results = [
+                {"label": t["label"], "passed": False, "actual": "", "expected": repr(t["expected"]), "error": err_msg}
+                for t in tests_spec
+            ]
     except subprocess.TimeoutExpired:
         err_msg = "Превышено время выполнения (таймаут 4 сек). Возможно, в коде бесконечный цикл."
+        tests_results = [
+            {"label": t["label"], "passed": False, "actual": "", "expected": repr(t["expected"]), "error": err_msg}
+            for t in tests_spec
+        ]
     except Exception as ex:
         err_msg = f"Системная ошибка запуска: {str(ex)}"
+        tests_results = [
+            {"label": t["label"], "passed": False, "actual": "", "expected": repr(t["expected"]), "error": err_msg}
+            for t in tests_spec
+        ]
 
     return {
         "ok": True,
         "task_id": payload.task_id,
         "title": task["title"],
+        "difficulty": task["difficulty"],
+        "est_minutes": task["est_minutes"],
         "description": task["description"],
         "raw_answer": answer,
         "extracted_code": code,
         "passed": passed,
+        "passed_count": passed_count,
+        "total_count": len(tests_spec),
         "error": err_msg,
-        "tests_labels": task["tests_labels"]
+        "tests_labels": tests_labels,
+        "tests_results": tests_results,
     }
 
 

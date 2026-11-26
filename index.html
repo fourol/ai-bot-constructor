@@ -425,55 +425,57 @@
     }
 
     .wire-glow {
-      stroke-width: 9;
+      stroke-width: 5;
       fill: none;
-      opacity: 0.24;
+      opacity: 0.08;
       stroke-linecap: round;
       pointer-events: none;
     }
 
     .wire-main {
-      stroke-width: 3.5;
+      stroke-width: 2.2;
+      opacity: 0.62;
       fill: none;
       stroke-linecap: round;
       cursor: pointer;
       pointer-events: stroke;
-      transition: stroke-width 0.15s ease;
-      filter: drop-shadow(0 2px 4px rgba(15, 23, 42, 0.16));
+      transition: stroke-width 0.15s ease, opacity 0.15s ease;
     }
 
     .wire-main:hover {
-      stroke-width: 6;
-      filter: drop-shadow(0 0 8px var(--wire-char));
+      stroke-width: 4;
+      opacity: 1;
+      filter: drop-shadow(0 0 6px var(--wire-char));
     }
 
     .wire-main.wire-brain {
-      stroke-width: 5.5;
+      stroke-width: 3;
+      opacity: 0.78;
     }
 
     .wire-glow.wire-brain {
-      stroke-width: 13;
-      opacity: 0.35;
+      stroke-width: 7;
+      opacity: 0.12;
     }
 
     .wire-flow {
-      stroke-width: 2.5;
+      stroke-width: 1.5;
       stroke: #ffffff;
       fill: none;
-      stroke-dasharray: 6 14;
+      stroke-dasharray: 5 16;
       stroke-linecap: round;
       pointer-events: none;
-      animation: wireFlowAnim 0.7s linear infinite;
-      opacity: 0.95;
+      animation: wireFlowAnim 1.4s linear infinite;
+      opacity: 0.28;
     }
 
     @keyframes wireFlowAnim {
-      from { stroke-dashoffset: 20; }
+      from { stroke-dashoffset: 21; }
       to { stroke-dashoffset: 0; }
     }
 
     .wire-temp {
-      stroke-width: 3;
+      stroke-width: 2.5;
       stroke-dasharray: 5 5;
       fill: none;
       pointer-events: none;
@@ -485,14 +487,22 @@
     }
 
     /* Wire Label Badge */
+    .wire-label-group {
+      cursor: pointer;
+      opacity: 0.78;
+      transition: opacity 0.15s ease;
+    }
+    .wire-label-group:hover {
+      opacity: 1;
+    }
     .wire-badge {
       pointer-events: auto;
       cursor: pointer;
-      font-size: 10px;
-      font-weight: 700;
+      font-size: 9.5px;
+      font-weight: 600;
       font-family: monospace;
-      letter-spacing: 0.5px;
-      fill: var(--text);
+      letter-spacing: 0.3px;
+      fill: var(--text-dim);
       text-anchor: middle;
       dominant-baseline: central;
     }
@@ -3008,8 +3018,8 @@
     }
 
     .guide-tabs {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      display: flex;
+      flex-wrap: wrap;
       gap: 4px;
       padding: 8px 12px;
       background: var(--bg-deep);
@@ -3018,12 +3028,13 @@
     }
 
     @media (max-width: 440px) {
-      .guide-tabs {
-        grid-template-columns: repeat(2, 1fr);
+      .guide-tab-btn {
+        flex: 1 1 calc(50% - 4px);
       }
     }
 
     .guide-tab-btn {
+      flex: 1 1 calc(25% - 4px);
       background: transparent;
       border: 1px solid transparent;
       color: var(--text-dim);
@@ -3130,12 +3141,119 @@
     /* Interactive Tasks & Step-by-step Guide CSS */
     .task-level-bar {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 3px;
       background: var(--bg-deep);
       padding: 4px;
       border-radius: 7px;
       border: 1px solid var(--border-subtle);
+    }
+
+    .code-track-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .code-task-card {
+      background: var(--bg-deep);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 7px 8px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      color: var(--text);
+    }
+
+    .code-task-card:hover {
+      border-color: var(--border-node);
+      background: var(--bg-node);
+    }
+
+    .code-task-card.active {
+      border-color: var(--wire-char);
+      background: var(--bg-node);
+      box-shadow: 0 0 0 1px var(--wire-char);
+    }
+
+    .code-task-card.passed {
+      border-color: rgba(22, 163, 74, 0.55);
+    }
+
+    .code-task-card.passed.active {
+      border-color: var(--success);
+      box-shadow: 0 0 0 1px var(--success);
+    }
+
+    .code-task-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .code-task-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--text);
+    }
+
+    .code-diff-pill {
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 9.5px;
+      font-weight: 700;
+    }
+
+    .code-diff-pill.easy { background: rgba(22, 163, 74, 0.14); color: var(--success); }
+    .code-diff-pill.med { background: rgba(234, 179, 8, 0.16); color: #ca8a04; }
+    .code-diff-pill.hard { background: rgba(220, 38, 38, 0.14); color: var(--danger); }
+
+    .code-timer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 10px;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      font-size: 11px;
+    }
+
+    .code-timer-clock {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--wire-char);
+    }
+
+    .btn-code-header {
+      background: rgba(124, 58, 237, 0.1);
+      color: #7c3aed;
+      border: 1px solid rgba(124, 58, 237, 0.35);
+      padding: 6px 11px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+    }
+    .btn-code-header:hover {
+      background: #7c3aed;
+      border-color: #7c3aed;
+      color: #ffffff;
+      transform: translateY(-1px);
     }
 
     .task-level-btn {
@@ -3728,6 +3846,10 @@
 
       <button type="button" class="btn-guide-header" id="btnProjectGuide" onclick="toggleProjectGuide()" title="База знаний проекта и специальности 09.02.13">
         <span>📖</span> База проекта
+      </button>
+
+      <button type="button" class="btn-code-header" id="btnCodePractice" onclick="openCodePracticeTab()" title="Отдельный практикум: 6 задач по программированию с ИИ (~20 мин)">
+        <span>💻</span> Код-задания
       </button>
 
       <button type="button" class="btn-theme-toggle" id="btnThemeToggle" onclick="toggleTheme()" title="Переключить тему оформления">
@@ -4674,12 +4796,23 @@
 
     
     // --- Task Progress Persistence (LocalStorage + Server SQLite Sync) ---
+    const CODE_TASK_IDS = ['sum_pos', 'vowels', 'palindrome', 'password_check', 'parse_orders', 'rate_limiter'];
+
+    function getDefaultCodeTasksMap() {
+      const m = {};
+      CODE_TASK_IDS.forEach(id => {
+        m[id] = { passed: false, aiResult: null };
+      });
+      return m;
+    }
+
     function getDefaultTaskProgress() {
       return {
         updatedAt: 0,
         activeGuideTab: 'about',
         activeTaskLevel: 'lvl1',
         activeExamVariant: 'space',
+        activeCodeTaskId: 'sum_pos',
         levels: {
           lvl1: { passed: false, checks: null, snapshot: null },
           lvl2: { passed: false, checks: null, snapshot: null },
@@ -4691,6 +4824,7 @@
           socratic: { passed: false, schemaPassed: false, schemaChecks: null, aiPassed: false, aiResults: null, snapshot: null }
         },
         bonusCode: { passed: false, schemaPassed: false, schemaChecks: null, aiResult: null, sandboxPassed: false, snapshot: null, savedCode: null },
+        codeTasks: getDefaultCodeTasksMap(),
         auditChecked: []
       };
     }
@@ -4729,11 +4863,38 @@
     function mergeTaskProgress(saved) {
       const def = getDefaultTaskProgress();
       if (!saved || typeof saved !== 'object') return def;
+
+      let activeGuideTab = saved.activeGuideTab || def.activeGuideTab;
+      let activeTaskLevel = saved.activeTaskLevel || def.activeTaskLevel;
+      if (activeTaskLevel === 'code') {
+        activeTaskLevel = 'lvl1';
+      }
+
+      const codeTasks = getDefaultCodeTasksMap();
+      CODE_TASK_IDS.forEach(id => {
+        if (saved.codeTasks && saved.codeTasks[id]) {
+          codeTasks[id] = Object.assign({}, codeTasks[id], saved.codeTasks[id]);
+        }
+      });
+
+      const mergedBonus = Object.assign({}, def.bonusCode, saved.bonusCode || {});
+      // Migrate legacy single bonusCode result into codeTasks if present
+      if (mergedBonus.aiResult && mergedBonus.aiResult.task_id && codeTasks[mergedBonus.aiResult.task_id]) {
+        const tid = mergedBonus.aiResult.task_id;
+        if (!codeTasks[tid].aiResult) {
+          codeTasks[tid].aiResult = mergedBonus.aiResult;
+          codeTasks[tid].passed = Boolean(mergedBonus.aiResult.passed);
+        }
+      }
+
+      const activeCodeTaskId = CODE_TASK_IDS.includes(saved.activeCodeTaskId) ? saved.activeCodeTaskId : def.activeCodeTaskId;
+
       return {
         updatedAt: saved.updatedAt || 0,
-        activeGuideTab: saved.activeGuideTab || def.activeGuideTab,
-        activeTaskLevel: saved.activeTaskLevel || def.activeTaskLevel,
+        activeGuideTab,
+        activeTaskLevel,
         activeExamVariant: saved.activeExamVariant || def.activeExamVariant,
+        activeCodeTaskId,
         levels: {
           lvl1: Object.assign({}, def.levels.lvl1, saved.levels?.lvl1 || {}),
           lvl2: Object.assign({}, def.levels.lvl2, saved.levels?.lvl2 || {}),
@@ -4744,7 +4905,8 @@
           college: Object.assign({}, def.exams.college, saved.exams?.college || {}),
           socratic: Object.assign({}, def.exams.socratic, saved.exams?.socratic || {})
         },
-        bonusCode: Object.assign({}, def.bonusCode, saved.bonusCode || {}),
+        bonusCode: mergedBonus,
+        codeTasks,
         auditChecked: Array.isArray(saved.auditChecked) ? saved.auditChecked : []
       };
     }
@@ -4838,16 +5000,7 @@
       const examTabBtn = document.getElementById('taskBtn_exam');
       if (examTabBtn) examTabBtn.classList.toggle('passed', anyExamPassed);
 
-      const codeBonusPassed = Boolean(taskProgressState.bonusCode?.passed);
-      if (codeBonusPassed) passedTotal++;
-      const codeTabBtn = document.getElementById('taskBtn_code');
-      if (codeTabBtn) codeTabBtn.classList.toggle('passed', codeBonusPassed);
-      const codeRestBtn = document.getElementById('btnRestore_code');
-      if (codeRestBtn) {
-        codeRestBtn.style.display = taskProgressState.bonusCode?.snapshot ? 'inline-flex' : 'none';
-      }
-
-      const totalTasks = lvlIds.length + examIds.length + 1;
+      const totalTasks = lvlIds.length + examIds.length;
       const counterEl = document.getElementById('tasksProgressCounter');
       const barEl = document.getElementById('tasksProgressBar');
       const hintEl = document.getElementById('tasksProgressHint');
@@ -4855,8 +5008,12 @@
       if (barEl) barEl.style.width = `${Math.round((passedTotal / totalTasks) * 100)}%`;
       if (hintEl) {
         hintEl.textContent = passedTotal === totalTasks
-          ? '🏆 Все уровни, экзамены и API-код пройдены!'
+          ? '🏆 Все основные уровни и экзамены пройдены!'
           : (passedTotal > 0 ? 'Прогресс и схемы сохранены' : 'Сохраняется автоматически');
+      }
+
+      if (typeof updateCodeTrackProgressUI === 'function') {
+        updateCodeTrackProgressUI();
       }
     }
 
@@ -4895,25 +5052,23 @@
         }
       });
 
-      // Restore Code/API Bonus UI
+      // Restore Code Practice Schema UI
       const bonusData = taskProgressState.bonusCode;
       const codeSchemaBox = document.getElementById('verifyBox_code_schema');
-      const codeAiBox = document.getElementById('verifyBox_code_ai');
       if (bonusData && Array.isArray(bonusData.schemaChecks) && bonusData.schemaChecks.length > 0) {
         renderVerifyResult('verifyBox_code_schema', bonusData.schemaChecks, null, false);
       } else if (codeSchemaBox) {
         codeSchemaBox.classList.remove('active');
       }
-      if (bonusData && bonusData.aiResult) {
-        renderCodeTaskResultBox(codeAiBox, bonusData.aiResult);
-      } else if (codeAiBox) {
-        codeAiBox.classList.remove('active');
-      }
 
-      // 2. Restore active guide tab, task level & exam variant
+      // 2. Restore active guide tab, task level, exam variant & active code task
       switchGuideTab(taskProgressState.activeGuideTab || 'about', true);
       switchTaskLevel(taskProgressState.activeTaskLevel || 'lvl1', true);
       selectExamVariant(taskProgressState.activeExamVariant || 'space', true);
+      if (typeof renderCodeTaskCardsGrid === 'function') {
+        renderCodeTaskCardsGrid();
+        selectCodeTask(taskProgressState.activeCodeTaskId || 'sum_pos', true);
+      }
 
       // 3. Restore audit checklist checkboxes
       if (Array.isArray(taskProgressState.auditChecked)) {
@@ -4965,6 +5120,15 @@
       showToast('Прогресс заданий сброшен', 'info');
     }
 
+    function resetCodeProgress() {
+      if (!confirm('Сбросить прогресс по 6 задачам код-практикума?')) return;
+      taskProgressState.codeTasks = getDefaultCodeTasksMap();
+      taskProgressState.bonusCode = getDefaultTaskProgress().bonusCode;
+      saveTaskProgress(true);
+      applyTaskProgressUI();
+      showToast('Прогресс код-практикума сброшен', 'info');
+    }
+
     // --- Right Project Guide & Scenario Loader Logic ---
     function toggleProjectGuide() {
       const panel = document.getElementById('projectGuidePanel');
@@ -4973,6 +5137,22 @@
       if (panel.classList.contains('active')) {
         calcAuditScore(true);
       }
+    }
+
+    function openCodePracticeTab() {
+      const panel = document.getElementById('projectGuidePanel');
+      if (!panel) return;
+      const isOpen = panel.classList.contains('active');
+      const isAlreadyCode = taskProgressState.activeGuideTab === 'code' &&
+        document.getElementById('guideTab_code')?.classList.contains('active');
+      if (isOpen && isAlreadyCode) {
+        panel.classList.remove('active');
+        return;
+      }
+      if (!isOpen) {
+        panel.classList.add('active');
+      }
+      switchGuideTab('code');
     }
 
     function switchGuideTab(tabName, skipSave = false) {
@@ -4985,10 +5165,15 @@
       if (targetPanel) targetPanel.classList.add('active');
 
       tabs.forEach(btn => {
-        if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabName)) {
+        const oc = btn.getAttribute('onclick') || '';
+        if (oc.includes(`'${tabName}'`)) {
           btn.classList.add('active');
         }
       });
+
+      if (tabName === 'code' && typeof refreshPythonBotOptions === 'function') {
+        refreshPythonBotOptions();
+      }
 
       if (!skipSave) {
         taskProgressState.activeGuideTab = tabName;
@@ -5071,7 +5256,7 @@
       const charName = (charEl?.querySelector('.node-val-name')?.value || '').trim();
       const basePrompt = (promptEl?.querySelector('.node-val-prompt')?.value || '').trim();
       const tempVal = paramsEl ? parseFloat(paramsEl.querySelector('.node-val-temp')?.value) : null;
-      const tokensVal = paramsEl ? parseInt(paramsEl.querySelector('.node-val-tokens')?.value, 10) : 200;
+      const tokensVal = paramsEl ? parseInt(paramsEl.querySelector('.node-val-tokens')?.value, 10) : 1024;
 
       const guardLang = guardEl ? (guardEl.querySelector('.node-val-guard-lang')?.value || 'any') : 'any';
       const guardSocratic = guardEl ? Boolean(guardEl.querySelector('.node-val-guard-socratic')?.checked) : false;
@@ -5138,7 +5323,7 @@
         basePrompt,
         compiledPrompt,
         tempVal: tempVal !== null && !isNaN(tempVal) ? tempVal : 0.7,
-        tokensVal: tokensVal || 200,
+        tokensVal: tokensVal || 1024,
         guardLang,
         guardSocratic,
         guardLatex,
@@ -5445,7 +5630,7 @@
               message: testItem.question,
               system_prompt: arch.compiledPrompt,
               temperature: arch.tempVal,
-              max_tokens: 180,
+              max_tokens: 600,
               kb_text: arch.kbText || null,
               history: []
             })
@@ -5517,18 +5702,207 @@
       }
     }
 
-    // --- Bonus Level: Programming with AI (Python Codegen & Auto-Tests) ---
-    const CODE_TASK_DESCS = {
-      sum_pos: "Функция <code>solve(numbers)</code> принимает список чисел и возвращает сумму всех положительных элементов (&gt; 0). Если таких чисел нет, возвращает 0.",
-      vowels: "Функция <code>count_vowels(text)</code> считает количество гласных русских букв (а, е, ё, и, о, у, ы, э, ю, я) без учета регистра.",
-      palindrome: "Функция <code>is_palindrome(s)</code> проверяет, читается ли строка одинаково слева направо и справа налево (без пробелов и регистра)."
-    };
+    // --- Code Practice Track (~20 min, 6 Python AI Coding Challenges) ---
+    const CODE_TASKS_META = [
+      {
+        id: 'sum_pos',
+        num: 1,
+        shortTitle: 'Сумма положительных',
+        title: '1. Сумма положительных чисел',
+        diffClass: 'easy',
+        diffLabel: 'Лёгкая',
+        minutes: 2,
+        desc: 'Функция <code>solve(numbers)</code> принимает список чисел и возвращает сумму всех элементов строго больше нуля (<code>&gt; 0</code>). Если положительных нет — возвращает <code>0</code>.',
+        examples: 'solve([1, -2, 3, 4, -5]) -> 8\nsolve([-1, -2, -3]) -> 0\nsolve([]) -> 0',
+        hint: 'Разминка: проверьте, что бот выдаёт чистый Python-код без приветствий и лишних рассуждений.'
+      },
+      {
+        id: 'vowels',
+        num: 2,
+        shortTitle: 'Счётчик гласных',
+        title: '2. Счётчик русских гласных',
+        diffClass: 'easy',
+        diffLabel: 'Лёгкая',
+        minutes: 3,
+        desc: 'Функция <code>count_vowels(text)</code> считает количество русских гласных букв (<code>а, е, ё, и, о, у, ы, э, ю, я</code>) без учёта регистра.',
+        examples: 'count_vowels("Привет") -> 2\ncount_vowels("Ёжик в тумане") -> 5\ncount_vowels("КОЛЛЕДЖ 54") -> 2',
+        hint: 'Ловушка для ИИ: маленькие модели часто забывают букву «ё» или заглавные буквы. Упомяните внимательность к деталям в Инструкции.'
+      },
+      {
+        id: 'palindrome',
+        num: 3,
+        shortTitle: 'Умный палиндром',
+        title: '3. Умный палиндром',
+        diffClass: 'med',
+        diffLabel: 'Средняя',
+        minutes: 3,
+        desc: 'Функция <code>is_palindrome(s)</code> возвращает <code>True</code>, если строка читается одинаково слева направо и справа налево, игнорируя пробелы, знаки препинания (<code>.,!?:;-</code>) и регистр.',
+        examples: 'is_palindrome("А роза упала на лапу Азора!") -> True\nis_palindrome("питон") -> False\nis_palindrome("12 3 21") -> True',
+        hint: 'Нужно очистить строку от пробелов и пунктуации (например, через <code>isalnum()</code>) перед переворотом <code>[::-1]</code>.'
+      },
+      {
+        id: 'password_check',
+        num: 4,
+        shortTitle: 'Валидатор пароля',
+        title: '4. Валидатор надёжного пароля',
+        diffClass: 'med',
+        diffLabel: 'Средняя',
+        minutes: 4,
+        desc: 'Функция <code>check_password(pwd)</code> возвращает <code>True</code>, только если длина <code>&gt;= 8</code> символов и есть минимум 1 заглавная буква, 1 строчная буква и 1 цифра.',
+        examples: 'check_password("Qwerty12") -> True\ncheck_password("qwerty12") -> False\ncheck_password("Ab1") -> False',
+        hint: 'Если модель путается в регулярных выражениях, добавьте в Few-Shot пример с проверкой символов через <code>any(c.isupper() ...)</code>.'
+      },
+      {
+        id: 'parse_orders',
+        num: 5,
+        shortTitle: 'Парсер выручки',
+        title: '5. Парсер выручки из логов',
+        diffClass: 'hard',
+        diffLabel: 'Продвинутая',
+        minutes: 4,
+        desc: 'Функция <code>calc_revenue(logs)</code> получает список строк вида <code>"Заказ #12: 450 руб"</code>, <code>"Отмена: 200 руб"</code>. Нужно сложить суммы только строк, начинающихся с <code>"Заказ"</code> (взять сумму заказа, а не его номер #12!).',
+        examples: 'calc_revenue(["Заказ #1: 500 руб", "Отмена: 200 руб", "Заказ #2: 300 руб"]) -> 800\ncalc_revenue(["Ошибка чтения"]) -> 0',
+        hint: 'Частая ошибка ИИ — сложить номер заказа #1 вместо цены 500! В системном промпте научите бота учитывать формат входных данных.'
+      },
+      {
+        id: 'rate_limiter',
+        num: 6,
+        shortTitle: 'Анти-спам фильтр',
+        title: '6. Анти-спам фильтр для бота',
+        diffClass: 'hard',
+        diffLabel: 'Продвинутая',
+        minutes: 4,
+        desc: 'Функция <code>filter_spam(messages, max_len)</code> обрезает пробелы по краям (<code>.strip()</code>), убирает пустые строки и строки длиннее <code>max_len</code>, а также удаляет повторяющиеся <b>подряд</b> сообщения (без учёта регистра).',
+        examples: 'filter_spam(["Привет", "привет", "Ок", "   ", "Очень длинно"], 10) -> ["Привет", "Ок"]\nfilter_spam(["a", "b", "a"], 5) -> ["a", "b", "a"]',
+        hint: 'Важно сохранять порядок и удалять только <b>подряд идущие</b> повторы, а не все дубликаты в списке!'
+      }
+    ];
 
-    function onCodeTaskChange() {
-      const sel = document.getElementById('codeTaskSelector');
-      const box = document.getElementById('codeTaskDescBox');
-      if (sel && box) {
-        box.innerHTML = CODE_TASK_DESCS[sel.value] || '';
+    let activeCodeTaskId = 'sum_pos';
+    let codeTimerSeconds = 20 * 60;
+    let codeTimerInterval = null;
+
+    function formatTimerClock(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateCodeTimerDisplay() {
+      const el = document.getElementById('codeTimerClock');
+      if (el) el.textContent = formatTimerClock(codeTimerSeconds);
+    }
+
+    function toggleCodeTimer() {
+      const btn = document.getElementById('btnCodeTimerToggle');
+      if (codeTimerInterval) {
+        clearInterval(codeTimerInterval);
+        codeTimerInterval = null;
+        if (btn) btn.textContent = '▶ Старт';
+      } else {
+        if (codeTimerSeconds <= 0) codeTimerSeconds = 20 * 60;
+        if (btn) btn.textContent = '⏸ Пауза';
+        codeTimerInterval = setInterval(() => {
+          if (codeTimerSeconds > 0) {
+            codeTimerSeconds--;
+            updateCodeTimerDisplay();
+          } else {
+            clearInterval(codeTimerInterval);
+            codeTimerInterval = null;
+            if (btn) btn.textContent = '▶ Старт';
+            showToast('⏰ 20 минут практикума завершены!', 'info');
+          }
+        }, 1000);
+      }
+    }
+
+    function resetCodeTimer() {
+      if (codeTimerInterval) {
+        clearInterval(codeTimerInterval);
+        codeTimerInterval = null;
+      }
+      codeTimerSeconds = 20 * 60;
+      updateCodeTimerDisplay();
+      const btn = document.getElementById('btnCodeTimerToggle');
+      if (btn) btn.textContent = '▶ Старт';
+    }
+
+    function renderCodeTaskCardsGrid() {
+      const grid = document.getElementById('codeTaskCardsGrid');
+      if (!grid) return;
+      grid.innerHTML = CODE_TASKS_META.map(t => {
+        const isPassed = Boolean(taskProgressState.codeTasks?.[t.id]?.passed);
+        const isActive = activeCodeTaskId === t.id;
+        return `
+          <button type="button" class="code-task-card ${isActive ? 'active' : ''} ${isPassed ? 'passed' : ''}" id="codeTaskCard_${t.id}" onclick="selectCodeTask('${t.id}')">
+            <div class="code-task-card-top">
+              <span class="code-diff-pill ${t.diffClass}">${t.diffLabel}</span>
+              <span>${isPassed ? '✅ Решено' : `~${t.minutes} мин`}</span>
+            </div>
+            <div class="code-task-card-title">${t.num}. ${escapeHtml(t.shortTitle)}</div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function updateCodeTrackProgressUI() {
+      const total = CODE_TASKS_META.length;
+      const passedCount = CODE_TASKS_META.filter(t => Boolean(taskProgressState.codeTasks?.[t.id]?.passed)).length;
+
+      const counterEl = document.getElementById('codeProgressCounter');
+      const barEl = document.getElementById('codeProgressBar');
+      const hintEl = document.getElementById('codeProgressHint');
+      const restBtn = document.getElementById('btnRestore_code');
+
+      if (counterEl) counterEl.textContent = `${passedCount} / ${total}`;
+      if (barEl) barEl.style.width = `${Math.round((passedCount / total) * 100)}%`;
+      if (hintEl) {
+        hintEl.textContent = passedCount === total
+          ? '🏆 Все 6 задач марафона пройдены!'
+          : (passedCount > 0 ? `Решено ${passedCount} из ${total} задач` : 'Решите все 6 задач с помощью ИИ');
+      }
+      if (restBtn) {
+        restBtn.style.display = taskProgressState.bonusCode?.snapshot ? 'inline-flex' : 'none';
+      }
+      renderCodeTaskCardsGrid();
+    }
+
+    function selectCodeTask(taskId, skipSave = false) {
+      const meta = CODE_TASKS_META.find(t => t.id === taskId) || CODE_TASKS_META[0];
+      activeCodeTaskId = meta.id;
+
+      const titleEl = document.getElementById('activeCodeTaskTitle');
+      const badgeEl = document.getElementById('activeCodeTaskBadge');
+      const descEl = document.getElementById('activeCodeTaskDesc');
+      const exEl = document.getElementById('activeCodeTaskExamples');
+      const hintEl = document.getElementById('activeCodeTaskHint');
+      const runBtn = document.getElementById('btnRunCodeTaskAI');
+      const resultBox = document.getElementById('verifyBox_code_ai');
+
+      if (titleEl) titleEl.textContent = meta.title;
+      if (badgeEl) badgeEl.textContent = `${meta.diffLabel} • ~${meta.minutes} мин`;
+      if (descEl) descEl.innerHTML = meta.desc;
+      if (exEl) exEl.innerText = meta.examples;
+      if (hintEl) hintEl.innerHTML = `💡 <b>Подсказка AI-интегратору:</b> ${meta.hint}`;
+      if (runBtn && !runBtn.disabled) {
+        runBtn.textContent = `🤖 Решить задачу ${meta.num}/6 через ИИ и запустить тесты`;
+      }
+
+      const savedResult = taskProgressState.codeTasks?.[meta.id]?.aiResult || null;
+      if (resultBox) {
+        if (savedResult) {
+          renderCodeTaskResultBox(resultBox, savedResult);
+        } else {
+          resultBox.classList.remove('active');
+          resultBox.innerHTML = '';
+        }
+      }
+
+      renderCodeTaskCardsGrid();
+
+      if (!skipSave) {
+        taskProgressState.activeCodeTaskId = meta.id;
+        saveTaskProgress();
       }
     }
 
@@ -5536,26 +5910,36 @@
       if (!box || !res) return;
       box.classList.add('active');
       const isPassed = Boolean(res.passed);
+      const testsResults = Array.isArray(res.tests_results) && res.tests_results.length > 0
+        ? res.tests_results
+        : (res.tests_labels || []).map(lbl => ({ label: lbl, passed: isPassed, error: '' }));
+      const totalCount = res.total_count || testsResults.length;
+      const passedCount = typeof res.passed_count === 'number'
+        ? res.passed_count
+        : testsResults.filter(t => t.passed).length;
+
       box.innerHTML = `
         <div class="verify-summary ${isPassed ? 'ok' : 'warn'}">
-          <span>${isPassed ? '🏆 Задача решена! Все unit-тесты пройдены!' : '⚠️ Код не прошёл unit-тесты'}</span>
-          <span>${isPassed ? '4 / 4' : 'Ошибка тестов'}</span>
+          <span>${isPassed ? '🏆 Задача решена! Все unit-тесты пройдены!' : '⚠️ Код не прошёл все unit-тесты'}</span>
+          <span>${passedCount} / ${totalCount}</span>
         </div>
         <div class="ai-exam-box" style="margin-top:6px;">
           <div class="ai-exam-q">${escapeHtml(res.title || 'Задача на Python')}</div>
-          <div style="font-size:11px; margin:4px 0; color:var(--text);">${escapeHtml(res.description || '')}</div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin:6px 0 2px 0;">
             <span style="font-size:10.5px; font-weight:bold; color:var(--wire-char);">Сгенерированный Python-код:</span>
             <button type="button" class="btn-sm-action" style="font-size:10px; padding:2px 6px;" onclick="copyCodeText(this)">📋 Копировать код</button>
           </div>
-          <pre class="python-snippet-pre" style="max-height:160px; margin-bottom:6px;">${escapeHtml(res.extracted_code || res.raw_answer || '')}</pre>
-          ${res.error ? `<div class="ai-exam-verdict fail" style="margin-bottom:6px;">Ошибка Python: ${escapeHtml(res.error)}</div>` : ''}
+          <pre class="python-snippet-pre" style="max-height:170px; margin-bottom:6px;">${escapeHtml(res.extracted_code || res.raw_answer || '')}</pre>
+          ${res.error && !isPassed ? `<div class="ai-exam-verdict fail" style="margin-bottom:6px;">${escapeHtml(res.error)}</div>` : ''}
           <div style="font-size:10.5px; font-weight:600; color:var(--text-dim); margin-bottom:4px;">Результаты unit-тестов:</div>
           <div style="display:flex; flex-direction:column; gap:3px;">
-            ${(res.tests_labels || []).map(lbl => `
-              <div class="verify-check-row ${isPassed ? 'ok' : 'fail'}" style="padding:4px 8px; font-size:10.5px;">
-                <span>${isPassed ? '✅' : '❌'}</span>
-                <div><code>${escapeHtml(lbl)}</code></div>
+            ${testsResults.map(t => `
+              <div class="verify-check-row ${t.passed ? 'ok' : 'fail'}" style="padding:4px 8px; font-size:10.5px;">
+                <span>${t.passed ? '✅' : '❌'}</span>
+                <div style="min-width:0; word-break:break-word;">
+                  <code>${escapeHtml(t.label)}</code>
+                  ${!t.passed && t.error ? `<div style="font-size:10px; opacity:0.85; margin-top:2px;">${escapeHtml(t.error)}</div>` : ''}
+                </div>
               </div>
             `).join('')}
           </div>
@@ -5612,15 +5996,15 @@
         return;
       }
       const arch = inspectCanvasArchitecture();
-      const sel = document.getElementById('codeTaskSelector');
-      const taskId = sel ? sel.value : 'sum_pos';
+      const taskId = activeCodeTaskId || 'sum_pos';
+      const meta = CODE_TASKS_META.find(t => t.id === taskId) || CODE_TASKS_META[0];
       const btn = document.getElementById('btnRunCodeTaskAI');
       const box = document.getElementById('verifyBox_code_ai');
       if (!box) return;
 
       if (btn) {
         btn.disabled = true;
-        btn.textContent = '⏳ ИИ решает задачу и запускает тесты...';
+        btn.textContent = '⏳ ИИ пишет код и запускает тесты...';
       }
       box.classList.add('active');
       box.innerHTML = `<div class="verify-summary warn"><span>🧪 Генерация Python-кода и запуск unit-тестов...</span><span>⏳</span></div>`;
@@ -5640,17 +6024,28 @@
         const data = await res.json();
         renderCodeTaskResultBox(box, data);
 
+        if (!taskProgressState.codeTasks) taskProgressState.codeTasks = getDefaultCodeTasksMap();
+        taskProgressState.codeTasks[taskId] = {
+          passed: Boolean(data.passed),
+          aiResult: data
+        };
         if (!taskProgressState.bonusCode) taskProgressState.bonusCode = {};
         taskProgressState.bonusCode.aiResult = data;
-        taskProgressState.bonusCode.passed = Boolean(data.passed);
+        taskProgressState.bonusCode.passed = CODE_TASK_IDS.every(id => Boolean(taskProgressState.codeTasks[id]?.passed));
         taskProgressState.bonusCode.snapshot = exportWorkflowSnapshot();
+
         updateTasksProgressSummaryUI();
         saveTaskProgress(true);
 
         if (data.passed) {
-          showToast('🏆 Задача решена! Все тесты пройдены без ошибок!', 'success');
+          const allDone = CODE_TASK_IDS.every(id => Boolean(taskProgressState.codeTasks[id]?.passed));
+          if (allDone) {
+            showToast('🏆 Поздравляем! Все 6 задач код-практикума решены!', 'success');
+          } else {
+            showToast(`✅ Задача ${meta.num}/6 решена! Можно переходить к следующей.`, 'success');
+          }
         } else {
-          showToast('Код не прошёл тесты. Проверьте промпт и снизьте температуру.', 'error');
+          showToast(`Пройдено ${data.passed_count || 0} из ${data.total_count || 4} тестов. Доработайте промпт!`, 'error');
         }
       } catch (err) {
         box.innerHTML = `<div class="verify-check-row fail"><span>❌</span><div>Ошибка связи с сервером: ${escapeHtml(err.message)}</div></div>`;
@@ -5658,7 +6053,7 @@
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = '🤖 Сгенерировать решение через ИИ и запустить тесты';
+          btn.textContent = `🤖 Решить задачу ${meta.num}/6 через ИИ и запустить тесты`;
         }
       }
     }
@@ -5689,7 +6084,7 @@
             message: q,
             system_prompt: arch.compiledPrompt,
             temperature: arch.tempVal,
-            max_tokens: 450,
+            max_tokens: 1024,
             kb_text: arch.kbText || null,
             history: []
           })
@@ -6081,12 +6476,14 @@
             }
           }
           if (n.val.tokens !== undefined) {
+            const tv = parseInt(n.val.tokens, 10) || 1024;
             const tok = el.querySelector('.node-val-tokens');
-            if (tok) tok.value = n.val.tokens;
+            if (tok) tok.value = tv;
             const btns = el.querySelectorAll('.btn-toggle');
             btns.forEach(b => {
-              const isMatch = (n.val.tokens == 140 && b.textContent.includes('1–2')) ||
-                              (n.val.tokens == 350 && b.textContent.includes('Развёрнуто'));
+              const isMatch = (tv <= 250 && b.textContent.includes('Короткий')) ||
+                              (tv > 250 && tv <= 1200 && b.textContent.includes('Развёрнуто')) ||
+                              (tv > 1200 && b.textContent.includes('Без лимита'));
               b.classList.toggle('active', isMatch);
             });
           }
@@ -6484,10 +6881,11 @@
             <div>
               <div class="control-label"><span>Длина ответа</span></div>
               <div class="toggle-btn-group">
-                <button type="button" class="btn-toggle" onclick="setNodeTokens('${id}', 140, this)">⚡ 1–2 фразы</button>
-                <button type="button" class="btn-toggle active" onclick="setNodeTokens('${id}', 350, this)">📖 Развёрнуто</button>
+                <button type="button" class="btn-toggle" onclick="setNodeTokens('${id}', 250, this)">⚡ Короткий</button>
+                <button type="button" class="btn-toggle active" onclick="setNodeTokens('${id}', 1024, this)">📖 Развёрнуто</button>
+                <button type="button" class="btn-toggle" onclick="setNodeTokens('${id}', 2048, this)">♾️ Без лимита</button>
               </div>
-              <input type="hidden" class="node-val-tokens" value="350">
+              <input type="hidden" class="node-val-tokens" value="1024">
             </div>
             <div class="port-row port-row-out">
               <span class="port-name" style="color:var(--wire-params);">Параметры</span>
@@ -7168,8 +7566,8 @@
         flowHtml += `<path class="wire-flow" d="${pathD}"></path>`;
 
         labelsHtml += `
-          <g onclick="disconnectWire(${idx})" style="cursor:pointer;" title="Кликните, чтобы отсоединить">
-            <rect x="${midX - badgeWidth / 2}" y="${midY - 9}" width="${badgeWidth}" height="18" rx="4" fill="var(--c-darkest)" stroke="${colorVar}" stroke-width="1.2" />
+          <g class="wire-label-group" onclick="disconnectWire(${idx})" title="Кликните, чтобы отсоединить">
+            <rect x="${midX - badgeWidth / 2}" y="${midY - 8.5}" width="${badgeWidth}" height="17" rx="4" fill="var(--bg-node)" stroke="${colorVar}" stroke-opacity="0.55" stroke-width="0.9" />
             <text x="${midX}" y="${midY}" class="wire-badge">${labelText}</text>
           </g>
         `;
@@ -7408,7 +7806,7 @@
       let prompt = '';
       let rulesText = '';
       let temperature = 0.7;
-      let maxTokens = 160;
+      let maxTokens = 1024;
 
       if (brainNodeId) {
         const promptConn = connections.find(c => c.toNode === brainNodeId && c.type === 'prompt');
@@ -7433,7 +7831,7 @@
           const parEl = document.getElementById(paramsConn.fromNode);
           if (parEl) {
             temperature = parseFloat(parEl.querySelector('.node-val-temp').value) || 0.7;
-            maxTokens = parseInt(parEl.querySelector('.node-val-tokens').value) || 160;
+            maxTokens = parseInt(parEl.querySelector('.node-val-tokens').value) || 1024;
           }
         }
 
@@ -7557,7 +7955,7 @@
             message: message,
             system_prompt: prompt,
             temperature: temperature,
-            max_tokens: Math.min(maxTokens, 200),
+            max_tokens: maxTokens,
             kb_text: kbText.trim() || null,
             history: termChatHistories[termNodeId]
           })
@@ -7777,7 +8175,7 @@
       let prompt = '';
       let extraRules = '';
       let temperature = 0.7;
-      let maxTokens = 350;
+      let maxTokens = 1024;
       let customGreeting = '';
       let customChips = [];
 
@@ -7819,7 +8217,7 @@
           const paramsEl = document.getElementById(paramsConn.fromNode);
           if (paramsEl) {
             temperature = parseFloat(paramsEl.querySelector('.node-val-temp').value) || 0.7;
-            maxTokens = parseInt(paramsEl.querySelector('.node-val-tokens').value) || 350;
+            maxTokens = parseInt(paramsEl.querySelector('.node-val-tokens').value) || 1024;
           }
         }
 
@@ -8158,13 +8556,14 @@
             tempSlider.value = bot.temperature;
             onTempSliderInput({ target: tempSlider }, nParams);
           }
-          const tokVal = bot.max_tokens || 350;
+          const tokVal = bot.max_tokens || 1024;
           const tokInp = paramsEl.querySelector('.node-val-tokens');
           if (tokInp) tokInp.value = tokVal;
           const btns = paramsEl.querySelectorAll('.btn-toggle');
           btns.forEach(b => {
-            const isMatch = (tokVal <= 150 && b.textContent.includes('1–2')) ||
-                            (tokVal > 150 && b.textContent.includes('Развёрнуто'));
+            const isMatch = (tokVal <= 250 && b.textContent.includes('Короткий')) ||
+                            (tokVal > 250 && tokVal <= 1200 && b.textContent.includes('Развёрнуто')) ||
+                            (tokVal > 1200 && b.textContent.includes('Без лимита'));
             b.classList.toggle('active', isMatch);
           });
         }
@@ -8996,6 +9395,7 @@
       <button type="button" class="guide-tab-btn" onclick="switchGuideTab('howto')">📘 Инструкция</button>
       <button type="button" class="guide-tab-btn" onclick="switchGuideTab('formula')">🧩 6 блоков</button>
       <button type="button" class="guide-tab-btn" onclick="switchGuideTab('tasks')">🎯 Задания</button>
+      <button type="button" class="guide-tab-btn" onclick="switchGuideTab('code')">💻 Код-задания</button>
       <button type="button" class="guide-tab-btn" onclick="switchGuideTab('redteam')">🛡️ Red Team</button>
       <button type="button" class="guide-tab-btn" onclick="switchGuideTab('audit')">📊 Чек-лист 100б</button>
     </div>
@@ -9036,6 +9436,10 @@
             <li><strong>45–55 мин:</strong> Аудит надёжности по 100-балльному чек-листу.</li>
             <li><strong>55–60 мин:</strong> Запуск бота и демонстрация результата.</li>
           </ul>
+        </div>
+
+        <div style="text-align:right; font-size:10px; color:var(--text-dim); opacity:0.5; padding:0 2px;">
+          автор: <a href="https://github.com/fourol/ai-bot-constructor" target="_blank" rel="noopener noreferrer" style="color:inherit; text-decoration:none; border-bottom:1px dotted currentColor;">fourol/ai-bot-constructor</a>
         </div>
       </div>
 
@@ -9100,7 +9504,7 @@
             </div>
             <div class="howto-module-item">
               <div class="howto-module-head"><span>🔥 Креативность и Длина</span><span class="howto-module-wire">➔ Мозг</span></div>
-              <div class="howto-module-desc">Ползунок <b>Temp</b>: <code>0.1–0.3</code> — строгая точность по фактам (для RAG и тестов); <code>0.7</code> — баланс; <code>1.0–1.3</code> — бурная фантазия. Кнопки длины переключают 1–2 фразы или развёрнутый ответ.</div>
+              <div class="howto-module-desc">Ползунок <b>Temp</b>: <code>0.1–0.3</code> — строгая точность по фактам (для RAG и тестов); <code>0.7</code> — баланс; <code>1.0–1.3</code> — бурная фантазия. Кнопки длины переключают «Короткий» (250), «Развёрнуто» (1024, по умолчанию) или «Без лимита» (2048).</div>
             </div>
             <div class="howto-module-item">
               <div class="howto-module-head"><span>📊 Формат Данных</span><span class="howto-module-wire">➔ Мозг</span></div>
@@ -9239,7 +9643,6 @@
           <button type="button" class="task-level-btn" id="taskBtn_lvl2" onclick="switchTaskLevel('lvl2')">🟡 Ур. 2</button>
           <button type="button" class="task-level-btn" id="taskBtn_lvl3" onclick="switchTaskLevel('lvl3')">🔴 Ур. 3</button>
           <button type="button" class="task-level-btn" id="taskBtn_exam" onclick="switchTaskLevel('exam')">🏆 Экзамен</button>
-          <button type="button" class="task-level-btn" id="taskBtn_code" onclick="switchTaskLevel('code')">💻 Код/API</button>
         </div>
 
         <!-- LEVEL 1: Новичок -->
@@ -9475,101 +9878,129 @@
             <button type="button" class="btn-restore-task" id="btnRestore_exam" onclick="restoreTaskSnapshot('exam')" style="display:none;">📂 Загрузить сохранённую схему этого варианта</button>
 
             <div style="margin-top:10px; padding:10px; background:var(--bg-deep); border:1px solid var(--border-subtle); border-radius:6px; font-size:11px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
-              <span>🚀 <b>Завершили экзамен?</b> Переходите к программированию:</span>
-              <button type="button" class="btn-sm-action" onclick="switchTaskLevel('code')" style="font-size:10.5px; padding:4px 8px; font-weight:bold; white-space:nowrap;">💻 Открыть Код/API →</button>
+              <span>🚀 <b>Завершили экзамен?</b> Переходите к отдельному практикуму (~20 мин):</span>
+              <button type="button" class="btn-sm-action" onclick="switchGuideTab('code')" style="font-size:10.5px; padding:4px 8px; font-weight:bold; white-space:nowrap;">💻 Код-задания →</button>
             </div>
           </div>
         </div>
 
-        <!-- LEVEL 5 (БОНУС): Программирование с помощью ИИ (Python Codegen) -->
-        <div class="task-level-panel" id="taskPanel_code">
-          <div class="guide-card">
-            <div class="guide-card-head">
-              <span class="guide-card-title">💻 Бонус: ИИ-Программист (Python)</span>
-              <span class="guide-badge">Код + Тесты</span>
+      </div>
+
+      <!-- TAB 4 (ОТДЕЛЬНЫЙ ТРЕК): Код-практикум с ИИ (~20 мин, 6 задач) -->
+      <div class="guide-tab-panel" id="guideTab_code">
+        <div class="guide-card">
+          <div class="guide-card-head">
+            <span class="guide-card-title">💻 Код-практикум: ИИ-Программист</span>
+            <span class="guide-badge">6 задач • ~20 мин</span>
+          </div>
+          <p class="guide-desc">
+            Отдельный практический трек по программированию на Python с помощью вашего ИИ-бота. Соберите точную архитектуру кодера на холсте и проведите бота через 6 алгоритмических и прикладных задач с автоматическими unit-тестами.
+          </p>
+        </div>
+
+        <!-- Отдельный прогресс и таймер 20 минут -->
+        <div class="audit-bar-box" style="padding:8px 10px;">
+          <div class="audit-bar-header" style="font-size:11.5px;">
+            <span>🧪 Прогресс код-заданий</span>
+            <span id="codeProgressCounter" style="color:var(--wire-char);">0 / 6</span>
+          </div>
+          <div class="audit-meter">
+            <div class="audit-fill" id="codeProgressBar"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <span id="codeProgressHint" style="font-size:10.5px; color:var(--text-dim);">Решите все 6 задач с помощью ИИ</span>
+            <button type="button" class="btn-sm-action" onclick="resetCodeProgress()" style="font-size:10px; padding:2px 6px;" title="Сбросить только прогресс код-трека">↺ Сбросить код-трек</button>
+          </div>
+        </div>
+
+        <div class="code-timer-bar">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span>⏱️ Таймер практикума:</span>
+            <span class="code-timer-clock" id="codeTimerClock">20:00</span>
+          </div>
+          <div style="display:flex; gap:4px;">
+            <button type="button" class="btn-sm-action" id="btnCodeTimerToggle" onclick="toggleCodeTimer()" style="font-size:10.5px; padding:3px 8px;">▶ Старт</button>
+            <button type="button" class="btn-sm-action" onclick="resetCodeTimer()" style="font-size:10.5px; padding:3px 7px;" title="Сбросить таймер на 20:00">↺</button>
+          </div>
+        </div>
+
+        <!-- ШАГ 1: Архитектура схемы ИИ-Кодера -->
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-body" style="width:100%; min-width:0;">
+            <div class="step-title">Настрой схему ИИ-Разработчика (~2 мин)</div>
+            <div class="step-text">
+              Чтобы нейросеть писала точный рабочий Python-код без «воды», настрой 4 блока на холсте:
+              <ul class="guide-list" style="margin-top:4px;">
+                <li><b>📝 Инструкция:</b> роль Python-разработчика (писать чистый код и учитывать крайние случаи).</li>
+                <li><b>📊 Формат Данных:</b> режим <code>Чистый код (Python / C++ / Web)</code>.</li>
+                <li><b>🔥 Креативность и Длина:</b> температура <code>≤ 0.3</code> (чтобы не было случайных опечаток).</li>
+                <li><b>🎯 Few-Shot (Примеры):</b> минимум 1 эталонный пример функции на Python.</li>
+              </ul>
             </div>
-            <p class="guide-desc">Сдали базовый экзамен? Научите своего бота решать реальные задачи по программированию на Python! Настройте архитектуру ИИ-кодера, выберите алгоритмическую задачу и проверьте, сможет ли модель написать 100% рабочий код без ошибок.</p>
-          </div>
-
-          <!-- ШАГ 1: Архитектура схемы -->
-          <div class="step-card">
-            <div class="step-num">1</div>
-            <div class="step-body">
-              <div class="step-title">Собери схему ИИ-Разработчика на холсте</div>
-              <div class="step-text">
-                Настрой на холсте специализированного бота по программированию:
-                <ul class="guide-list" style="margin-top:4px;">
-                  <li>В <b>📝 Инструкции</b> задай роль Python-разработчика (например: <i>«Ты опытный программист. Пиши чистый, оптимизированный и рабочий код на Python без лишней воды»</i>).</li>
-                  <li>Подключи <b>📊 Формат Данных</b> в режиме <code>Чистый код (Python / C++ / Web)</code>.</li>
-                  <li>Подключи <b>🔥 Креативность и Длина</b> с температурой <code>≤ 0.3</code> (низкая температура исключает опечатки в синтаксисе).</li>
-                  <li>Подключи <b>🎯 Few-Shot (Примеры)</b> и приведи эталонный пример функции с кодом.</li>
-                </ul>
-              </div>
+            <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+              <button type="button" class="btn-verify-task" id="btnVerifyCodeSchema" onclick="verifyCodeSchema()">1️⃣ Проверить схему ИИ-Кодера</button>
+              <div class="verify-results-box" id="verifyBox_code_schema"></div>
+              <button type="button" class="btn-restore-task" id="btnRestore_code" onclick="restoreTaskSnapshot('code')" style="display:none;">📂 Загрузить сохранённую схему ИИ-Кодера на холст</button>
             </div>
           </div>
+        </div>
 
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <button type="button" class="btn-verify-task" id="btnVerifyCodeSchema" onclick="verifyCodeSchema()">1️⃣ Проверить схему ИИ-Кодера</button>
-            <div class="verify-results-box" id="verifyBox_code_schema"></div>
-            <button type="button" class="btn-restore-task" id="btnRestore_code" onclick="restoreTaskSnapshot('code')" style="display:none;">📂 Загрузить сохранённую схему ИИ-Кодера на холст</button>
-          </div>
+        <!-- ШАГ 2: 6 задач марафона (~18 мин) -->
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-body" style="width:100%; min-width:0;">
+            <div class="step-title">Выбери и реши 6 задач на Python (~18 мин)</div>
+            <div class="step-text" style="margin-bottom:8px;">
+              Идите по порядку от разминки к проектным задачам. Если тест не прошёл — посмотрите, где ошиблась модель, и доработайте <b>Инструкцию</b> или <b>Few-Shot</b> на холсте!
+            </div>
 
-          <!-- ШАГ 2: Выбор задачи и автопроверка ИИ -->
-          <div class="step-card" style="margin-top:8px;">
-            <div class="step-num">2</div>
-            <div class="step-body" style="width:100%; min-width:0;">
-              <div class="step-title">Автоматический тест решения через ИИ</div>
-              <div class="step-text" style="margin-bottom:6px;">
-                Выбери задачу на Python. Платформа отправит ТЗ твоему боту, извлечёт сгенерированный код и автоматически запустит 4 unit-теста:
+            <div class="code-track-grid" id="codeTaskCardsGrid"></div>
+
+            <div class="guide-card" id="activeCodeTaskCard" style="margin-top:8px; padding:10px;">
+              <div class="guide-card-head">
+                <span class="guide-card-title" id="activeCodeTaskTitle" style="font-size:12px;">1. Сумма положительных чисел</span>
+                <span class="guide-badge" id="activeCodeTaskBadge">Лёгкая • ~2 мин</span>
               </div>
+              <p class="guide-desc" id="activeCodeTaskDesc" style="margin-top:4px;"></p>
+              <div id="activeCodeTaskExamples" style="font-size:10.5px; color:var(--text-dim); background:var(--bg-node); border:1px solid var(--border-subtle); border-radius:5px; padding:6px 8px; margin-top:6px; font-family:ui-monospace, monospace; line-height:1.45;"></div>
+              <div class="step-why" id="activeCodeTaskHint" style="margin-top:6px;"></div>
 
-              <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
-                <label style="font-size:11px; font-weight:600; color:var(--text);">Выберите алгоритмическую задачу:</label>
-                <select id="codeTaskSelector" class="control-select" style="font-size:11px;" onchange="onCodeTaskChange()">
-                  <option value="sum_pos">🔢 Задача 1: Сумма положительных чисел solve(numbers)</option>
-                  <option value="vowels">🔤 Задача 2: Подсчет гласных букв count_vowels(text)</option>
-                  <option value="palindrome">🔄 Задача 3: Проверка палиндрома is_palindrome(s)</option>
-                </select>
-                <div id="codeTaskDescBox" style="font-size:11px; color:var(--text-dim); background:var(--bg-deep); border:1px solid var(--border-subtle); border-radius:5px; padding:6px 8px; line-height:1.4;">
-                  Функция <code>solve(numbers)</code> принимает список чисел и возвращает сумму всех положительных элементов (&gt; 0). Если таких чисел нет, возвращает 0.
-                </div>
-              </div>
-
-              <button type="button" class="btn-verify-task" id="btnRunCodeTaskAI" style="width:100%; padding:8px 12px; font-size:11.5px;" onclick="runCodeTaskAI()">🤖 Сгенерировать решение через ИИ и запустить тесты</button>
+              <button type="button" class="btn-verify-task" id="btnRunCodeTaskAI" style="width:100%; padding:8px 12px; font-size:11.5px; margin-top:8px;" onclick="runCodeTaskAI()">🤖 Решить задачу через ИИ и запустить тесты</button>
               <div class="verify-results-box" id="verifyBox_code_ai" style="margin-top:8px;"></div>
             </div>
           </div>
+        </div>
 
-          <!-- ШАГ 3: Решение любой своей задачи с помощью созданного ИИ -->
-          <div class="step-card" style="margin-top:8px;">
-            <div class="step-num">3</div>
-            <div class="step-body" style="width:100%; min-width:0;">
-              <div class="step-title">Реши любую свою задачу с помощью ИИ</div>
-              <div class="step-text" style="margin-bottom:6px;">
-                Введи условие любой задачи по информатике или программированию, и твой настроенный бот напишет готовый код:
-              </div>
-              <textarea id="customTaskInput" class="control-textarea" style="min-height:55px; font-size:11px;" placeholder="Например: Напиши функцию для нахождения факториала числа N рекурсией..."></textarea>
-              <button type="button" class="btn-sm-action" style="margin-top:6px; width:100%; padding:6px 10px; font-size:11px; font-weight:bold;" onclick="solveCustomTaskAI()">⚡ Спросить моего ИИ-помощника</button>
-              <pre id="customTaskResultPre" class="python-snippet-pre" style="display:none; margin-top:8px;"></pre>
+        <!-- ШАГ 3: Своя задача -->
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-body" style="width:100%; min-width:0;">
+            <div class="step-title">Песочница: своя задача для ИИ</div>
+            <div class="step-text" style="margin-bottom:6px;">
+              Введи условие любой своей задачи по информатике или программированию — твой настроенный бот напишет решение:
             </div>
+            <textarea id="customTaskInput" class="control-textarea" style="min-height:55px; font-size:11px;" placeholder="Например: Напиши функцию на Python, которая находит второе по величине число в списке..."></textarea>
+            <button type="button" class="btn-sm-action" style="margin-top:6px; width:100%; padding:6px 10px; font-size:11px; font-weight:bold;" onclick="solveCustomTaskAI()">⚡ Спросить моего ИИ-помощника</button>
+            <pre id="customTaskResultPre" class="python-snippet-pre" style="display:none; margin-top:8px;"></pre>
           </div>
+        </div>
 
-          <!-- ШАГ 4: Готовый Python скрипт для запуска в IDLE/Thonny -->
-          <div class="step-card" style="margin-top:8px;">
-            <div class="step-num">4</div>
-            <div class="step-body" style="width:100%; min-width:0;">
-              <div class="step-title">Запуск бота в школьном Python (IDLE / Thonny)</div>
-              <div class="step-text" style="margin-bottom:6px;">
-                Опубликуй бота в Галерею (кнопка на Терминале), выбери его ниже и скопируй скрипт для запуска в консоли Python на своём компьютере:
-              </div>
-              <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
-                <select id="pythonBotSelect" class="control-select" style="flex:1; font-size:11px;" onchange="updatePythonSnippet()">
-                  <option value="">-- Опубликуйте бота в Галерею --</option>
-                </select>
-                <button type="button" class="btn-sm-action" onclick="copyPythonSnippet()" style="white-space:nowrap; font-size:11px;">📋 Копировать код</button>
-              </div>
-              <pre id="pythonSnippetBox" class="python-snippet-pre"></pre>
+        <!-- ШАГ 4: Готовый Python скрипт для запуска в IDLE/Thonny -->
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <div class="step-body" style="width:100%; min-width:0;">
+            <div class="step-title">Интеграция: запуск бота из Python (IDLE / Thonny)</div>
+            <div class="step-text" style="margin-bottom:6px;">
+              Опубликуй бота в Галерею (кнопка на Терминале), выбери его ниже и скопируй готовый Python-клиент к нашему REST API:
             </div>
+            <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
+              <select id="pythonBotSelect" class="control-select" style="flex:1; font-size:11px;" onchange="updatePythonSnippet()">
+                <option value="">-- Опубликуйте бота в Галерею --</option>
+              </select>
+              <button type="button" class="btn-sm-action" onclick="copyPythonSnippet()" style="white-space:nowrap; font-size:11px;">📋 Копировать код</button>
+            </div>
+            <pre id="pythonSnippetBox" class="python-snippet-pre"></pre>
           </div>
         </div>
 
