@@ -2079,6 +2079,165 @@
       grid-template-rows: 100%;
     }
 
+    /* VIEW 3: Dedicated Code Practice IDE */
+    #codePracticeView {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      max-height: 100%;
+      overflow: hidden;
+      background: var(--chat-bg);
+    }
+
+    #codePracticeView.active {
+      display: grid !important;
+      grid-template-columns: 340px 1fr;
+      grid-template-rows: 100%;
+    }
+
+    .code-sidebar {
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 12px;
+      gap: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-node) var(--bg-panel);
+    }
+
+    .code-workspace {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      background: var(--chat-bg);
+    }
+
+    .code-workspace-head {
+      padding: 10px 16px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .code-workspace-body {
+      flex: 1 1 0%;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.9fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    @media (max-width: 1080px) {
+      #codePracticeView.active {
+        grid-template-columns: 280px 1fr;
+      }
+      .code-workspace-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 780px) {
+      #codePracticeView.active {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+      .code-sidebar {
+        max-height: 240px;
+        border-right: none;
+        border-bottom: 1px solid var(--border-subtle);
+      }
+    }
+
+    .code-editor-card {
+      background: var(--bg-node);
+      border: 1px solid var(--border-node);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .code-editor-toolbar {
+      padding: 8px 12px;
+      background: var(--bg-node-header);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .code-ide-editor {
+      width: 100%;
+      min-height: 260px;
+      background: #0f172a;
+      color: #e2e8f0;
+      border: none;
+      padding: 12px 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      resize: vertical;
+      tab-size: 4;
+      user-select: text;
+      outline: none;
+    }
+
+    .code-ide-editor::placeholder {
+      color: #64748b;
+    }
+
+    .code-ide-actions {
+      padding: 10px 12px;
+      background: var(--bg-deep);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .code-results-pane {
+      background: var(--bg-node);
+      border: 1px solid var(--border-node);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .code-stdout-pre {
+      background: #0f172a;
+      color: #cbd5e1;
+      border: 1px solid var(--border-subtle);
+      border-radius: 5px;
+      padding: 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      white-space: pre-wrap;
+      margin: 0;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+
     .gallery-pane {
       background: var(--bg-panel);
       border-right: 1px solid var(--border-subtle);
@@ -3018,8 +3177,8 @@
     }
 
     .guide-tabs {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 4px;
       padding: 8px 12px;
       background: var(--bg-deep);
@@ -3028,13 +3187,12 @@
     }
 
     @media (max-width: 440px) {
-      .guide-tab-btn {
-        flex: 1 1 calc(50% - 4px);
+      .guide-tabs {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
     .guide-tab-btn {
-      flex: 1 1 calc(25% - 4px);
       background: transparent;
       border: 1px solid transparent;
       color: var(--text-dim);
@@ -3150,8 +3308,8 @@
     }
 
     .code-track-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      display: flex;
+      flex-direction: column;
       gap: 6px;
     }
 
@@ -3837,6 +3995,9 @@
       <button class="nav-btn" id="tabBtnChat" onclick="switchTab('chat')">
         Чат и Галерея <span id="botsBadge" style="background:var(--c-dark); color:var(--c-light); padding:1px 5px; border-radius:8px; font-size:10px;">0</span>
       </button>
+      <button class="nav-btn" id="tabBtnCode" onclick="switchTab('code')">
+        💻 Код-практикум <span id="codeTabBadge" style="background:var(--c-dark); color:var(--c-light); padding:1px 5px; border-radius:8px; font-size:10px;">0/6</span>
+      </button>
     </div>
 
     <div class="top-actions">
@@ -3846,10 +4007,6 @@
 
       <button type="button" class="btn-guide-header" id="btnProjectGuide" onclick="toggleProjectGuide()" title="База знаний проекта и специальности 09.02.13">
         <span>📖</span> База проекта
-      </button>
-
-      <button type="button" class="btn-code-header" id="btnCodePractice" onclick="openCodePracticeTab()" title="Отдельный практикум: 6 задач по программированию с ИИ (~20 мин)">
-        <span>💻</span> Код-задания
       </button>
 
       <button type="button" class="btn-theme-toggle" id="btnThemeToggle" onclick="toggleTheme()" title="Переключить тему оформления">
@@ -4065,15 +4222,11 @@
   <div class="view-panel" id="chatGalleryView">
     <div class="gallery-pane">
       <div class="gallery-head">
-        <span class="gallery-title">Галерея ботов</span>
+        <span class="gallery-title">👤 Мои боты</span>
         <div style="display:flex; gap:6px;">
           <button type="button" class="btn-sm-action" onclick="createNewBotOnCanvas()" title="Собрать нового бота с нуля на схеме" style="color:#0284c7; font-weight:700;">➕ Новый</button>
           <button class="btn-sm-action" onclick="fetchBotsList()" title="Обновить список ботов">↻</button>
         </div>
-      </div>
-      <div class="gallery-filter-bar">
-        <button type="button" class="gallery-filter-pill active" id="filterPillMy" onclick="setGalleryFilter('my')">👤 Мои боты</button>
-        <button type="button" class="gallery-filter-pill" id="filterPillAll" onclick="setGalleryFilter('all')">🌐 Все</button>
       </div>
       <div class="gallery-list" id="galleryList"></div>
     </div>
@@ -4116,10 +4269,162 @@
       </div>
 
       <div class="chat-input-bar">
-        <textarea id="chatInput" class="input-field" placeholder="Напишите сообщение... (Enter — отправить)" rows="1" onkeydown="onChatInputKeyDown(event)"></textarea>
+        <textarea id="chatInput" class="input-field" autocomplete="off" placeholder="Напишите сообщение... (Enter — отправить)" rows="1" onkeydown="onChatInputKeyDown(event)"></textarea>
         <button class="btn-send" id="btnSend" onclick="sendUserMessage()">➤</button>
       </div>
     </div>
+  </div>
+
+  <!-- VIEW 3: Dedicated Code Practice IDE (~20 min, 6 Python Tasks + Real Editor) -->
+  <div class="view-panel" id="codePracticeView">
+    <!-- Left Sidebar: Progress, Timer, Schema Check & Task List -->
+    <aside class="code-sidebar">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-size:13px; font-weight:800; color:var(--text);">💻 Код-практикум</div>
+          <div style="font-size:10.5px; color:var(--text-dim);">Python + ИИ-помощник • ~20 мин</div>
+        </div>
+        <button type="button" class="btn-sm-action" onclick="resetCodeProgress()" style="font-size:10px; padding:3px 7px;" title="Сбросить прогресс и код по задачам">↺ Сбросить</button>
+      </div>
+
+      <div class="audit-bar-box" style="padding:8px 10px;">
+        <div class="audit-bar-header" style="font-size:11px;">
+          <span>🧪 Прогресс задач</span>
+          <span id="codeProgressCounter" style="color:var(--wire-char);">0 / 6</span>
+        </div>
+        <div class="audit-meter">
+          <div class="audit-fill" id="codeProgressBar"></div>
+        </div>
+        <div id="codeProgressHint" style="font-size:10px; color:var(--text-dim); margin-top:4px;">Решите все 6 задач</div>
+      </div>
+
+      <div class="code-timer-bar">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span>⏱️ Таймер:</span>
+          <span class="code-timer-clock" id="codeTimerClock">20:00</span>
+        </div>
+        <div style="display:flex; gap:4px;">
+          <button type="button" class="btn-sm-action" id="btnCodeTimerToggle" onclick="toggleCodeTimer()" style="font-size:10.5px; padding:3px 8px;">▶ Старт</button>
+          <button type="button" class="btn-sm-action" onclick="resetCodeTimer()" style="font-size:10.5px; padding:3px 7px;" title="Сбросить таймер на 20:00">↺</button>
+        </div>
+      </div>
+
+      <div class="guide-card" style="padding:9px 10px;">
+        <div class="guide-card-head">
+          <span class="guide-card-title" style="font-size:11.5px;">1️⃣ Схема ИИ-Кодера на холсте</span>
+        </div>
+        <p class="guide-desc" style="font-size:10.5px; margin-top:3px;">
+          Для генерации через ИИ: <b>Формат → Чистый код</b>, <b>Temp ≤ 0.3</b>, <b>Few-Shot</b> с примером на Python.
+        </p>
+        <div style="display:flex; flex-direction:column; gap:5px; margin-top:6px;">
+          <button type="button" class="btn-verify-task" id="btnVerifyCodeSchema" onclick="verifyCodeSchema()" style="padding:6px 8px; font-size:11px;">Проверить схему нод</button>
+          <div class="verify-results-box" id="verifyBox_code_schema"></div>
+          <button type="button" class="btn-restore-task" id="btnRestore_code" onclick="restoreTaskSnapshot('code')" style="display:none; font-size:10.5px;">📂 Загрузить сохранённую схему</button>
+        </div>
+      </div>
+
+      <div style="font-size:11px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.4px;">Задачи марафона</div>
+      <div class="code-track-grid" id="codeTaskCardsGrid"></div>
+
+      <button type="button" class="code-task-card" id="codeNavSandboxBtn" onclick="switchCodeWorkspaceMode('sandbox')" style="margin-top:2px;">
+        <div class="code-task-card-top">
+          <span class="code-diff-pill easy">Дополнительно</span>
+          <span>API + Чат</span>
+        </div>
+        <div class="code-task-card-title">⚡ Своя задача и Python API</div>
+      </button>
+    </aside>
+
+    <!-- Right Workspace: Task Brief + Real Python Editor + Unit Tests Console -->
+    <main class="code-workspace">
+      <div class="code-workspace-head">
+        <div style="min-width:0;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span id="activeCodeTaskTitle" style="font-size:14.5px; font-weight:700; color:var(--text);">1. Сумма положительных чисел</span>
+            <span class="guide-badge" id="activeCodeTaskBadge">Лёгкая • ~2 мин</span>
+          </div>
+          <div id="codeWorkspaceSubtitle" style="font-size:11px; color:var(--text-dim); margin-top:2px;">Пишите код вручную в редакторе или сгенерируйте решение своим ИИ-ботом</div>
+        </div>
+        <div style="display:flex; gap:6px; flex-shrink:0;">
+          <button type="button" class="btn-sm-action" id="btnCodeModeTasks" onclick="switchCodeWorkspaceMode('tasks')" style="font-weight:700;">📝 Редактор и тесты</button>
+          <button type="button" class="btn-sm-action" id="btnCodeModeSandbox" onclick="switchCodeWorkspaceMode('sandbox')">⚡ Своя задача / API</button>
+        </div>
+      </div>
+
+      <!-- MODE A: Task Brief + Python Code Editor + Unit Tests -->
+      <div class="code-workspace-body" id="codeWorkspaceTasksPane">
+        <div style="display:flex; flex-direction:column; gap:12px; min-width:0;">
+          <div class="guide-card" style="padding:12px 14px;">
+            <div class="guide-card-head">
+              <span class="guide-card-title" style="font-size:12.5px;">📋 Условие задачи</span>
+            </div>
+            <p class="guide-desc" id="activeCodeTaskDesc" style="margin-top:4px;"></p>
+            <div id="activeCodeTaskExamples" style="font-size:11.5px; color:var(--text); background:var(--bg-node); border:1px solid var(--border-subtle); border-radius:6px; padding:8px 10px; margin-top:8px; font-family:ui-monospace, monospace; white-space:pre-wrap; line-height:1.5;"></div>
+            <div class="step-why" id="activeCodeTaskHint" style="margin-top:8px;"></div>
+          </div>
+
+          <!-- Dedicated Python Code Editor -->
+          <div class="code-editor-card">
+            <div class="code-editor-toolbar">
+              <span style="font-size:12px; font-weight:700; color:var(--text);">📝 Редактор кода (Python)</span>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button type="button" class="btn-sm-action" onclick="insertCodeStub()" title="Вставить заготовку функции">↺ Шаблон функции</button>
+                <button type="button" class="btn-sm-action" onclick="copyEditorCode()" title="Копировать код из редактора">📋 Копировать</button>
+              </div>
+            </div>
+            <textarea id="codeEditorTextarea" class="code-ide-editor" spellcheck="false" autocomplete="off" placeholder="# Напишите функцию на Python здесь или нажмите «Сгенерировать через ИИ»..." oninput="onCodeEditorInput()" onkeydown="onCodeEditorKeyDown(event)"></textarea>
+            <div class="code-ide-actions">
+              <button type="button" class="btn-verify-task" id="btnRunEditorTests" onclick="runEditorCodeTests()" style="flex:1; min-width:190px; padding:8px 12px; font-size:12px;">▶ Запустить код и unit-тесты</button>
+              <button type="button" class="btn-verify-task secondary" id="btnRunCodeTaskAI" onclick="runCodeTaskAI()" style="flex:1; min-width:210px; padding:8px 12px; font-size:12px;">🤖 Сгенерировать через ИИ и проверить</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Unit Tests & Output Console -->
+        <div class="code-results-pane">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:12.5px; font-weight:700; color:var(--text);">🧪 Консоль и unit-тесты</span>
+            <span id="codeRunModeBadge" style="font-size:10px; color:var(--text-dim);">Готово к запуску</span>
+          </div>
+          <div class="verify-results-box active" id="verifyBox_code_ai" style="margin-top:0;">
+            <div style="font-size:11.5px; color:var(--text-dim); padding:10px; background:var(--bg-deep); border:1px dashed var(--border-subtle); border-radius:6px; line-height:1.5;">
+              Напишите решение в редакторе слева и нажмите <b>«▶ Запустить код и unit-тесты»</b> или сгенерируйте код вашим ИИ-ботом. Здесь появится вывод <code>print()</code> и статус каждого теста.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODE B: Custom AI Sandbox + IDLE/Thonny API Client -->
+      <div class="code-workspace-body" id="codeWorkspaceSandboxPane" style="display:none; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));">
+        <div class="guide-card" style="padding:14px;">
+          <div class="guide-card-head">
+            <span class="guide-card-title">⚡ Своя задача для ИИ-помощника</span>
+          </div>
+          <p class="guide-desc" style="margin-top:4px; margin-bottom:8px;">
+            Введите условие любой задачи по информатике или программированию — ваш настроенный бот со схемы нод напишет решение:
+          </p>
+          <textarea id="customTaskInput" class="control-textarea" style="min-height:95px; font-size:12px;" placeholder="Например: Напиши функцию на Python, которая находит второе по величине число в списке..."></textarea>
+          <button type="button" class="btn-verify-task" style="margin-top:8px; width:100%; padding:8px 12px; font-size:12px;" onclick="solveCustomTaskAI()">⚡ Спросить моего ИИ-помощника</button>
+          <pre id="customTaskResultPre" class="python-snippet-pre" style="display:none; margin-top:10px; max-height:320px;"></pre>
+        </div>
+
+        <div class="guide-card" style="padding:14px;">
+          <div class="guide-card-head">
+            <span class="guide-card-title">🐍 Запуск бота в школьном Python (IDLE / Thonny)</span>
+          </div>
+          <p class="guide-desc" style="margin-top:4px; margin-bottom:8px;">
+            Запустите бота в «Мои боты», выберите его ниже и скопируйте готовый Python-клиент к REST API:
+          </p>
+          <div style="display:flex; gap:6px; align-items:center; margin-bottom:8px;">
+            <select id="pythonBotSelect" class="control-select" style="flex:1; font-size:12px;" onchange="updatePythonSnippet()">
+              <option value="">-- Опубликуйте своего бота --</option>
+            </select>
+            <button type="button" class="btn-sm-action" onclick="copyPythonSnippet()" style="white-space:nowrap; font-size:11.5px;">📋 Копировать код</button>
+          </div>
+          <pre id="pythonSnippetBox" class="python-snippet-pre" style="max-height:360px;"></pre>
+        </div>
+      </div>
+    </main>
   </div>
 
   <!-- Onboarding Tour Elements -->
@@ -4325,7 +4630,7 @@
         badge: "Шаг 10 из 12 • Чат и Галерея",
         icon: "💬",
         title: "Работа во вкладке «Чат и Галерея»",
-        body: "Во втором разделе собраны все твои боты и полноэкранный чат:<ul><li><b>Фильтры:</b> переключай список между <i>«👤 Мои боты»</i>, <i>«🏛️ КС54»</i> и <i>«🌐 Все»</i>.</li><li><b>Управление в чате:</b> кнопка <b>«🧩 Настроить схему нод»</b> возвращает бота на холст, <b>«🔄 Новый диалог»</b> очищает переписку, <b>«🔗 Ссылка»</b> даёт прямую ссылку.</li><li><b>Удобство:</b> текст и код свободно выделяются, есть кнопка <b>«📋 Скопировать ответ»</b> и плавающая кнопка <b>«↓ Вниз»</b> при прокрутке вверх.</li></ul>",
+        body: "Во втором разделе собраны только твои боты и полноэкранный чат:<ul><li><b>Приватность:</b> чужие боты и переписки скрыты — каждый работает только со своими проектами.</li><li><b>Управление в чате:</b> кнопка <b>«🧩 Настроить схему нод»</b> возвращает бота на холст, <b>«🔄 Новый диалог»</b> очищает переписку, <b>«🔗 Ссылка»</b> даёт прямую ссылку.</li><li><b>Удобство:</b> текст и код свободно выделяются, есть кнопка <b>«📋 Скопировать ответ»</b> и плавающая кнопка <b>«↓ Вниз»</b> при прокрутке вверх.</li></ul>",
         tip: "💡 В чате также отображаются быстрые кнопки-подсказки, которые ты задал в блоке «💬 Приветствие и Кнопки»."
       },
       {
@@ -4746,6 +5051,26 @@
     let currentBotId = null;
     let chatHistories = {};
     let isStreaming = false;
+    let activeChatAbortController = null;
+
+    function clearChatInputField() {
+      const inp = document.getElementById('chatInput');
+      if (inp) inp.value = '';
+    }
+
+    function cancelActiveChatStream() {
+      if (activeChatAbortController) {
+        try { activeChatAbortController.abort(); } catch (e) {}
+        activeChatAbortController = null;
+      }
+      isStreaming = false;
+      const typing = document.getElementById('typingIndicator');
+      const btnSend = document.getElementById('btnSend');
+      const inp = document.getElementById('chatInput');
+      if (typing) typing.style.display = 'none';
+      if (btnSend) btnSend.disabled = false;
+      if (inp) inp.disabled = false;
+    }
 
     // DOM
     const viewport = document.getElementById('viewport');
@@ -4801,7 +5126,7 @@
     function getDefaultCodeTasksMap() {
       const m = {};
       CODE_TASK_IDS.forEach(id => {
-        m[id] = { passed: false, aiResult: null };
+        m[id] = { passed: false, aiResult: null, editorCode: '' };
       });
       return m;
     }
@@ -5141,21 +5466,12 @@
 
     function openCodePracticeTab() {
       const panel = document.getElementById('projectGuidePanel');
-      if (!panel) return;
-      const isOpen = panel.classList.contains('active');
-      const isAlreadyCode = taskProgressState.activeGuideTab === 'code' &&
-        document.getElementById('guideTab_code')?.classList.contains('active');
-      if (isOpen && isAlreadyCode) {
-        panel.classList.remove('active');
-        return;
-      }
-      if (!isOpen) {
-        panel.classList.add('active');
-      }
-      switchGuideTab('code');
+      if (panel) panel.classList.remove('active');
+      switchTab('code');
     }
 
     function switchGuideTab(tabName, skipSave = false) {
+      if (tabName === 'code') tabName = 'about';
       const tabs = document.querySelectorAll('.guide-tab-btn');
       const panels = document.querySelectorAll('.guide-tab-panel');
       tabs.forEach(t => t.classList.remove('active'));
@@ -5170,10 +5486,6 @@
           btn.classList.add('active');
         }
       });
-
-      if (tabName === 'code' && typeof refreshPythonBotOptions === 'function') {
-        refreshPythonBotOptions();
-      }
 
       if (!skipSave) {
         taskProgressState.activeGuideTab = tabName;
@@ -5702,7 +6014,7 @@
       }
     }
 
-    // --- Code Practice Track (~20 min, 6 Python AI Coding Challenges) ---
+    // --- Code Practice IDE (~20 min, 6 Python Coding Challenges + Editor) ---
     const CODE_TASKS_META = [
       {
         id: 'sum_pos',
@@ -5714,7 +6026,8 @@
         minutes: 2,
         desc: 'Функция <code>solve(numbers)</code> принимает список чисел и возвращает сумму всех элементов строго больше нуля (<code>&gt; 0</code>). Если положительных нет — возвращает <code>0</code>.',
         examples: 'solve([1, -2, 3, 4, -5]) -> 8\nsolve([-1, -2, -3]) -> 0\nsolve([]) -> 0',
-        hint: 'Разминка: проверьте, что бот выдаёт чистый Python-код без приветствий и лишних рассуждений.'
+        hint: 'Разминка: проверьте, что бот выдаёт чистый Python-код без приветствий и лишних рассуждений.',
+        stub: 'def solve(numbers: list) -> int:\n    # Верните сумму всех чисел > 0\n    pass\n'
       },
       {
         id: 'vowels',
@@ -5726,7 +6039,8 @@
         minutes: 3,
         desc: 'Функция <code>count_vowels(text)</code> считает количество русских гласных букв (<code>а, е, ё, и, о, у, ы, э, ю, я</code>) без учёта регистра.',
         examples: 'count_vowels("Привет") -> 2\ncount_vowels("Ёжик в тумане") -> 5\ncount_vowels("КОЛЛЕДЖ 54") -> 2',
-        hint: 'Ловушка для ИИ: маленькие модели часто забывают букву «ё» или заглавные буквы. Упомяните внимательность к деталям в Инструкции.'
+        hint: 'Ловушка для ИИ: маленькие модели часто забывают букву «ё» или заглавные буквы. Упомяните внимательность к деталям в Инструкции.',
+        stub: 'def count_vowels(text: str) -> int:\n    # Гласные: а, е, ё, и, о, у, ы, э, ю, я (без учёта регистра)\n    pass\n'
       },
       {
         id: 'palindrome',
@@ -5738,7 +6052,8 @@
         minutes: 3,
         desc: 'Функция <code>is_palindrome(s)</code> возвращает <code>True</code>, если строка читается одинаково слева направо и справа налево, игнорируя пробелы, знаки препинания (<code>.,!?:;-</code>) и регистр.',
         examples: 'is_palindrome("А роза упала на лапу Азора!") -> True\nis_palindrome("питон") -> False\nis_palindrome("12 3 21") -> True',
-        hint: 'Нужно очистить строку от пробелов и пунктуации (например, через <code>isalnum()</code>) перед переворотом <code>[::-1]</code>.'
+        hint: 'Нужно очистить строку от пробелов и пунктуации (например, через <code>isalnum()</code>) перед переворотом <code>[::-1]</code>.',
+        stub: 'def is_palindrome(s: str) -> bool:\n    # Оставьте только буквы/цифры в нижнем регистре и проверьте срез [::-1]\n    pass\n'
       },
       {
         id: 'password_check',
@@ -5750,7 +6065,8 @@
         minutes: 4,
         desc: 'Функция <code>check_password(pwd)</code> возвращает <code>True</code>, только если длина <code>&gt;= 8</code> символов и есть минимум 1 заглавная буква, 1 строчная буква и 1 цифра.',
         examples: 'check_password("Qwerty12") -> True\ncheck_password("qwerty12") -> False\ncheck_password("Ab1") -> False',
-        hint: 'Если модель путается в регулярных выражениях, добавьте в Few-Shot пример с проверкой символов через <code>any(c.isupper() ...)</code>.'
+        hint: 'Если модель путается в регулярных выражениях, добавьте в Few-Shot пример с проверкой символов через <code>any(c.isupper() ...)</code>.',
+        stub: 'def check_password(pwd: str) -> bool:\n    # Длина >= 8, есть хотя бы 1 заглавная, 1 строчная и 1 цифра\n    pass\n'
       },
       {
         id: 'parse_orders',
@@ -5762,7 +6078,8 @@
         minutes: 4,
         desc: 'Функция <code>calc_revenue(logs)</code> получает список строк вида <code>"Заказ #12: 450 руб"</code>, <code>"Отмена: 200 руб"</code>. Нужно сложить суммы только строк, начинающихся с <code>"Заказ"</code> (взять сумму заказа, а не его номер #12!).',
         examples: 'calc_revenue(["Заказ #1: 500 руб", "Отмена: 200 руб", "Заказ #2: 300 руб"]) -> 800\ncalc_revenue(["Ошибка чтения"]) -> 0',
-        hint: 'Частая ошибка ИИ — сложить номер заказа #1 вместо цены 500! В системном промпте научите бота учитывать формат входных данных.'
+        hint: 'Частая ошибка ИИ — сложить номер заказа #1 вместо цены 500! В системном промпте научите бота учитывать формат входных данных.',
+        stub: 'def calc_revenue(logs: list) -> int:\n    # Учитывайте только строки, начинающиеся с "Заказ"\n    pass\n'
       },
       {
         id: 'rate_limiter',
@@ -5774,13 +6091,50 @@
         minutes: 4,
         desc: 'Функция <code>filter_spam(messages, max_len)</code> обрезает пробелы по краям (<code>.strip()</code>), убирает пустые строки и строки длиннее <code>max_len</code>, а также удаляет повторяющиеся <b>подряд</b> сообщения (без учёта регистра).',
         examples: 'filter_spam(["Привет", "привет", "Ок", "   ", "Очень длинно"], 10) -> ["Привет", "Ок"]\nfilter_spam(["a", "b", "a"], 5) -> ["a", "b", "a"]',
-        hint: 'Важно сохранять порядок и удалять только <b>подряд идущие</b> повторы, а не все дубликаты в списке!'
+        hint: 'Важно сохранять порядок и удалять только <b>подряд идущие</b> повторы, а не все дубликаты в списке!',
+        stub: 'def filter_spam(messages: list, max_len: int) -> list:\n    # Обрежьте пробелы, проверьте max_len и удалите повторы подряд\n    pass\n'
       }
     ];
 
     let activeCodeTaskId = 'sum_pos';
+    let codeWorkspaceMode = 'tasks';
     let codeTimerSeconds = 20 * 60;
     let codeTimerInterval = null;
+
+    function switchCodeWorkspaceMode(mode) {
+      codeWorkspaceMode = mode === 'sandbox' ? 'sandbox' : 'tasks';
+      const tasksPane = document.getElementById('codeWorkspaceTasksPane');
+      const sandboxPane = document.getElementById('codeWorkspaceSandboxPane');
+      const btnTasks = document.getElementById('btnCodeModeTasks');
+      const btnSandbox = document.getElementById('btnCodeModeSandbox');
+      const sandboxNav = document.getElementById('codeNavSandboxBtn');
+      const titleEl = document.getElementById('activeCodeTaskTitle');
+      const badgeEl = document.getElementById('activeCodeTaskBadge');
+      const subEl = document.getElementById('codeWorkspaceSubtitle');
+
+      if (codeWorkspaceMode === 'sandbox') {
+        if (tasksPane) tasksPane.style.display = 'none';
+        if (sandboxPane) sandboxPane.style.display = 'grid';
+        if (btnTasks) btnTasks.style.fontWeight = '500';
+        if (btnSandbox) btnSandbox.style.fontWeight = '700';
+        if (sandboxNav) sandboxNav.classList.add('active');
+        if (titleEl) titleEl.textContent = '⚡ Своя задача и Python API';
+        if (badgeEl) badgeEl.textContent = 'Песочница';
+        if (subEl) subEl.textContent = 'Решайте произвольные задачи через своего бота или подключите его в IDLE / Thonny';
+        if (typeof refreshPythonBotOptions === 'function') refreshPythonBotOptions();
+      } else {
+        if (tasksPane) tasksPane.style.display = 'grid';
+        if (sandboxPane) sandboxPane.style.display = 'none';
+        if (btnTasks) btnTasks.style.fontWeight = '700';
+        if (btnSandbox) btnSandbox.style.fontWeight = '500';
+        if (sandboxNav) sandboxNav.classList.remove('active');
+        if (subEl) subEl.textContent = 'Пишите код вручную в редакторе или сгенерируйте решение своим ИИ-ботом';
+        const meta = CODE_TASKS_META.find(t => t.id === activeCodeTaskId) || CODE_TASKS_META[0];
+        if (titleEl) titleEl.textContent = meta.title;
+        if (badgeEl) badgeEl.textContent = `${meta.diffLabel} • ~${meta.minutes} мин`;
+      }
+      renderCodeTaskCardsGrid();
+    }
 
     function formatTimerClock(sec) {
       const m = Math.floor(sec / 60);
@@ -5832,7 +6186,7 @@
       if (!grid) return;
       grid.innerHTML = CODE_TASKS_META.map(t => {
         const isPassed = Boolean(taskProgressState.codeTasks?.[t.id]?.passed);
-        const isActive = activeCodeTaskId === t.id;
+        const isActive = codeWorkspaceMode === 'tasks' && activeCodeTaskId === t.id;
         return `
           <button type="button" class="code-task-card ${isActive ? 'active' : ''} ${isPassed ? 'passed' : ''}" id="codeTaskCard_${t.id}" onclick="selectCodeTask('${t.id}')">
             <div class="code-task-card-top">
@@ -5853,13 +6207,15 @@
       const barEl = document.getElementById('codeProgressBar');
       const hintEl = document.getElementById('codeProgressHint');
       const restBtn = document.getElementById('btnRestore_code');
+      const navBadge = document.getElementById('codeTabBadge');
 
       if (counterEl) counterEl.textContent = `${passedCount} / ${total}`;
+      if (navBadge) navBadge.textContent = `${passedCount}/${total}`;
       if (barEl) barEl.style.width = `${Math.round((passedCount / total) * 100)}%`;
       if (hintEl) {
         hintEl.textContent = passedCount === total
           ? '🏆 Все 6 задач марафона пройдены!'
-          : (passedCount > 0 ? `Решено ${passedCount} из ${total} задач` : 'Решите все 6 задач с помощью ИИ');
+          : (passedCount > 0 ? `Решено ${passedCount} из ${total} задач` : 'Решите все 6 задач');
       }
       if (restBtn) {
         restBtn.style.display = taskProgressState.bonusCode?.snapshot ? 'inline-flex' : 'none';
@@ -5871,13 +6227,19 @@
       const meta = CODE_TASKS_META.find(t => t.id === taskId) || CODE_TASKS_META[0];
       activeCodeTaskId = meta.id;
 
+      if (codeWorkspaceMode !== 'tasks') {
+        switchCodeWorkspaceMode('tasks');
+      }
+
       const titleEl = document.getElementById('activeCodeTaskTitle');
       const badgeEl = document.getElementById('activeCodeTaskBadge');
       const descEl = document.getElementById('activeCodeTaskDesc');
       const exEl = document.getElementById('activeCodeTaskExamples');
       const hintEl = document.getElementById('activeCodeTaskHint');
+      const editor = document.getElementById('codeEditorTextarea');
       const runBtn = document.getElementById('btnRunCodeTaskAI');
       const resultBox = document.getElementById('verifyBox_code_ai');
+      const runModeBadge = document.getElementById('codeRunModeBadge');
 
       if (titleEl) titleEl.textContent = meta.title;
       if (badgeEl) badgeEl.textContent = `${meta.diffLabel} • ~${meta.minutes} мин`;
@@ -5885,16 +6247,28 @@
       if (exEl) exEl.innerText = meta.examples;
       if (hintEl) hintEl.innerHTML = `💡 <b>Подсказка AI-интегратору:</b> ${meta.hint}`;
       if (runBtn && !runBtn.disabled) {
-        runBtn.textContent = `🤖 Решить задачу ${meta.num}/6 через ИИ и запустить тесты`;
+        runBtn.textContent = `🤖 Сгенерировать через ИИ (${meta.num}/6) и проверить`;
       }
 
-      const savedResult = taskProgressState.codeTasks?.[meta.id]?.aiResult || null;
+      const savedTask = taskProgressState.codeTasks?.[meta.id] || {};
+      const savedResult = savedTask.aiResult || null;
+      const initialCode = savedTask.editorCode || savedResult?.extracted_code || meta.stub;
+      if (editor) {
+        editor.value = initialCode;
+      }
+
       if (resultBox) {
+        resultBox.classList.add('active');
         if (savedResult) {
           renderCodeTaskResultBox(resultBox, savedResult);
+          if (runModeBadge) runModeBadge.textContent = savedResult.passed ? 'Все тесты пройдены ✅' : 'Есть ошибки в тестах';
         } else {
-          resultBox.classList.remove('active');
-          resultBox.innerHTML = '';
+          if (runModeBadge) runModeBadge.textContent = 'Готово к запуску';
+          resultBox.innerHTML = `
+            <div style="font-size:11.5px; color:var(--text-dim); padding:10px; background:var(--bg-deep); border:1px dashed var(--border-subtle); border-radius:6px; line-height:1.5;">
+              Напишите решение в редакторе слева и нажмите <b>«▶ Запустить код и unit-тесты»</b> или сгенерируйте код вашим ИИ-ботом. Здесь появится вывод <code>print()</code> и статус каждого теста.
+            </div>
+          `;
         }
       }
 
@@ -5904,6 +6278,52 @@
         taskProgressState.activeCodeTaskId = meta.id;
         saveTaskProgress();
       }
+    }
+
+    function onCodeEditorInput() {
+      const editor = document.getElementById('codeEditorTextarea');
+      if (!editor) return;
+      if (!taskProgressState.codeTasks) taskProgressState.codeTasks = getDefaultCodeTasksMap();
+      if (!taskProgressState.codeTasks[activeCodeTaskId]) {
+        taskProgressState.codeTasks[activeCodeTaskId] = { passed: false, aiResult: null, editorCode: '' };
+      }
+      taskProgressState.codeTasks[activeCodeTaskId].editorCode = editor.value;
+      saveTaskProgress();
+    }
+
+    function onCodeEditorKeyDown(e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const ta = e.target;
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        ta.value = ta.value.substring(0, start) + '    ' + ta.value.substring(end);
+        ta.selectionStart = ta.selectionEnd = start + 4;
+        onCodeEditorInput();
+      }
+    }
+
+    function insertCodeStub() {
+      const meta = CODE_TASKS_META.find(t => t.id === activeCodeTaskId) || CODE_TASKS_META[0];
+      const editor = document.getElementById('codeEditorTextarea');
+      if (!editor) return;
+      if (editor.value.trim() && editor.value.trim() !== meta.stub.trim() && !confirm('Заменить текущий код в редакторе на шаблон функции?')) {
+        return;
+      }
+      editor.value = meta.stub;
+      onCodeEditorInput();
+      showToast('Шаблон функции вставлен', 'info');
+    }
+
+    function copyEditorCode() {
+      const editor = document.getElementById('codeEditorTextarea');
+      if (!editor || !editor.value.trim()) {
+        showToast('Редактор пуст', 'info');
+        return;
+      }
+      copyTextToClipboard(editor.value).then(() => {
+        showToast('Код скопирован в буфер обмена!', 'success');
+      }).catch(() => {});
     }
 
     function renderCodeTaskResultBox(box, res) {
@@ -5923,26 +6343,24 @@
           <span>${isPassed ? '🏆 Задача решена! Все unit-тесты пройдены!' : '⚠️ Код не прошёл все unit-тесты'}</span>
           <span>${passedCount} / ${totalCount}</span>
         </div>
-        <div class="ai-exam-box" style="margin-top:6px;">
-          <div class="ai-exam-q">${escapeHtml(res.title || 'Задача на Python')}</div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin:6px 0 2px 0;">
-            <span style="font-size:10.5px; font-weight:bold; color:var(--wire-char);">Сгенерированный Python-код:</span>
-            <button type="button" class="btn-sm-action" style="font-size:10px; padding:2px 6px;" onclick="copyCodeText(this)">📋 Копировать код</button>
+        ${res.stdout ? `
+          <div style="margin-top:6px;">
+            <div style="font-size:10.5px; font-weight:600; color:var(--text-dim); margin-bottom:3px;">Вывод консоли (print):</div>
+            <pre class="code-stdout-pre">${escapeHtml(res.stdout)}</pre>
           </div>
-          <pre class="python-snippet-pre" style="max-height:170px; margin-bottom:6px;">${escapeHtml(res.extracted_code || res.raw_answer || '')}</pre>
-          ${res.error && !isPassed ? `<div class="ai-exam-verdict fail" style="margin-bottom:6px;">${escapeHtml(res.error)}</div>` : ''}
-          <div style="font-size:10.5px; font-weight:600; color:var(--text-dim); margin-bottom:4px;">Результаты unit-тестов:</div>
-          <div style="display:flex; flex-direction:column; gap:3px;">
-            ${testsResults.map(t => `
-              <div class="verify-check-row ${t.passed ? 'ok' : 'fail'}" style="padding:4px 8px; font-size:10.5px;">
-                <span>${t.passed ? '✅' : '❌'}</span>
-                <div style="min-width:0; word-break:break-word;">
-                  <code>${escapeHtml(t.label)}</code>
-                  ${!t.passed && t.error ? `<div style="font-size:10px; opacity:0.85; margin-top:2px;">${escapeHtml(t.error)}</div>` : ''}
-                </div>
+        ` : ''}
+        ${res.error && !isPassed ? `<div class="ai-exam-verdict fail" style="margin-top:6px;">${escapeHtml(res.error)}</div>` : ''}
+        <div style="font-size:10.5px; font-weight:600; color:var(--text-dim); margin:8px 0 4px 0;">Результаты unit-тестов:</div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          ${testsResults.map(t => `
+            <div class="verify-check-row ${t.passed ? 'ok' : 'fail'}" style="padding:5px 8px; font-size:11px;">
+              <span>${t.passed ? '✅' : '❌'}</span>
+              <div style="min-width:0; word-break:break-word;">
+                <code>${escapeHtml(t.label)}</code>
+                ${!t.passed && t.error ? `<div style="font-size:10.5px; opacity:0.88; margin-top:2px;">${escapeHtml(t.error)}</div>` : ''}
               </div>
-            `).join('')}
-          </div>
+            </div>
+          `).join('')}
         </div>
       `;
     }
@@ -5989,10 +6407,75 @@
       return allSchemaOk;
     }
 
+    async function runEditorCodeTests() {
+      const editor = document.getElementById('codeEditorTextarea');
+      const btn = document.getElementById('btnRunEditorTests');
+      const box = document.getElementById('verifyBox_code_ai');
+      const runModeBadge = document.getElementById('codeRunModeBadge');
+      if (!editor || !box) return;
+
+      const code = editor.value;
+      const taskId = activeCodeTaskId || 'sum_pos';
+      const meta = CODE_TASKS_META.find(t => t.id === taskId) || CODE_TASKS_META[0];
+
+      if (!code.trim()) {
+        showToast('Редактор кода пуст. Напишите код или сгенерируйте его через ИИ.', 'info');
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Запуск unit-тестов...';
+      }
+      if (runModeBadge) runModeBadge.textContent = 'Проверка кода из редактора...';
+      box.classList.add('active');
+      box.innerHTML = `<div class="verify-summary warn"><span>🧪 Выполнение кода из редактора...</span><span>⏳</span></div>`;
+
+      try {
+        const res = await fetch('/api/run-code-task', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task_id: taskId, code })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        renderCodeTaskResultBox(box, data);
+
+        if (!taskProgressState.codeTasks) taskProgressState.codeTasks = getDefaultCodeTasksMap();
+        taskProgressState.codeTasks[taskId] = {
+          passed: Boolean(data.passed),
+          aiResult: data,
+          editorCode: code
+        };
+        if (!taskProgressState.bonusCode) taskProgressState.bonusCode = {};
+        taskProgressState.bonusCode.aiResult = data;
+        taskProgressState.bonusCode.passed = CODE_TASK_IDS.every(id => Boolean(taskProgressState.codeTasks[id]?.passed));
+
+        updateTasksProgressSummaryUI();
+        saveTaskProgress(true);
+
+        if (runModeBadge) runModeBadge.textContent = data.passed ? 'Решено (редактор) ✅' : 'Тесты не пройдены';
+        if (data.passed) {
+          const allDone = CODE_TASK_IDS.every(id => Boolean(taskProgressState.codeTasks[id]?.passed));
+          showToast(allDone ? '🏆 Все 6 задач код-практикума решены!' : `✅ Задача ${meta.num}/6 решена!`, 'success');
+        } else {
+          showToast(`Пройдено ${data.passed_count || 0} из ${data.total_count || 4} тестов`, 'error');
+        }
+      } catch (err) {
+        box.innerHTML = `<div class="verify-check-row fail"><span>❌</span><div>Ошибка связи с сервером: ${escapeHtml(err.message)}</div></div>`;
+        showToast('Ошибка при запуске кода: ' + err.message, 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '▶ Запустить код и unit-тесты';
+        }
+      }
+    }
+
     async function runCodeTaskAI() {
       const schemaOk = verifyCodeSchema(false);
       if (!schemaOk) {
-        showToast('Сначала исправьте красные пункты в схеме нод', 'info');
+        showToast('Сначала исправьте красные пункты в «Схема ИИ-Кодера» слева', 'info');
         return;
       }
       const arch = inspectCanvasArchitecture();
@@ -6000,12 +6483,15 @@
       const meta = CODE_TASKS_META.find(t => t.id === taskId) || CODE_TASKS_META[0];
       const btn = document.getElementById('btnRunCodeTaskAI');
       const box = document.getElementById('verifyBox_code_ai');
+      const editor = document.getElementById('codeEditorTextarea');
+      const runModeBadge = document.getElementById('codeRunModeBadge');
       if (!box) return;
 
       if (btn) {
         btn.disabled = true;
         btn.textContent = '⏳ ИИ пишет код и запускает тесты...';
       }
+      if (runModeBadge) runModeBadge.textContent = 'Генерация через ИИ...';
       box.classList.add('active');
       box.innerHTML = `<div class="verify-summary warn"><span>🧪 Генерация Python-кода и запуск unit-тестов...</span><span>⏳</span></div>`;
 
@@ -6022,12 +6508,17 @@
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
+
+        if (editor && data.extracted_code) {
+          editor.value = data.extracted_code;
+        }
         renderCodeTaskResultBox(box, data);
 
         if (!taskProgressState.codeTasks) taskProgressState.codeTasks = getDefaultCodeTasksMap();
         taskProgressState.codeTasks[taskId] = {
           passed: Boolean(data.passed),
-          aiResult: data
+          aiResult: data,
+          editorCode: data.extracted_code || (editor ? editor.value : '')
         };
         if (!taskProgressState.bonusCode) taskProgressState.bonusCode = {};
         taskProgressState.bonusCode.aiResult = data;
@@ -6037,15 +6528,16 @@
         updateTasksProgressSummaryUI();
         saveTaskProgress(true);
 
+        if (runModeBadge) runModeBadge.textContent = data.passed ? 'Решено (ИИ) ✅' : 'Можно доработать в редакторе';
         if (data.passed) {
           const allDone = CODE_TASK_IDS.every(id => Boolean(taskProgressState.codeTasks[id]?.passed));
           if (allDone) {
             showToast('🏆 Поздравляем! Все 6 задач код-практикума решены!', 'success');
           } else {
-            showToast(`✅ Задача ${meta.num}/6 решена! Можно переходить к следующей.`, 'success');
+            showToast(`✅ Задача ${meta.num}/6 решена! Код загружен в редактор.`, 'success');
           }
         } else {
-          showToast(`Пройдено ${data.passed_count || 0} из ${data.total_count || 4} тестов. Доработайте промпт!`, 'error');
+          showToast(`Пройдено ${data.passed_count || 0} из ${data.total_count || 4} тестов — доработайте код в редакторе или промпт!`, 'error');
         }
       } catch (err) {
         box.innerHTML = `<div class="verify-check-row fail"><span>❌</span><div>Ошибка связи с сервером: ${escapeHtml(err.message)}</div></div>`;
@@ -6053,7 +6545,7 @@
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = `🤖 Решить задачу ${meta.num}/6 через ИИ и запустить тесты`;
+          btn.textContent = `🤖 Сгенерировать через ИИ (${meta.num}/6) и проверить`;
         }
       }
     }
@@ -6108,18 +6600,13 @@
       if (!sel) return;
       const myId = typeof getOrCreateUserId === 'function' ? getOrCreateUserId() : '';
       const myBots = allBots.filter(b => b.user_id === myId);
-      const otherBots = allBots.filter(b => b.user_id !== myId);
-      const sorted = [...myBots, ...otherBots];
       const prevVal = sel.value;
 
-      if (sorted.length === 0) {
-        sel.innerHTML = '<option value="ВАШ_BOT_ID">-- Опубликуйте бота в Галерею --</option>';
+      if (myBots.length === 0) {
+        sel.innerHTML = '<option value="ВАШ_BOT_ID">-- Опубликуйте своего бота --</option>';
       } else {
-        sel.innerHTML = sorted.map(b => {
-          const tag = b.user_id === myId ? ' (Мой)' : '';
-          return `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)}${tag} [${escapeHtml(b.id)}]</option>`;
-        }).join('');
-        if (prevVal && sorted.some(b => b.id === prevVal)) {
+        sel.innerHTML = myBots.map(b => `<option value="${escapeHtml(b.id)}">${escapeHtml(b.name)} [${escapeHtml(b.id)}]</option>`).join('');
+        if (prevVal && myBots.some(b => b.id === prevVal)) {
           sel.value = prevVal;
         }
       }
@@ -6199,6 +6686,10 @@
       const text = textEl.textContent.replace(/[«»]/g, '').trim();
 
       switchTab('chat');
+      if (!currentBotId) {
+        showToast('Сначала выберите или запустите своего бота', 'error');
+        return;
+      }
       const input = document.getElementById('chatInput');
       if (input) {
         input.value = text;
@@ -6287,28 +6778,28 @@
 
       const params = new URLSearchParams(window.location.search);
       const botParam = params.get('bot');
+      const myId = getOrCreateUserId();
       let lastTab = null;
       let lastBot = null;
       try {
         lastTab = localStorage.getItem('bot_last_tab');
-        lastBot = localStorage.getItem('bot_last_active_id');
+        lastBot = localStorage.getItem(`bot_last_active_id_${myId}`);
       } catch(e) {}
 
-      const myId = getOrCreateUserId();
       const myBots = allBots.filter(b => b.user_id === myId);
 
-      if (botParam && allBots.some(b => b.id === botParam)) {
+      if (botParam && myBots.some(b => b.id === botParam)) {
         selectBot(botParam, false);
         switchTab('chat');
-      } else if (lastBot && allBots.some(b => b.id === lastBot)) {
+      } else if (lastBot && myBots.some(b => b.id === lastBot)) {
         selectBot(lastBot, false);
-        if (lastTab === 'chat') switchTab('chat');
+        if (lastTab === 'chat' || lastTab === 'code') switchTab(lastTab);
       } else if (myBots.length > 0) {
         selectBot(myBots[0].id, false);
-        if (lastTab === 'chat') switchTab('chat');
+        if (lastTab === 'chat' || lastTab === 'code') switchTab(lastTab);
       } else {
         showEmptyChatState();
-        if (lastTab === 'chat') switchTab('chat');
+        if (lastTab === 'chat' || lastTab === 'code') switchTab(lastTab);
       }
 
       updateEditingBanner();
@@ -7237,7 +7728,7 @@
                   Задайте тестовый вопрос боту...
                 </div>
                 <div class="terminal-input-row">
-                  <input type="text" class="terminal-input node-term-input" placeholder="Привет! Кто ты?" onkeydown="onTerminalInputKeyDown(event, '${id}')">
+                  <input type="text" class="terminal-input node-term-input" autocomplete="off" placeholder="Привет! Кто ты?" onkeydown="onTerminalInputKeyDown(event, '${id}')">
                   <button type="button" class="btn-terminal-test node-term-btn-test" onclick="testDraftInTerminal('${id}')">⚡ Тест</button>
                 </div>
               </div>
@@ -7766,6 +8257,8 @@
       termChatHistories[termNodeId] = [];
       const termEl = document.getElementById(termNodeId);
       if (!termEl) return;
+      const inp = termEl.querySelector('.node-term-input');
+      if (inp) inp.value = '';
       const screen = termEl.querySelector('.node-term-response');
       if (screen) {
         screen.classList.add('empty');
@@ -8407,7 +8900,18 @@
       const textEl = document.getElementById('canvasEditingText');
       const btnTop = document.getElementById('btnQueue');
       const canvasView = document.getElementById('canvasView');
+      const codeView = document.getElementById('codePracticeView');
       const isNodesTab = canvasView && canvasView.classList.contains('active');
+      const isCodeTab = codeView && codeView.classList.contains('active');
+
+      if (isCodeTab) {
+        if (btnTop) {
+          btnTop.innerHTML = '<span>🧩 Настроить схему нод</span>';
+          btnTop.title = 'Вернуться к холсту нод для настройки ИИ-программиста';
+          btnTop.onclick = () => switchTab('nodes');
+        }
+        return;
+      }
 
       if (!isNodesTab) {
         // We are on Chat & Gallery view!
@@ -8454,6 +8958,7 @@
 
     function createNewBotOnCanvas() {
       editingBotId = null;
+      for (const k of Object.keys(termChatHistories)) delete termChatHistories[k];
       resetWorkflowToDefault(true);
       switchTab('nodes');
       updateEditingBanner();
@@ -8472,6 +8977,10 @@
         document.getElementById('tabBtnNodes').classList.add('active');
         document.getElementById('canvasView').classList.add('active');
         setTimeout(updateAllWires, 20);
+      } else if (name === 'code') {
+        document.getElementById('tabBtnCode').classList.add('active');
+        document.getElementById('codePracticeView').classList.add('active');
+        if (typeof refreshPythonBotOptions === 'function') refreshPythonBotOptions();
       } else {
         document.getElementById('tabBtnChat').classList.add('active');
         document.getElementById('chatGalleryView').classList.add('active');
@@ -8507,6 +9016,7 @@
       const myId = getOrCreateUserId();
       const isOwner = Boolean(bot.user_id && bot.user_id === myId);
       editingBotId = isOwner ? bot.id : null;
+      for (const k of Object.keys(termChatHistories)) delete termChatHistories[k];
 
       // 1. Try to load dedicated saved scheme from localStorage
       let loaded = false;
@@ -8628,13 +9138,13 @@
     // 11. Gallery & Chat Logic
     async function fetchBotsList(silent = false) {
       try {
-        const res = await fetch('/api/bots');
-        if (!res.ok) throw new Error('Ошибка загрузки ботов');
-        allBots = await res.json();
-
         const myId = getOrCreateUserId();
-        const myBots = allBots.filter(b => b.user_id && b.user_id === myId);
-        document.getElementById('botsBadge').textContent = myBots.length;
+        const res = await fetch(`/api/bots?user_id=${encodeURIComponent(myId)}`);
+        if (!res.ok) throw new Error('Ошибка загрузки ботов');
+        const list = await res.json();
+        allBots = Array.isArray(list) ? list.filter(b => b.user_id && b.user_id === myId) : [];
+
+        document.getElementById('botsBadge').textContent = allBots.length;
         renderGallery();
         if (typeof refreshPythonBotOptions === 'function') refreshPythonBotOptions();
       } catch (e) {
@@ -8711,6 +9221,11 @@
         localStorage.setItem('ks54_user_id', newUId);
         localStorage.setItem('ks54_user_name', newName);
       } catch(e) {}
+      chatHistories = {};
+      currentBotId = null;
+      editingBotId = null;
+      updateEditingBanner();
+      showEmptyChatState();
       updateProfileBadge();
       closeUserProfileModal();
       showToast('Сессия обновлена', 'info');
@@ -8718,65 +9233,41 @@
       loadTaskProgress();
     }
 
-    let currentGalleryFilter = 'my';
-
-    function setGalleryFilter(filter) {
-      currentGalleryFilter = filter;
-      document.querySelectorAll('.gallery-filter-pill').forEach(btn => btn.classList.remove('active'));
-      const activeBtn = document.getElementById('filterPill' + filter.charAt(0).toUpperCase() + filter.slice(1));
-      if (activeBtn) activeBtn.classList.add('active');
-      renderGallery();
-    }
-
     function renderGallery() {
       const container = document.getElementById('galleryList');
       if (!container) return;
 
       const myId = getOrCreateUserId();
-      let filtered = [];
-
-      if (currentGalleryFilter === 'my') {
-        filtered = allBots.filter(b => (b.user_id && b.user_id === myId));
-      } else {
-        filtered = allBots;
-      }
+      const filtered = allBots.filter(b => (b.user_id && b.user_id === myId));
 
       if (filtered.length === 0) {
         container.innerHTML = `
           <div style="text-align:center; padding:32px 14px; color:var(--text-dim); font-size:12px; display:flex; flex-direction:column; gap:8px; align-items:center;">
-            <span>${currentGalleryFilter === 'my' ? 'У вас пока нет своих ботов' : 'Ботов не найдено'}</span>
+            <span>У вас пока нет своих ботов</span>
             <button type="button" class="btn-sm-action" onclick="createNewBotOnCanvas()" style="margin-top:2px; color:#0284c7; font-weight:700;">🧩 Собрать своего бота</button>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = filtered.map(b => {
-        const isMy = Boolean(b.user_id && b.user_id === myId);
-        const isSystem = b.user_id === 'system';
-        const ownerTag = isMy ? '<span class="bot-owner-tag my">Мой</span>' : (isSystem ? '<span class="bot-owner-tag system">КС54</span>' : '');
-        const actionIcon = isMy ? '⚙️' : '📋';
-        const actionTitle = isMy
-          ? `Настроить ноды «${escapeHtml(b.name)}» на схеме`
-          : `Скопировать шаблон «${escapeHtml(b.name)}» к себе на холст`;
-
-        return `
+      container.innerHTML = filtered.map(b => `
         <div class="bot-card ${b.id === currentBotId ? 'active' : ''}" onclick="selectBot('${b.id}', true)">
           <div class="bot-avatar">${escapeHtml(b.avatar)}</div>
           <div class="bot-details">
-            <div class="bot-card-title">${escapeHtml(b.name)} ${ownerTag}</div>
+            <div class="bot-card-title">${escapeHtml(b.name)}</div>
             <div class="bot-card-meta">${b.chunks_count || 0} фактов • Temp ${b.temperature != null ? b.temperature : 0.7} • #${b.id}</div>
           </div>
           <div style="display:flex; align-items:center; gap:2px;">
-            <button type="button" class="btn-card-edit" onclick="editBotById(event, '${b.id}')" title="${actionTitle}">${actionIcon}</button>
-            ${isMy ? `<button type="button" class="btn-card-delete" onclick="deleteBotById(event, '${b.id}')" title="Удалить моего бота">✕</button>` : ''}
+            <button type="button" class="btn-card-edit" onclick="editBotById(event, '${b.id}')" title="Настроить ноды «${escapeHtml(b.name)}» на схеме">⚙️</button>
+            <button type="button" class="btn-card-delete" onclick="deleteBotById(event, '${b.id}')" title="Удалить моего бота">✕</button>
           </div>
         </div>
-      `;
-      }).join('');
+      `).join('');
     }
 
     function showEmptyChatState() {
+      cancelActiveChatStream();
+      clearChatInputField();
       currentBotId = null;
       const avEl = document.getElementById('currentAvatar');
       const nmEl = document.getElementById('currentName');
@@ -8804,10 +9295,7 @@
       if (!botId) return null;
       const uId = getOrCreateUserId();
       try {
-        let raw = localStorage.getItem(`bot_chat_history_${uId}_${botId}`);
-        if (!raw) {
-          raw = localStorage.getItem(`bot_chat_history_${botId}`);
-        }
+        const raw = localStorage.getItem(`bot_chat_history_${uId}_${botId}`);
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) return parsed;
@@ -8831,6 +9319,8 @@
 
     function startNewChatDialog() {
       if (!currentBotId) return;
+      cancelActiveChatStream();
+      clearChatInputField();
       const uId = getOrCreateUserId();
       chatHistories[currentBotId] = [];
       try {
@@ -8843,12 +9333,18 @@
     const clearCurrentChat = startNewChatDialog;
 
     function selectBot(id, updateUrl = true) {
-      const bot = allBots.find(b => b.id === id);
+      const myId = getOrCreateUserId();
+      const bot = allBots.find(b => b.id === id && b.user_id === myId);
       if (!bot) return;
 
+      const switchedBot = currentBotId !== id;
+      if (switchedBot) {
+        cancelActiveChatStream();
+      }
+      clearChatInputField();
       currentBotId = id;
       try {
-        localStorage.setItem('bot_last_active_id', id);
+        localStorage.setItem(`bot_last_active_id_${myId}`, id);
       } catch(e) {}
 
       if (updateUrl) {
@@ -8858,17 +9354,13 @@
       document.getElementById('currentAvatar').textContent = bot.avatar;
       document.getElementById('currentName').textContent = bot.name;
 
-      const myId = getOrCreateUserId();
-      const isMy = Boolean(bot.user_id && bot.user_id === myId);
       const delBtn = document.getElementById('btnDeleteCurrentBot');
       const editBtn = document.getElementById('btnEditBotNodes');
-      if (delBtn) delBtn.style.display = isMy ? 'inline-flex' : 'none';
+      if (delBtn) delBtn.style.display = 'inline-flex';
       if (editBtn) {
         editBtn.style.display = 'inline-flex';
-        editBtn.innerHTML = isMy ? '🧩 Настроить схему нод' : '📋 Взять шаблон к себе';
-        editBtn.title = isMy
-          ? 'Открыть схему и параметры этого бота на холсте нод'
-          : 'Скопировать схему этого образца на свой холст нод';
+        editBtn.innerHTML = '🧩 Настроить схему нод';
+        editBtn.title = 'Открыть схему и параметры этого бота на холсте нод';
       }
 
       // Check for custom UI config
@@ -8934,7 +9426,7 @@
       }
 
       try {
-        const res = await fetch(`/api/bots/${targetId}`, { method: 'DELETE' });
+        const res = await fetch(`/api/bots/${targetId}?user_id=${encodeURIComponent(myId)}`, { method: 'DELETE' });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.detail || 'Ошибка удаления бота');
@@ -8946,8 +9438,8 @@
           localStorage.removeItem(`bot_chat_history_${targetId}`);
           localStorage.removeItem(`bot_ui_${targetId}`);
           localStorage.removeItem(`bot_scheme_${targetId}`);
-          if (localStorage.getItem('bot_last_active_id') === targetId) {
-            localStorage.removeItem('bot_last_active_id');
+          if (localStorage.getItem(`bot_last_active_id_${myId}`) === targetId) {
+            localStorage.removeItem(`bot_last_active_id_${myId}`);
           }
         } catch(err) {}
 
@@ -9038,17 +9530,19 @@
         return;
       }
 
+      const targetBotId = currentBotId;
       const input = document.getElementById('chatInput');
       const text = input.value.trim();
       if (!text) return;
       input.value = '';
 
-      if (!chatHistories[currentBotId]) chatHistories[currentBotId] = [];
-      chatHistories[currentBotId].push({ role: 'user', content: text });
-      saveChatHistory(currentBotId);
+      if (!chatHistories[targetBotId]) chatHistories[targetBotId] = [];
+      chatHistories[targetBotId].push({ role: 'user', content: text });
+      saveChatHistory(targetBotId);
       renderMessages();
 
       isStreaming = true;
+      activeChatAbortController = new AbortController();
       document.getElementById('btnSend').disabled = true;
       document.getElementById('chatInput').disabled = true;
       document.getElementById('typingIndicator').style.display = 'flex';
@@ -9056,7 +9550,7 @@
       const container = document.getElementById('chatMessages');
       container.scrollTop = container.scrollHeight;
 
-      const bot = allBots.find(b => b.id === currentBotId);
+      const bot = allBots.find(b => b.id === targetBotId);
       const avatar = bot ? bot.avatar : '🤖';
 
       const botRow = document.createElement('div');
@@ -9080,10 +9574,11 @@
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: activeChatAbortController.signal,
           body: JSON.stringify({
-            bot_id: currentBotId,
+            bot_id: targetBotId,
             message: text,
-            history: chatHistories[currentBotId].slice(0, -1)
+            history: chatHistories[targetBotId].slice(0, -1)
           })
         });
 
@@ -9092,7 +9587,9 @@
           throw new Error(err.detail || 'Ошибка генерации ответа');
         }
 
-        document.getElementById('typingIndicator').style.display = 'none';
+        if (currentBotId === targetBotId) {
+          document.getElementById('typingIndicator').style.display = 'none';
+        }
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder('utf-8');
@@ -9102,7 +9599,8 @@
           if (done) break;
           const chunk = decoder.decode(value, { stream: true });
           responseText += chunk;
-          
+          if (currentBotId !== targetBotId) break;
+
           const wasNearBottom = (container.scrollHeight - container.scrollTop - container.clientHeight) <= 120;
           target.innerHTML = renderMarkdown(responseText);
           if (wasNearBottom) {
@@ -9110,30 +9608,38 @@
           }
         }
 
-        chatHistories[currentBotId].push({
-          role: 'assistant',
-          content: responseText.trim()
-        });
-        saveChatHistory(currentBotId);
+        if (responseText.trim()) {
+          chatHistories[targetBotId].push({
+            role: 'assistant',
+            content: responseText.trim()
+          });
+          saveChatHistory(targetBotId);
+        }
 
       } catch (err) {
-        document.getElementById('typingIndicator').style.display = 'none';
-        target.textContent = `[Ошибка: ${err.message}]`;
-        showToast(err.message, 'error');
+        if (err && err.name === 'AbortError') return;
+        if (currentBotId === targetBotId) {
+          document.getElementById('typingIndicator').style.display = 'none';
+          target.textContent = `[Ошибка: ${err.message}]`;
+          showToast(err.message, 'error');
+        }
       } finally {
-        target.removeAttribute('id');
-        if (metaBar) {
-          metaBar.removeAttribute('id');
-          metaBar.style.display = 'flex';
+        activeChatAbortController = null;
+        if (currentBotId === targetBotId) {
+          target.removeAttribute('id');
+          if (metaBar) {
+            metaBar.removeAttribute('id');
+            metaBar.style.display = 'flex';
+          }
+          isStreaming = false;
+          document.getElementById('btnSend').disabled = false;
+          document.getElementById('chatInput').disabled = false;
+          document.getElementById('chatInput').focus();
+          if ((container.scrollHeight - container.scrollTop - container.clientHeight) <= 160) {
+            container.scrollTop = container.scrollHeight;
+          }
+          onChatScroll();
         }
-        isStreaming = false;
-        document.getElementById('btnSend').disabled = false;
-        document.getElementById('chatInput').disabled = false;
-        document.getElementById('chatInput').focus();
-        if ((container.scrollHeight - container.scrollTop - container.clientHeight) <= 160) {
-          container.scrollTop = container.scrollHeight;
-        }
-        onChatScroll();
       }
     }
 
@@ -9395,7 +9901,6 @@
       <button type="button" class="guide-tab-btn" onclick="switchGuideTab('howto')">📘 Инструкция</button>
       <button type="button" class="guide-tab-btn" onclick="switchGuideTab('formula')">🧩 6 блоков</button>
       <button type="button" class="guide-tab-btn" onclick="switchGuideTab('tasks')">🎯 Задания</button>
-      <button type="button" class="guide-tab-btn" onclick="switchGuideTab('code')">💻 Код-задания</button>
       <button type="button" class="guide-tab-btn" onclick="switchGuideTab('redteam')">🛡️ Red Team</button>
       <button type="button" class="guide-tab-btn" onclick="switchGuideTab('audit')">📊 Чек-лист 100б</button>
     </div>
@@ -9549,7 +10054,7 @@
             <span class="guide-card-title">💬 5. Возможности вкладки «Чат и Галерея»</span>
           </div>
           <ul class="guide-list">
-            <li><b>Фильтры списка:</b> <i>👤 Мои боты</i> (созданные тобой), <i>🏛️ КС54</i> (образцы) и <i>🌐 Все</i>.</li>
+            <li><b>Приватность списка:</b> в разделе отображаются только боты, созданные на твоём рабочем месте.</li>
             <li><b>Действия в шапке чата:</b> <i>🧩 Настроить схему нод</i>, <i>🔄 Новый диалог</i> (очистка переписки), <i>🔗 Ссылка</i> (скопировать адрес бота), <i>🗑️</i> (удалить).</li>
             <li><b>Выделение и копирование:</b> любой текст, ответ целиком (кнопка <b>📋 Скопировать ответ</b>) или код (кнопка <b>Копировать</b>) легко выделяются и копируются.</li>
             <li><b>Умный скролл:</b> если пролистать длинный ответ вверх во время генерации, экран не дёргается вниз. Кнопка <b>«↓ Вниз»</b> в углу вернёт к последнему сообщению.</li>
@@ -9878,129 +10383,9 @@
             <button type="button" class="btn-restore-task" id="btnRestore_exam" onclick="restoreTaskSnapshot('exam')" style="display:none;">📂 Загрузить сохранённую схему этого варианта</button>
 
             <div style="margin-top:10px; padding:10px; background:var(--bg-deep); border:1px solid var(--border-subtle); border-radius:6px; font-size:11px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
-              <span>🚀 <b>Завершили экзамен?</b> Переходите к отдельному практикуму (~20 мин):</span>
-              <button type="button" class="btn-sm-action" onclick="switchGuideTab('code')" style="font-size:10.5px; padding:4px 8px; font-weight:bold; white-space:nowrap;">💻 Код-задания →</button>
+              <span>🚀 <b>Завершили экзамен?</b> Переходите в отдельный раздел:</span>
+              <button type="button" class="btn-sm-action" onclick="toggleProjectGuide(); switchTab('code');" style="font-size:10.5px; padding:4px 8px; font-weight:bold; white-space:nowrap;">💻 Код-практикум →</button>
             </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- TAB 4 (ОТДЕЛЬНЫЙ ТРЕК): Код-практикум с ИИ (~20 мин, 6 задач) -->
-      <div class="guide-tab-panel" id="guideTab_code">
-        <div class="guide-card">
-          <div class="guide-card-head">
-            <span class="guide-card-title">💻 Код-практикум: ИИ-Программист</span>
-            <span class="guide-badge">6 задач • ~20 мин</span>
-          </div>
-          <p class="guide-desc">
-            Отдельный практический трек по программированию на Python с помощью вашего ИИ-бота. Соберите точную архитектуру кодера на холсте и проведите бота через 6 алгоритмических и прикладных задач с автоматическими unit-тестами.
-          </p>
-        </div>
-
-        <!-- Отдельный прогресс и таймер 20 минут -->
-        <div class="audit-bar-box" style="padding:8px 10px;">
-          <div class="audit-bar-header" style="font-size:11.5px;">
-            <span>🧪 Прогресс код-заданий</span>
-            <span id="codeProgressCounter" style="color:var(--wire-char);">0 / 6</span>
-          </div>
-          <div class="audit-meter">
-            <div class="audit-fill" id="codeProgressBar"></div>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-            <span id="codeProgressHint" style="font-size:10.5px; color:var(--text-dim);">Решите все 6 задач с помощью ИИ</span>
-            <button type="button" class="btn-sm-action" onclick="resetCodeProgress()" style="font-size:10px; padding:2px 6px;" title="Сбросить только прогресс код-трека">↺ Сбросить код-трек</button>
-          </div>
-        </div>
-
-        <div class="code-timer-bar">
-          <div style="display:flex; align-items:center; gap:6px;">
-            <span>⏱️ Таймер практикума:</span>
-            <span class="code-timer-clock" id="codeTimerClock">20:00</span>
-          </div>
-          <div style="display:flex; gap:4px;">
-            <button type="button" class="btn-sm-action" id="btnCodeTimerToggle" onclick="toggleCodeTimer()" style="font-size:10.5px; padding:3px 8px;">▶ Старт</button>
-            <button type="button" class="btn-sm-action" onclick="resetCodeTimer()" style="font-size:10.5px; padding:3px 7px;" title="Сбросить таймер на 20:00">↺</button>
-          </div>
-        </div>
-
-        <!-- ШАГ 1: Архитектура схемы ИИ-Кодера -->
-        <div class="step-card">
-          <div class="step-num">1</div>
-          <div class="step-body" style="width:100%; min-width:0;">
-            <div class="step-title">Настрой схему ИИ-Разработчика (~2 мин)</div>
-            <div class="step-text">
-              Чтобы нейросеть писала точный рабочий Python-код без «воды», настрой 4 блока на холсте:
-              <ul class="guide-list" style="margin-top:4px;">
-                <li><b>📝 Инструкция:</b> роль Python-разработчика (писать чистый код и учитывать крайние случаи).</li>
-                <li><b>📊 Формат Данных:</b> режим <code>Чистый код (Python / C++ / Web)</code>.</li>
-                <li><b>🔥 Креативность и Длина:</b> температура <code>≤ 0.3</code> (чтобы не было случайных опечаток).</li>
-                <li><b>🎯 Few-Shot (Примеры):</b> минимум 1 эталонный пример функции на Python.</li>
-              </ul>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
-              <button type="button" class="btn-verify-task" id="btnVerifyCodeSchema" onclick="verifyCodeSchema()">1️⃣ Проверить схему ИИ-Кодера</button>
-              <div class="verify-results-box" id="verifyBox_code_schema"></div>
-              <button type="button" class="btn-restore-task" id="btnRestore_code" onclick="restoreTaskSnapshot('code')" style="display:none;">📂 Загрузить сохранённую схему ИИ-Кодера на холст</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ШАГ 2: 6 задач марафона (~18 мин) -->
-        <div class="step-card">
-          <div class="step-num">2</div>
-          <div class="step-body" style="width:100%; min-width:0;">
-            <div class="step-title">Выбери и реши 6 задач на Python (~18 мин)</div>
-            <div class="step-text" style="margin-bottom:8px;">
-              Идите по порядку от разминки к проектным задачам. Если тест не прошёл — посмотрите, где ошиблась модель, и доработайте <b>Инструкцию</b> или <b>Few-Shot</b> на холсте!
-            </div>
-
-            <div class="code-track-grid" id="codeTaskCardsGrid"></div>
-
-            <div class="guide-card" id="activeCodeTaskCard" style="margin-top:8px; padding:10px;">
-              <div class="guide-card-head">
-                <span class="guide-card-title" id="activeCodeTaskTitle" style="font-size:12px;">1. Сумма положительных чисел</span>
-                <span class="guide-badge" id="activeCodeTaskBadge">Лёгкая • ~2 мин</span>
-              </div>
-              <p class="guide-desc" id="activeCodeTaskDesc" style="margin-top:4px;"></p>
-              <div id="activeCodeTaskExamples" style="font-size:10.5px; color:var(--text-dim); background:var(--bg-node); border:1px solid var(--border-subtle); border-radius:5px; padding:6px 8px; margin-top:6px; font-family:ui-monospace, monospace; line-height:1.45;"></div>
-              <div class="step-why" id="activeCodeTaskHint" style="margin-top:6px;"></div>
-
-              <button type="button" class="btn-verify-task" id="btnRunCodeTaskAI" style="width:100%; padding:8px 12px; font-size:11.5px; margin-top:8px;" onclick="runCodeTaskAI()">🤖 Решить задачу через ИИ и запустить тесты</button>
-              <div class="verify-results-box" id="verifyBox_code_ai" style="margin-top:8px;"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ШАГ 3: Своя задача -->
-        <div class="step-card">
-          <div class="step-num">3</div>
-          <div class="step-body" style="width:100%; min-width:0;">
-            <div class="step-title">Песочница: своя задача для ИИ</div>
-            <div class="step-text" style="margin-bottom:6px;">
-              Введи условие любой своей задачи по информатике или программированию — твой настроенный бот напишет решение:
-            </div>
-            <textarea id="customTaskInput" class="control-textarea" style="min-height:55px; font-size:11px;" placeholder="Например: Напиши функцию на Python, которая находит второе по величине число в списке..."></textarea>
-            <button type="button" class="btn-sm-action" style="margin-top:6px; width:100%; padding:6px 10px; font-size:11px; font-weight:bold;" onclick="solveCustomTaskAI()">⚡ Спросить моего ИИ-помощника</button>
-            <pre id="customTaskResultPre" class="python-snippet-pre" style="display:none; margin-top:8px;"></pre>
-          </div>
-        </div>
-
-        <!-- ШАГ 4: Готовый Python скрипт для запуска в IDLE/Thonny -->
-        <div class="step-card">
-          <div class="step-num">4</div>
-          <div class="step-body" style="width:100%; min-width:0;">
-            <div class="step-title">Интеграция: запуск бота из Python (IDLE / Thonny)</div>
-            <div class="step-text" style="margin-bottom:6px;">
-              Опубликуй бота в Галерею (кнопка на Терминале), выбери его ниже и скопируй готовый Python-клиент к нашему REST API:
-            </div>
-            <div style="display:flex; gap:6px; align-items:center; margin-bottom:6px;">
-              <select id="pythonBotSelect" class="control-select" style="flex:1; font-size:11px;" onchange="updatePythonSnippet()">
-                <option value="">-- Опубликуйте бота в Галерею --</option>
-              </select>
-              <button type="button" class="btn-sm-action" onclick="copyPythonSnippet()" style="white-space:nowrap; font-size:11px;">📋 Копировать код</button>
-            </div>
-            <pre id="pythonSnippetBox" class="python-snippet-pre"></pre>
           </div>
         </div>
 

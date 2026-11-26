@@ -321,9 +321,12 @@ async def create_bot(
     }
 
 
-# Получение списка всех ботов
+# Получение списка ботов только текущего пользователя
 @app.get("/api/bots")
-async def list_bots():
+async def list_bots(user_id: Optional[str] = None):
+    clean_uid = (user_id or "").strip()
+    if not clean_uid:
+        return []
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute("""
@@ -331,9 +334,10 @@ async def list_bots():
                    COUNT(k.id) as chunks_count
             FROM bots b
             LEFT JOIN knowledge_chunks k ON b.id = k.bot_id
+            WHERE b.user_id = ?
             GROUP BY b.id
             ORDER BY b.created_at DESC
-        """)
+        """, (clean_uid,))
         rows = cursor.fetchall()
 
     return [
@@ -352,13 +356,14 @@ async def list_bots():
     ]
 
 
-# Получение конкретного бота
+# Получение конкретного бота (только владелец)
 @app.get("/api/bots/{bot_id}")
-async def get_bot(bot_id: str):
+async def get_bot(bot_id: str, user_id: Optional[str] = None):
+    clean_uid = (user_id or "").strip()
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT b.id, b.name, b.avatar, b.system_prompt, b.temperature, b.max_tokens, b.created_at,
+            SELECT b.id, b.name, b.avatar, b.system_prompt, b.temperature, b.max_tokens, b.created_at, b.user_id,
                    COUNT(k.id) as chunks_count
             FROM bots b
             LEFT JOIN knowledge_chunks k ON b.id = k.bot_id
@@ -369,6 +374,8 @@ async def get_bot(bot_id: str):
 
     if not row:
         raise HTTPException(status_code=404, detail="Бот не найден")
+    if not clean_uid or row["user_id"] != clean_uid:
+        raise HTTPException(status_code=403, detail="Нет доступа к чужому боту")
 
     return {
         "id": row["id"],
@@ -378,6 +385,7 @@ async def get_bot(bot_id: str):
         "temperature": row["temperature"] if row["temperature"] is not None else 0.7,
         "max_tokens": row["max_tokens"] if row["max_tokens"] is not None else DEFAULT_MAX_TOKENS,
         "created_at": row["created_at"],
+        "user_id": row["user_id"] or "anon",
         "chunks_count": row["chunks_count"]
     }
 
@@ -427,6 +435,9 @@ async def update_bot(
             raise HTTPException(status_code=404, detail="Бот не найден")
         if bot_id in STARTER_BOT_IDS or existing["user_id"] == "system":
             raise HTTPException(status_code=403, detail="Системные образцы КС54 нельзя перезаписывать")
+        clean_uid = (user_id or "").strip()
+        if not clean_uid or existing["user_id"] != clean_uid:
+            raise HTTPException(status_code=403, detail="Нельзя редактировать чужого бота")
 
         cursor.execute(
             """
@@ -480,10 +491,11 @@ async def update_bot(
     }
 
 
-# Удаление бота и его базы знаний
+# Удаление бота и его базы знаний (только владелец)
 @app.delete("/api/bots/{bot_id}")
-async def delete_bot(bot_id: str):
+async def delete_bot(bot_id: str, user_id: Optional[str] = None):
     bot_id = bot_id.strip()
+    clean_uid = (user_id or "").strip()
     with get_db() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT id, name, user_id FROM bots WHERE id = ?", (bot_id,))
@@ -492,6 +504,8 @@ async def delete_bot(bot_id: str):
             raise HTTPException(status_code=404, detail="Бот не найден")
         if bot_id in STARTER_BOT_IDS or bot["user_id"] == "system":
             raise HTTPException(status_code=403, detail="Системные образцы КС54 нельзя удалить")
+        if not clean_uid or bot["user_id"] != clean_uid:
+            raise HTTPException(status_code=403, detail="Нельзя удалить чужого бота")
 
         cursor.execute("DELETE FROM bots WHERE id = ?", (bot_id,))
         conn.commit()
@@ -771,11 +785,154 @@ def extract_python_code(answer: str) -> str:
     return answer.strip()
 
 
-@app.post("/api/verify-code-task")
-async def verify_code_task(payload: CodeTaskRequest):
+class RunCodeTaskRequest(BaseModel):
+    task_id: str
+    code: str
+
+
+def run_python_tests_sandbox(code: str, tests_spec: list) -> dict:
     import subprocess
     import sys
 
+    runner_script = (
+        "import json, io, contextlib\n"
+        f"USER_CODE = json.loads({json.dumps(json.dumps(code, ensure_ascii=False))})\n"
+        f"TESTS = json.loads({json.dumps(json.dumps(tests_spec, ensure_ascii=False))})\n"
+        "results = []\n"
+        "ns = {}\n"
+        "compile_err = ''\n"
+        "out_chunks = []\n"
+        "try:\n"
+        "    buf = io.StringIO()\n"
+        "    with contextlib.redirect_stdout(buf):\n"
+        "        exec(compile(USER_CODE, '<code_editor>', 'exec'), ns, ns)\n"
+        "    if buf.getvalue(): out_chunks.append(buf.getvalue())\n"
+        "except Exception as e:\n"
+        "    compile_err = f'{type(e).__name__}: {e}'\n"
+        "for t in TESTS:\n"
+        "    if compile_err:\n"
+        "        results.append({'label': t['label'], 'passed': False, 'actual': '', 'expected': repr(t['expected']), 'error': compile_err})\n"
+        "        continue\n"
+        "    try:\n"
+        "        buf = io.StringIO()\n"
+        "        with contextlib.redirect_stdout(buf):\n"
+        "            actual = eval(t['call'], ns, ns)\n"
+        "        if buf.getvalue(): out_chunks.append(buf.getvalue())\n"
+        "        exp = t['expected']\n"
+        "        ok = (actual == exp) and (type(actual) is type(exp))\n"
+        "        results.append({'label': t['label'], 'passed': ok, 'actual': repr(actual), 'expected': repr(exp), 'error': '' if ok else f'Получено {repr(actual)}, ожидалось {repr(exp)}'})\n"
+        "    except Exception as e:\n"
+        "        results.append({'label': t['label'], 'passed': False, 'actual': '', 'expected': repr(t['expected']), 'error': f'{type(e).__name__}: {e}'})\n"
+        "print('__CODE_TEST_JSON__:' + json.dumps({'compile_error': compile_err, 'results': results, 'stdout': ''.join(out_chunks)[:2000]}, ensure_ascii=False))\n"
+    )
+
+    passed = False
+    passed_count = 0
+    err_msg = ""
+    stdout_text = ""
+    tests_results = []
+
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-c", runner_script],
+            capture_output=True,
+            text=True,
+            timeout=4,
+        )
+        marker_line = None
+        for line in reversed((proc.stdout or "").splitlines()):
+            if line.startswith("__CODE_TEST_JSON__:"):
+                marker_line = line[len("__CODE_TEST_JSON__:"):]
+                break
+        if marker_line:
+            parsed = json.loads(marker_line)
+            tests_results = parsed.get("results", [])
+            err_msg = parsed.get("compile_error", "")
+            stdout_text = parsed.get("stdout", "")
+            passed_count = sum(1 for r in tests_results if r.get("passed"))
+            passed = len(tests_results) == len(tests_spec) and passed_count == len(tests_spec)
+            if not passed and not err_msg:
+                first_err = next((r.get("error") for r in tests_results if not r.get("passed") and r.get("error")), "")
+                err_msg = first_err or "Не все unit-тесты пройдены"
+        else:
+            raw_err = (proc.stderr or proc.stdout or "").strip()
+            err_lines = [l for l in raw_err.splitlines() if l.strip()]
+            err_msg = err_lines[-1] if err_lines else "Ошибка при выполнении unit-тестов"
+            tests_results = [
+                {"label": t["label"], "passed": False, "actual": "", "expected": repr(t["expected"]), "error": err_msg}
+                for t in tests_spec
+            ]
+    except subprocess.TimeoutExpired:
+        err_msg = "Превышено время выполнения (таймаут 4 сек). Возможно, в коде бесконечный цикл."
+        tests_results = [
+            {"label": t["label"], "passed": False, "actual": "", "expected": repr(t["expected"]), "error": err_msg}
+            for t in tests_spec
+        ]
+    except Exception as ex:
+        err_msg = f"Системная ошибка запуска: {str(ex)}"
+        tests_results = [
+            {"label": t["label"], "passed": False, "actual": "", "expected": repr(t["expected"]), "error": err_msg}
+            for t in tests_spec
+        ]
+
+    return {
+        "passed": passed,
+        "passed_count": passed_count,
+        "total_count": len(tests_spec),
+        "error": err_msg,
+        "stdout": stdout_text,
+        "tests_results": tests_results,
+    }
+
+
+@app.post("/api/run-code-task")
+async def run_code_task(payload: RunCodeTaskRequest):
+    task = CODE_TASKS.get(payload.task_id) or CODE_TASKS["sum_pos"]
+    tests_spec = task["tests"]
+    tests_labels = [t["label"] for t in tests_spec]
+    code = (payload.code or "").strip()
+    if not code:
+        return {
+            "ok": True,
+            "task_id": payload.task_id,
+            "title": task["title"],
+            "difficulty": task["difficulty"],
+            "est_minutes": task["est_minutes"],
+            "description": task["description"],
+            "extracted_code": "",
+            "passed": False,
+            "passed_count": 0,
+            "total_count": len(tests_spec),
+            "error": "Редактор кода пуст. Напишите или сгенерируйте функцию на Python.",
+            "stdout": "",
+            "tests_labels": tests_labels,
+            "tests_results": [
+                {"label": t["label"], "passed": False, "actual": "", "expected": repr(t["expected"]), "error": "Код отсутствует"}
+                for t in tests_spec
+            ],
+        }
+
+    run_res = run_python_tests_sandbox(code, tests_spec)
+    return {
+        "ok": True,
+        "task_id": payload.task_id,
+        "title": task["title"],
+        "difficulty": task["difficulty"],
+        "est_minutes": task["est_minutes"],
+        "description": task["description"],
+        "extracted_code": code,
+        "passed": run_res["passed"],
+        "passed_count": run_res["passed_count"],
+        "total_count": run_res["total_count"],
+        "error": run_res["error"],
+        "stdout": run_res["stdout"],
+        "tests_labels": tests_labels,
+        "tests_results": run_res["tests_results"],
+    }
+
+
+@app.post("/api/verify-code-task")
+async def verify_code_task(payload: CodeTaskRequest):
     task = CODE_TASKS.get(payload.task_id) or CODE_TASKS["sum_pos"]
     tests_spec = task["tests"]
     tests_labels = [t["label"] for t in tests_spec]
@@ -814,6 +971,7 @@ async def verify_code_task(payload: CodeTaskRequest):
             "passed_count": 0,
             "total_count": len(tests_spec),
             "error": f"Ошибка вызова нейросети: {str(e)}",
+            "stdout": "",
             "tests_labels": tests_labels,
             "tests_results": [
                 {"label": t["label"], "passed": False, "actual": "", "expected": repr(t["expected"]), "error": "Нет ответа от модели"}
@@ -822,82 +980,7 @@ async def verify_code_task(payload: CodeTaskRequest):
         }
 
     code = extract_python_code(answer)
-
-    runner_script = (
-        "import json, io, contextlib\n"
-        f"USER_CODE = json.loads({json.dumps(json.dumps(code, ensure_ascii=False))})\n"
-        f"TESTS = json.loads({json.dumps(json.dumps(tests_spec, ensure_ascii=False))})\n"
-        "results = []\n"
-        "ns = {}\n"
-        "compile_err = ''\n"
-        "try:\n"
-        "    buf = io.StringIO()\n"
-        "    with contextlib.redirect_stdout(buf):\n"
-        "        exec(compile(USER_CODE, '<ai_code>', 'exec'), ns, ns)\n"
-        "except Exception as e:\n"
-        "    compile_err = f'{type(e).__name__}: {e}'\n"
-        "for t in TESTS:\n"
-        "    if compile_err:\n"
-        "        results.append({'label': t['label'], 'passed': False, 'actual': '', 'expected': repr(t['expected']), 'error': compile_err})\n"
-        "        continue\n"
-        "    try:\n"
-        "        buf = io.StringIO()\n"
-        "        with contextlib.redirect_stdout(buf):\n"
-        "            actual = eval(t['call'], ns, ns)\n"
-        "        exp = t['expected']\n"
-        "        ok = (actual == exp) and (type(actual) is type(exp))\n"
-        "        results.append({'label': t['label'], 'passed': ok, 'actual': repr(actual), 'expected': repr(exp), 'error': '' if ok else f'Получено {repr(actual)}, ожидалось {repr(exp)}'})\n"
-        "    except Exception as e:\n"
-        "        results.append({'label': t['label'], 'passed': False, 'actual': '', 'expected': repr(t['expected']), 'error': f'{type(e).__name__}: {e}'})\n"
-        "print('__CODE_TEST_JSON__:' + json.dumps({'compile_error': compile_err, 'results': results}, ensure_ascii=False))\n"
-    )
-
-    passed = False
-    passed_count = 0
-    err_msg = ""
-    tests_results = []
-
-    try:
-        proc = subprocess.run(
-            [sys.executable, "-c", runner_script],
-            capture_output=True,
-            text=True,
-            timeout=4,
-        )
-        marker_line = None
-        for line in reversed((proc.stdout or "").splitlines()):
-            if line.startswith("__CODE_TEST_JSON__:"):
-                marker_line = line[len("__CODE_TEST_JSON__:"):]
-                break
-        if marker_line:
-            parsed = json.loads(marker_line)
-            tests_results = parsed.get("results", [])
-            err_msg = parsed.get("compile_error", "")
-            passed_count = sum(1 for r in tests_results if r.get("passed"))
-            passed = len(tests_results) == len(tests_spec) and passed_count == len(tests_spec)
-            if not passed and not err_msg:
-                first_err = next((r.get("error") for r in tests_results if not r.get("passed") and r.get("error")), "")
-                err_msg = first_err or "Не все unit-тесты пройдены"
-        else:
-            raw_err = (proc.stderr or proc.stdout or "").strip()
-            err_lines = [l for l in raw_err.splitlines() if l.strip()]
-            err_msg = err_lines[-1] if err_lines else "Ошибка при выполнении unit-тестов"
-            tests_results = [
-                {"label": t["label"], "passed": False, "actual": "", "expected": repr(t["expected"]), "error": err_msg}
-                for t in tests_spec
-            ]
-    except subprocess.TimeoutExpired:
-        err_msg = "Превышено время выполнения (таймаут 4 сек). Возможно, в коде бесконечный цикл."
-        tests_results = [
-            {"label": t["label"], "passed": False, "actual": "", "expected": repr(t["expected"]), "error": err_msg}
-            for t in tests_spec
-        ]
-    except Exception as ex:
-        err_msg = f"Системная ошибка запуска: {str(ex)}"
-        tests_results = [
-            {"label": t["label"], "passed": False, "actual": "", "expected": repr(t["expected"]), "error": err_msg}
-            for t in tests_spec
-        ]
+    run_res = run_python_tests_sandbox(code, tests_spec)
 
     return {
         "ok": True,
@@ -908,12 +991,13 @@ async def verify_code_task(payload: CodeTaskRequest):
         "description": task["description"],
         "raw_answer": answer,
         "extracted_code": code,
-        "passed": passed,
-        "passed_count": passed_count,
-        "total_count": len(tests_spec),
-        "error": err_msg,
+        "passed": run_res["passed"],
+        "passed_count": run_res["passed_count"],
+        "total_count": run_res["total_count"],
+        "error": run_res["error"],
+        "stdout": run_res["stdout"],
         "tests_labels": tests_labels,
-        "tests_results": tests_results,
+        "tests_results": run_res["tests_results"],
     }
 
 
