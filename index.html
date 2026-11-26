@@ -4345,9 +4345,18 @@
           </div>
           <div id="codeWorkspaceSubtitle" style="font-size:11px; color:var(--text-dim); margin-top:2px;">Пишите код вручную в редакторе или сгенерируйте решение своим ИИ-ботом</div>
         </div>
-        <div style="display:flex; gap:6px; flex-shrink:0;">
+        <div style="display:flex; gap:6px; flex-wrap:wrap; flex-shrink:0;">
+          <button type="button" class="btn-sm-action" id="btnCodeBeginnerHelp" onclick="openCodeHelpModal('general')" style="background:rgba(245, 158, 11, 0.14); border-color:rgba(245, 158, 11, 0.5); color:#d97706; font-weight:700;">🆘 Помощь новичкам</button>
           <button type="button" class="btn-sm-action" id="btnCodeModeTasks" onclick="switchCodeWorkspaceMode('tasks')" style="font-weight:700;">📝 Редактор и тесты</button>
           <button type="button" class="btn-sm-action" id="btnCodeModeSandbox" onclick="switchCodeWorkspaceMode('sandbox')">⚡ Своя задача / API</button>
+        </div>
+      </div>
+
+      <div id="codeBeginnerBanner" style="margin:10px 16px 0 16px; padding:8px 12px; background:var(--tour-tip-bg); border:1px solid var(--tour-tip-border); border-radius:7px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:11.5px; flex-shrink:0;">
+        <span>👋 <b>Совсем не разбираетесь в IT и коде?</b> Не переживайте! Нажмите <b>«🆘 Помощь новичкам»</b> или <b>«💡 Как решить?»</b> — там всё объяснено на пальцах и простыми словами.</span>
+        <div style="display:flex; gap:6px; flex-shrink:0;">
+          <button type="button" class="btn-sm-action" onclick="openCodeHelpModal('general')" style="font-weight:700; white-space:nowrap;">Открыть шпаргалку</button>
+          <button type="button" class="btn-sm-action" onclick="dismissCodeBeginnerBanner()" title="Скрыть подсказку">✕</button>
         </div>
       </div>
 
@@ -4357,6 +4366,7 @@
           <div class="guide-card" style="padding:12px 14px;">
             <div class="guide-card-head">
               <span class="guide-card-title" style="font-size:12.5px;">📋 Условие задачи</span>
+              <button type="button" class="btn-sm-action" id="btnTaskBeginnerHelp" onclick="openCodeHelpModal('task')" style="font-size:11px; padding:3px 8px; font-weight:700; color:var(--wire-char); border-color:var(--wire-char);">💡 Как решить простыми словами</button>
             </div>
             <p class="guide-desc" id="activeCodeTaskDesc" style="margin-top:4px;"></p>
             <div id="activeCodeTaskExamples" style="font-size:11.5px; color:var(--text); background:var(--bg-node); border:1px solid var(--border-subtle); border-radius:6px; padding:8px 10px; margin-top:8px; font-family:ui-monospace, monospace; white-space:pre-wrap; line-height:1.5;"></div>
@@ -6029,7 +6039,18 @@
         desc: 'Функция <code>solve(numbers)</code> принимает список чисел и возвращает сумму всех элементов строго больше нуля (<code>&gt; 0</code>). Если положительных нет — возвращает <code>0</code>.',
         examples: 'solve([1, -2, 3, 4, -5]) -> 8\nsolve([-1, -2, -3]) -> 0\nsolve([]) -> 0',
         hint: 'Разминка: проверьте, что бот выдаёт чистый Python-код без приветствий и лишних рассуждений.',
-        stub: 'def solve(numbers: list) -> int:\n    # Верните сумму всех чисел > 0\n    pass\n'
+        stub: 'def solve(numbers: list) -> int:\n    # Верните сумму всех чисел > 0\n    pass\n',
+        beginnerHelp: {
+          analogy: 'Представьте обычную кассу магазина. Вам дают список чеков: среди них есть покупки с плюсом (1, 3, 4) и возвраты с минусом (-2, -5). Ваша задача — сложить только покупки больше нуля.',
+          steps: [
+            'Заведите переменную для суммы: <code>total = 0</code>.',
+            'Пройдитесь по каждому числу в списке <code>numbers</code> с помощью цикла <code>for x in numbers:</code>.',
+            'Если число больше нуля (<code>if x > 0:</code>), прибавьте его к сумме: <code>total += x</code>.',
+            'В самом конце напишите <code>return total</code> (и обязательно удалите слово <code>pass</code>).'
+          ],
+          syntaxTip: 'total = 0\nfor x in numbers:\n    if x > 0:\n        total += x\nreturn total',
+          aiPromptTip: 'Ты Python-программист. Напиши короткую рабочую функцию без пояснений и всегда возвращай результат через return.'
+        }
       },
       {
         id: 'vowels',
@@ -6044,7 +6065,18 @@
         desc: 'Функция <code>count_vowels(text)</code> считает количество русских гласных букв в строке независимо от регистра. (5 тестов)',
         examples: 'count_vowels("Привет") -> 2\ncount_vowels("Ёжик в тумане") -> 5\ncount_vowels("ЭЮЯ ёжик") -> 5',
         hint: 'Сервер больше не подсказывает модели про букву «ё» и регистр — проверьте, справится ли бот или допишите проверку в промпт/код!',
-        stub: 'def count_vowels(text: str) -> int:\n    # Посчитайте русские гласные буквы в любом регистре\n    pass\n'
+        stub: 'def count_vowels(text: str) -> int:\n    # Посчитайте русские гласные буквы в любом регистре\n    pass\n',
+        beginnerHelp: {
+          analogy: 'Нужно взять слово или фразу и по очереди проверить каждую букву: является ли она русской гласной (всего их 10: а, е, ё, и, о, у, ы, э, ю, я). Большие буквы (А, Ё, Э) тоже считаются!',
+          steps: [
+            'Сначала превратите весь текст в маленькие буквы командой <code>text.lower()</code> — тогда не придётся отдельно перечислять заглавные.',
+            'Заведите счётчик <code>count = 0</code> и строку со всеми 10 гласными: <code>"аеёиоуыэюя"</code>.',
+            'Для каждой буквы <code>ch</code> в <code>text.lower()</code> проверьте: <code>if ch in "аеёиоуыэюя": count += 1</code>.',
+            'Верните <code>return count</code>.'
+          ],
+          syntaxTip: 'vowels = "аеёиоуыэюя"\ncount = 0\nfor ch in text.lower():\n    if ch in vowels:\n        count += 1\nreturn count',
+          aiPromptTip: 'Ты внимательный Python-разработчик. В задачах со строками всегда учитывай верхний и нижний регистр и все 10 русских гласных (включая букву ё).'
+        }
       },
       {
         id: 'bug_discount',
@@ -6059,7 +6091,18 @@
         desc: '<b>В редакторе уже лежит «кривой» код от ИИ!</b> Почини <code>calc_order(prices, is_vip)</code>: учитываются только цены <code>&gt; 0</code> (пустая корзина → <code>0</code>); если <code>is_vip=True</code>, скидка <code>20%</code> (<code>total * 80 // 100</code>); если итог <b>после скидки</b> строго <code>&lt; 1000</code> (и <code>&gt; 0</code>), добавляется доставка <code>300</code> руб (от 1000 руб доставка 0).',
         examples: 'calc_order([500, 700], False) -> 1200\ncalc_order([1000], False) -> 1000\ncalc_order([], True) -> 0\ncalc_order([500, -100, 600], True) -> 1180',
         hint: 'Сначала нажмите «▶ Запустить код и unit-тесты», посмотрите какие из 6 тестов упали, и найдите 3 логических бага в коде ИИ!',
-        stub: 'def calc_order(prices: list, is_vip: bool) -> int:\n    # Код сгенерирован слабой нейросетью (есть 3 ошибки!):\n    total = sum(prices)\n    if total <= 1000:\n        total += 300\n    if is_vip:\n        total = total * 80 // 100\n    return total\n'
+        stub: 'def calc_order(prices: list, is_vip: bool) -> int:\n    # Код сгенерирован слабой нейросетью (есть 3 ошибки!):\n    total = sum(prices)\n    if total <= 1000:\n        total += 300\n    if is_vip:\n        total = total * 80 // 100\n    return total\n',
+        beginnerHelp: {
+          analogy: 'Здесь писать с нуля не нужно! Код уже есть, но нейросеть перепутала порядок действий на кассе: посчитала доставку ДО скидки, взяла деньги за доставку пустой корзины и забыла выкинуть отрицательные цены.',
+          steps: [
+            'Сначала нажмите синюю кнопку <b>«▶ Запустить код и unit-тесты»</b> — вы увидите 3 красные строки справа.',
+            '<b>Ошибка 1:</b> вместо <code>sum(prices)</code> нужно складывать только цены больше нуля: <code>sum(p for p in prices if p > 0)</code>. А если <code>total == 0</code>, сразу сделать <code>return 0</code>.',
+            '<b>Ошибка 2:</b> сначала примените VIP-скидку (<code>if is_vip: total = total * 80 // 100</code>), и только ПОТОМ проверяйте доставку.',
+            '<b>Ошибка 3:</b> доставка берётся при сумме строго меньше 1000: замените <code><= 1000</code> на <code>< 1000</code>.'
+          ],
+          syntaxTip: '1) Отфильтруй p > 0 и проверь total == 0 -> return 0\n2) Сначала блок if is_vip:\n3) Потом блок if total < 1000: total += 300',
+          aiPromptTip: 'Найди все логические ошибки на граничных условиях (пустой список, знак < вместо <=, порядок скидки и доставки) и верни исправленный код.'
+        }
       },
       {
         id: 'bug_grades',
@@ -6074,7 +6117,17 @@
         desc: '<b>В редакторе код от ИИ с ошибками на крайних случаях!</b> <code>calc_gpa(record)</code> разбирает строку оценок через запятую (<code>"2, н, 4*, 5"</code>): <code>н</code>/<code>Н</code> и пустые элементы пропускаются; оценка со звёздочкой <code>4*</code> — пересдача, она <b>заменяет предыдущую оценку</b> (или добавляется первой); если оценок нет — вернуть <code>0.0</code>; иначе <code>round(сумма / кол-во, 2)</code>.',
         examples: 'calc_gpa("2, 5*, 4") -> 4.5\ncalc_gpa("2, н, 4*, 5") -> 4.5\ncalc_gpa("Н, , 5*") -> 5.0\ncalc_gpa("") -> 0.0',
         hint: 'Запустите 7 unit-тестов на текущем коде — посмотрите на ZeroDivisionError, ValueError и работу пересдачи <code>*</code>.',
-        stub: 'def calc_gpa(record: str) -> float:\n    # Код от ИИ падает на пересдачах и пропусках — почини его!\n    grades = []\n    for item in record.split(","):\n        s = item.strip()\n        if s == "н":\n            continue\n        if s.endswith("*"):\n            grades.append(int(s[:-1]))\n        else:\n            grades.append(int(s))\n    return round(sum(grades) / len(grades), 2)\n'
+        stub: 'def calc_gpa(record: str) -> float:\n    # Код от ИИ падает на пересдачах и пропусках — почини его!\n    grades = []\n    for item in record.split(","):\n        s = item.strip()\n        if s == "н":\n            continue\n        if s.endswith("*"):\n            grades.append(int(s[:-1]))\n        else:\n            grades.append(int(s))\n    return round(sum(grades) / len(grades), 2)\n',
+        beginnerHelp: {
+          analogy: 'Представьте электронный дневник: если студент получил «2», а потом пересдал на «5*», старая «2» стирается и остаётся только «5». А «н» (не был) и пустые запятые не считаются вообще.',
+          steps: [
+            '<b>Ошибка 1 (пропуски и пустоты):</b> строка <code>if s == "н":</code> не ловит большую <code>"Н"</code> и пустую строку <code>""</code>. Замените на <code>if not s or s.lower() == "н": continue</code>.',
+            '<b>Ошибка 2 (пересдача *):</b> перед тем как добавить новую оценку в <code>if s.endswith("*"):</code>, нужно удалить последнюю (если список не пуст): <code>if grades: grades.pop()</code>.',
+            '<b>Ошибка 3 (пустой список):</b> перед делением <code>sum(grades) / len(grades)</code> проверьте <code>if not grades: return 0.0</code>, иначе программа упадёт с ошибкой деления на 0.'
+          ],
+          syntaxTip: 'if not s or s.lower() == "н": continue\nif s.endswith("*"):\n    if grades: grades.pop()\n    ...\nif not grades: return 0.0',
+          aiPromptTip: 'Исправь код: учитывай пустые элементы, любой регистр буквы н, удаление предыдущей оценки через pop() при пересдаче и защиту от деления на ноль.'
+        }
       },
       {
         id: 'safe_json',
@@ -6089,7 +6142,18 @@
         desc: 'Функция <code>safe_parse_llm_json(raw)</code> извлекает первый валидный JSON-объект (<code>dict</code>) из ответа LLM: снимает обёртку <code>```json ... ```</code> и лишний текст, очищает висячие запятые перед <code>}</code> или <code>]</code>, не падает на тексте со случайной скобкой <code>{ошибка ...</code> до реального JSON, и возвращает <code>None</code> для битого JSON или массивов <code>[1, 2]</code>. (7 жёстких тестов)',
         examples: 'safe_parse_llm_json(\'{"items": [1, 2,], "ok": true,}\') -> {"items": [1, 2], "ok": True}\nsafe_parse_llm_json(\'[1, 2, 3]\') -> None\nsafe_parse_llm_json(\'Текст {мусор, а потом {"id": 42, "ok": true}\') -> {"id": 42, "ok": True}',
         hint: 'Сложное ТЗ! Пробуйте перебирать позиции <code>{</code> + <code>json.JSONDecoder().raw_decode</code> после удаления висячих запятых через regex.',
-        stub: 'import json\nimport re\n\ndef safe_parse_llm_json(raw: str):\n    # Извлеките первый валидный dict из грязного ответа LLM или верните None\n    pass\n'
+        stub: 'import json\nimport re\n\ndef safe_parse_llm_json(raw: str):\n    # Извлеките первый валидный dict из грязного ответа LLM или верните None\n    pass\n',
+        beginnerHelp: {
+          analogy: 'Это задача уровня настоящего AI-разработчика! Нейросети часто болтают лишнее вокруг JSON-анкеты («Вот ваш ответ: ...») или ставят лишнюю запятую в конце. Нам нужно аккуратно достать оттуда словарь <code>{...}</code>, чтобы программа не «сломалась» даже от мусора.',
+          steps: [
+            'Сразу проверьте: если строка пустая (<code>if not raw: return None</code>).',
+            'Удалите лишние запятые перед закрывающими скобками командой <code>re.sub(r",\\s*([}\\]])", r"\\1", текст)</code>.',
+            'Пройдитесь по строке и на каждой открывающей скобке <code>{</code> попробуйте прочитать объект через <code>json.JSONDecoder().raw_decode(...)</code> внутри блока <code>try ... except:</code>.',
+            'Если получилось и это именно словарь (<code>isinstance(obj, dict)</code>) — сразу делайте <code>return obj</code>. Если дошли до конца и ничего не нашли — <code>return None</code>.'
+          ],
+          syntaxTip: 'dec = json.JSONDecoder()\nfor idx, ch in enumerate(raw):\n    if ch == "{":\n        clean = re.sub(r",\\s*([}\\]])", r"\\1", raw[idx:])\n        try: obj, _ = dec.raw_decode(clean) ...',
+          aiPromptTip: 'Напиши надёжный парсер на Python через json.JSONDecoder().raw_decode с перебором всех позиций "{", очисткой висячих запятых regex и проверкой isinstance(obj, dict).'
+        }
       },
       {
         id: 'robot_undo',
@@ -6104,7 +6168,18 @@
         desc: 'Робот стартует в <code>[0, 0]</code> на поле <code>0..10</code> по X и Y. Функция <code>run_robot(commands)</code> читает команды через <code>;</code> (регистр не важен, пустые игнорируются): <code>UP n</code> (+y), <code>DOWN n</code> (-y), <code>RIGHT n</code> (+x), <code>LEFT n</code> (-x), <code>RESET</code> (в [0, 0]), <code>UNDO</code> (откат к точным координатам до предыдущей команды). После каждого шага координаты зажимаются в <code>[0, 10]</code>. Вернуть список <code>[x, y]</code>. (6 жёстких тестов)',
         examples: 'run_robot("RIGHT 8; RIGHT 5; UNDO") -> [8, 0]\nrun_robot("UP 4; RIGHT 3; UNDO; UNDO; UNDO") -> [0, 0]\nrun_robot("up 5 ; right 2 ; RESET ; UNDO") -> [2, 5]',
         hint: 'Главная ловушка: после «RIGHT 8; RIGHT 5» (упёрлись в стенку 10) команда UNDO должна вернуть [8, 0], а не [5, 0]! Храните стек истории состояний.',
-        stub: 'def run_robot(commands: str) -> list:\n    x, y = 0, 0\n    history = []\n    # Разберите команды через ";" и реализуйте движение, границы 0..10, RESET и UNDO\n    return [x, y]\n'
+        stub: 'def run_robot(commands: str) -> list:\n    x, y = 0, 0\n    history = []\n    # Разберите команды через ";" и реализуйте движение, границы 0..10, RESET и UNDO\n    return [x, y]\n',
+        beginnerHelp: {
+          analogy: 'Представьте фишку на клеточном поле 10×10. Перед тем как передвинуть фишку или нажать RESET, вы записываете в блокнот (<code>history</code>), где она стояла раньше. Когда звучит команда <code>UNDO</code> (отмена), вы просто берёте последнюю запись из блокнота!',
+          steps: [
+            'Разбейте строку команд по точке с запятой: <code>for part in commands.split(";"):</code> и приведите к верхнему регистру: <code>cmd = part.strip().upper()</code>.',
+            'Если команда пустая — пропустите (<code>if not cmd: continue</code>).',
+            'Если <code>cmd == "UNDO"</code> — если список <code>history</code> не пуст, верните прошлые координаты: <code>x, y = history.pop()</code>.',
+            'Перед каждым движением или <code>RESET</code> сохраняйте текущее место: <code>history.append((x, y))</code>. После движения зажимайте координаты от 0 до 10 через <code>min(10, max(0, ...))</code>.'
+          ],
+          syntaxTip: 'history.append((x, y))  # запомнили позицию до шага\nx = min(10, max(0, x + n))  # не вылезаем за 0..10\nif cmd == "UNDO" and history:\n    x, y = history.pop()',
+          aiPromptTip: 'Реализуй интерпретатор команд робота со стеком истории (history.append((x, y)) перед каждым изменением, UNDO делает history.pop(), координаты зажаты min(10, max(0, ...))).'
+        }
       }
     ];
 
@@ -6270,6 +6345,7 @@
 
       const savedTask = taskProgressState.codeTasks?.[meta.id] || {};
       const savedResult = savedTask.aiResult || null;
+      lastCodeRunResult = savedResult;
       const initialCode = savedTask.editorCode || savedResult?.extracted_code || meta.stub;
       if (editor) {
         editor.value = initialCode;
@@ -6346,8 +6422,158 @@
       }).catch(() => {});
     }
 
+    let lastCodeRunResult = null;
+
+    function dismissCodeBeginnerBanner() {
+      const b = document.getElementById('codeBeginnerBanner');
+      if (b) b.style.display = 'none';
+      try { localStorage.setItem('ks54_code_beginner_banner_hidden', '1'); } catch(e) {}
+    }
+
+    function openCodeHelpModal(tab = 'general') {
+      const modal = document.getElementById('codeHelpModal');
+      if (!modal) return;
+      populateCodeHelpTaskTab();
+      populateCodeHelpErrorTab();
+      switchCodeHelpTab(tab || 'general');
+      modal.classList.add('active');
+    }
+
+    function closeCodeHelpModal() {
+      const modal = document.getElementById('codeHelpModal');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function switchCodeHelpTab(tab) {
+      ['general', 'task', 'error'].forEach(t => {
+        const btn = document.getElementById(`codeHelpTabBtn_${t}`);
+        const pane = document.getElementById(`codeHelpPane_${t}`);
+        if (btn) btn.classList.toggle('active', t === tab);
+        if (pane) pane.style.display = t === tab ? 'flex' : 'none';
+      });
+    }
+
+    function populateCodeHelpTaskTab() {
+      const meta = CODE_TASKS_META.find(t => t.id === activeCodeTaskId) || CODE_TASKS_META[0];
+      const bh = meta.beginnerHelp || {};
+      const titleEl = document.getElementById('codeHelpTaskTitle');
+      const analogyEl = document.getElementById('codeHelpTaskAnalogy');
+      const stepsEl = document.getElementById('codeHelpTaskSteps');
+      const syntaxEl = document.getElementById('codeHelpTaskSyntax');
+      const aiTipEl = document.getElementById('codeHelpTaskAiTip');
+
+      if (titleEl) titleEl.textContent = meta.title;
+      if (analogyEl) analogyEl.innerHTML = bh.analogy || 'Прочитайте условие задачи и посмотрите примеры входных и выходных данных.';
+      if (stepsEl) {
+        stepsEl.innerHTML = (bh.steps || []).map(s => `<li style="margin-bottom:4px;">${s}</li>`).join('');
+      }
+      if (syntaxEl) syntaxEl.textContent = bh.syntaxTip || meta.stub || '';
+      if (aiTipEl) aiTipEl.textContent = bh.aiPromptTip || '';
+    }
+
+    function explainPythonErrorFriendly(res) {
+      if (!res) {
+        return {
+          title: 'Тесты ещё не запускались',
+          explanation: 'Нажмите синюю кнопку «▶ Запустить код и unit-тесты» или зелёную кнопку ИИ. Компьютер проверит код на нескольких примерах и покажет, что именно пошло не так.'
+        };
+      }
+      if (res.passed) {
+        return {
+          title: 'Ошибок нет — всё работает отлично!',
+          explanation: 'Все проверочные тесты пройдены. Можете переходить к следующей задаче в списке слева!'
+        };
+      }
+      const err = String(res.error || '');
+      const firstFail = (res.tests_results || []).find(t => !t.passed);
+      const failDetail = firstFail ? String(firstFail.error || '') : '';
+      const combined = `${err}\n${failDetail}`;
+
+      if (/pass\b/i.test(res.extracted_code || '') && /Получено None/i.test(combined)) {
+        return {
+          title: 'В коде осталась заглушка «pass»',
+          explanation: 'Слово <code>pass</code> в шаблоне означает «пока ничего не делать», поэтому функция возвращает пустоту (<code>None</code>). Сотрите <code>pass</code> и напишите расчёт + <code>return итоговое_значение</code> (или откройте вкладку «💡 Разбор этой задачи» сверху).'
+        };
+      }
+      if (/Получено None/i.test(combined)) {
+        return {
+          title: 'Функция ничего не вернула (None)',
+          explanation: 'В Python, чтобы функция отдала ответ на проверку, в самом конце обязательно нужно написать слово <code>return ответ</code>. Если написать только <code>print(...)</code> вместо <code>return</code>, тесты получат пустоту <code>None</code>.'
+        };
+      }
+      if (/IndentationError/i.test(combined)) {
+        return {
+          title: 'Сбились отступы (пробелы слева)',
+          explanation: 'В языке Python отступы слева очень важны: все строки внутри функции <code>def ...:</code>, внутри <code>if ...:</code> и внутри цикла <code>for ...:</code> должны быть сдвинуты вправо на 4 пробела. Нажмите клавишу <b>Tab</b> в начале сбившейся строки.'
+        };
+      }
+      if (/SyntaxError/i.test(combined)) {
+        return {
+          title: 'Опечатка в синтаксисе (как опечатка в слове)',
+          explanation: 'Компьютер не смог прочитать код из-за знаков препинания. Проверьте 3 частые причины: 1) в конце строк <code>def</code>, <code>if</code>, <code>else</code>, <code>for</code> забыто двоеточие <code>:</code>; 2) не закрыта круглая скобка <code>)</code> или кавычка <code>"</code>; 3) в условии вместо <code>==</code> написано одно <code>=</code>.'
+        };
+      }
+      if (/NameError/i.test(combined)) {
+        return {
+          title: 'Компьютер не нашёл имя функции или переменной',
+          explanation: 'Проверьте две вещи: 1) название функции после <code>def</code> должно буква в букву совпадать с условием задачи; 2) если вы используете переменную (например <code>total</code>), её нужно сначала создать выше строкой <code>total = 0</code>.'
+        };
+      }
+      if (/ZeroDivisionError/i.test(combined)) {
+        return {
+          title: 'Деление на ноль',
+          explanation: 'Когда список оценок или строка оказались пустыми, длина списка равна <code>0</code>, и компьютер не может разделить на ноль. Перед делением добавьте защиту: <code>if not grades: return 0.0</code>.'
+        };
+      }
+      if (/TypeError|ValueError/i.test(combined)) {
+        return {
+          title: 'Неподходящий тип данных (число и строка перепутаны)',
+          explanation: 'Скорее всего программа попыталась превратить текст в число (<code>int("н")</code>) или сложить число со строкой. Проверьте, что все пустые строки и буквы «н» отфильтрованы заранее до <code>int(...)</code>.'
+        };
+      }
+      if (/Ошибка вызова нейросети|Connection|connect/i.test(combined)) {
+        return {
+          title: 'Локальная нейросеть сейчас не отвечает',
+          explanation: 'Связь с моделью ИИ на сервере временно недоступна, но вы всё равно можете решить задачу в редакторе кода с помощью вкладки «💡 Разбор этой задачи» и синей кнопки «▶ Запустить код и unit-тесты»!'
+        };
+      }
+      return {
+        title: 'Код запустился, но ответ не совпал с ожидаемым',
+        explanation: 'Это уже хороший знак: синтаксических ошибок нет! Но в одном из особых случаев логика дала другой результат. Посмотрите, что именно пришло в красном тесте (<code>Получено ..., ожидалось ...</code>), и загляните во вкладку «💡 Разбор этой задачи» — там разобраны все подводные камни.'
+      };
+    }
+
+    function populateCodeHelpErrorTab() {
+      const box = document.getElementById('codeHelpErrorContent');
+      if (!box) return;
+      const res = lastCodeRunResult || taskProgressState.codeTasks?.[activeCodeTaskId]?.aiResult || null;
+      const info = explainPythonErrorFriendly(res);
+      box.innerHTML = `
+        <div class="info-section highlight">
+          <div class="info-label">🔍 Что случилось простыми словами:</div>
+          <div style="font-size:13.5px; font-weight:700; color:var(--text); margin-top:4px;">${escapeHtml(info.title)}</div>
+          <div class="info-text" style="margin-top:6px; line-height:1.55;">${info.explanation}</div>
+        </div>
+        ${res && !res.passed && res.error ? `
+          <div class="info-section">
+            <div class="info-label">⚙️ Техническое сообщение Python:</div>
+            <pre class="code-stdout-pre" style="margin-top:4px;">${escapeHtml(res.error)}</pre>
+          </div>
+        ` : ''}
+      `;
+    }
+
+    function copyBeginnerAiHint() {
+      const el = document.getElementById('codeHelpTaskAiTip');
+      if (!el || !el.textContent.trim()) return;
+      copyTextToClipboard(el.textContent.trim()).then(() => {
+        showToast('Подсказка для инструкции ИИ скопирована!', 'success');
+      }).catch(() => {});
+    }
+
     function renderCodeTaskResultBox(box, res) {
       if (!box || !res) return;
+      lastCodeRunResult = res;
       box.classList.add('active');
       const isPassed = Boolean(res.passed);
       const testsResults = Array.isArray(res.tests_results) && res.tests_results.length > 0
@@ -6363,6 +6589,11 @@
           <span>${isPassed ? '🏆 Задача решена! Все unit-тесты пройдены!' : '⚠️ Код не прошёл все unit-тесты'}</span>
           <span>${passedCount} / ${totalCount}</span>
         </div>
+        ${!isPassed ? `
+          <button type="button" class="btn-sm-action" onclick="openCodeHelpModal('error')" style="margin-top:6px; width:100%; padding:6px 10px; font-size:11.5px; font-weight:700; color:#d97706; border-color:rgba(245, 158, 11, 0.55); background:rgba(245, 158, 11, 0.1);">
+            ❓ Почему не прошло? Объяснить ошибку простыми словами
+          </button>
+        ` : ''}
         ${res.stdout ? `
           <div style="margin-top:6px;">
             <div style="font-size:10.5px; font-weight:600; color:var(--text-dim); margin-bottom:3px;">Вывод консоли (print):</div>
@@ -6785,6 +7016,12 @@
       await initAssignedWorkstation();
       updateProfileBadge();
       restoreAuditChecklist();
+      try {
+        if (localStorage.getItem('ks54_code_beginner_banner_hidden') === '1') {
+          const b = document.getElementById('codeBeginnerBanner');
+          if (b) b.style.display = 'none';
+        }
+      } catch(e) {}
       initTheme();
       setupViewport();
       const loaded = loadSavedWorkflow();
@@ -10516,6 +10753,99 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-modal-ok" onclick="closeUserProfileModal()">Понятно</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BEGINNER HELP POPUP MODAL FOR CODE PRACTICE -->
+  <div class="modal-overlay" id="codeHelpModal" onclick="if (event.target === this) closeCodeHelpModal()">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-head">
+        <div class="modal-head-title">
+          <div class="modal-icon">🆘</div>
+          <div>
+            <div class="modal-name">Помощь для начинающих (простыми словами)</div>
+            <div class="modal-badge">Без сложных терминов • Шаг за шагом</div>
+          </div>
+        </div>
+        <button type="button" class="btn-modal-close" onclick="closeCodeHelpModal()">✕</button>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; padding:8px 14px; background:var(--bg-deep); border-bottom:1px solid var(--border-subtle);">
+        <button type="button" class="task-level-btn active" id="codeHelpTabBtn_general" onclick="switchCodeHelpTab('general')" style="font-size:11px; padding:6px;">📘 С нуля: как начать</button>
+        <button type="button" class="task-level-btn" id="codeHelpTabBtn_task" onclick="switchCodeHelpTab('task')" style="font-size:11px; padding:6px;">💡 Разбор этой задачи</button>
+        <button type="button" class="task-level-btn" id="codeHelpTabBtn_error" onclick="switchCodeHelpTab('error')" style="font-size:11px; padding:6px;">❓ Разбор ошибки</button>
+      </div>
+
+      <div class="modal-body" style="gap:10px;">
+        <!-- TAB 1: С нуля -->
+        <div id="codeHelpPane_general" style="display:flex; flex-direction:column; gap:10px;">
+          <div class="info-section highlight">
+            <div class="info-label">🤖 Вариант 1 — Решить через своего ИИ-бота (без опыта в коде)</div>
+            <div class="info-text" style="margin-top:4px; line-height:1.55;">
+              Вы можете не писать код с нуля, а настроить своего ИИ-помощника:
+              <ol style="margin:6px 0 0 18px; padding:0; display:flex; flex-direction:column; gap:4px;">
+                <li>Нажмите вверху <b>«Схема нод»</b> (или кнопку <b>«🧩 Настроить схему нод»</b>).</li>
+                <li>Подключите к <b>🧠 Мозгу Бота</b>: <b>📊 Формат Данных</b> (выберите <code>Чистый код</code>), <b>🔥 Креативность</b> (ползунок влево до <code>0.1–0.3</code>) и <b>🎯 Few-Shot</b> (впишите 1 пример короткой функции).</li>
+                <li>Вернитесь сюда и нажмите зелёную кнопку <b>«🤖 Сгенерировать через ИИ»</b> — бот сам напишет код в чёрное окно!</li>
+              </ol>
+            </div>
+            <button type="button" class="btn-sm-action" onclick="closeCodeHelpModal(); switchTab('nodes');" style="margin-top:8px; font-weight:700; color:var(--wire-char); border-color:var(--wire-char);">🧩 Перейти на Схему нод →</button>
+          </div>
+
+          <div class="info-section">
+            <div class="info-label">📖 Мини-словарик: что значат слова в редакторе?</div>
+            <ul class="guide-list" style="margin-top:6px;">
+              <li><b><code>def имя(...):</code></b> — это начало рецепта (функции). Название после <code>def</code> менять нельзя!</li>
+              <li><b><code>pass</code></b> — пустая заглушка («тут пока пусто»). Её нужно стереть и написать своё решение.</li>
+              <li><b><code>return ответ</code></b> — команда «отдай готовый ответ на проверку». Без <code>return</code> тесты получат пустоту <code>None</code>.</li>
+              <li><b>Отступы (кнопка <code>Tab</code>)</b> — строки внутри <code>def</code>, <code>if</code> и <code>for</code> всегда сдвигаются вправо на 4 пробела.</li>
+              <li><b>Unit-тесты (справа)</b> — это 4–7 проверочных примеров. Зелёный <code>✅</code> — всё верно, красный <code>❌</code> — нужно поправить код.</li>
+            </ul>
+          </div>
+
+          <div class="info-section">
+            <div class="info-label">🐛 Что делать в задачах 3 и 4 («Отладка ИИ»)?</div>
+            <div class="info-text" style="margin-top:4px; line-height:1.5;">
+              Там писать всё заново не нужно! В редакторе уже лежит почти рабочий код, но с 2–3 хитрыми ошибками. Нажмите синюю кнопку <b>«▶ Запустить код и unit-тесты»</b>, посмотрите, какие примеры стали красными, и откройте вкладку <b>«💡 Разбор этой задачи»</b> сверху.
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Разбор текущей задачи -->
+        <div id="codeHelpPane_task" style="display:none; flex-direction:column; gap:10px;">
+          <div class="info-section highlight">
+            <div class="info-label">💡 Простыми словами о задаче: <span id="codeHelpTaskTitle" style="color:var(--text);"></span></div>
+            <div class="info-text" id="codeHelpTaskAnalogy" style="margin-top:6px; line-height:1.55;"></div>
+          </div>
+
+          <div class="info-section">
+            <div class="info-label">🪜 Как рассуждать по шагам:</div>
+            <ol id="codeHelpTaskSteps" style="margin:6px 0 0 18px; padding:0; font-size:12px; color:var(--text); line-height:1.5;"></ol>
+          </div>
+
+          <div class="info-section">
+            <div class="info-label">🧩 Какие команды Python здесь пригодятся:</div>
+            <pre class="code-stdout-pre" id="codeHelpTaskSyntax" style="margin-top:6px; max-height:150px;"></pre>
+          </div>
+
+          <div class="info-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <div class="info-label">🤖 Что написать боту в блок «📝 Инструкция»:</div>
+              <button type="button" class="btn-sm-action" onclick="copyBeginnerAiHint()" style="font-size:10.5px; padding:2px 8px;">📋 Скопировать</button>
+            </div>
+            <div id="codeHelpTaskAiTip" style="margin-top:6px; font-size:11.5px; color:var(--text); font-style:italic; line-height:1.45;"></div>
+          </div>
+        </div>
+
+        <!-- TAB 3: Разбор ошибки -->
+        <div id="codeHelpPane_error" style="display:none; flex-direction:column; gap:10px;">
+          <div id="codeHelpErrorContent" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-ok" onclick="closeCodeHelpModal()">Понятно, попробую! 👍</button>
       </div>
     </div>
   </div>
