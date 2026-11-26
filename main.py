@@ -8,7 +8,7 @@ import sqlite3
 from typing import Optional, List
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, File, Form, UploadFile, HTTPException
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Request
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -103,6 +103,16 @@ def init_db():
                 user_id TEXT PRIMARY KEY,
                 progress_json TEXT NOT NULL,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS workstations (
+                client_key TEXT PRIMARY KEY,
+                pc_number INTEGER UNIQUE NOT NULL,
+                pc_name TEXT NOT NULL,
+                user_id TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         """)
 
@@ -690,15 +700,17 @@ class CodeTaskRequest(BaseModel):
     system_prompt: str
     temperature: Optional[float] = 0.2
     kb_text: Optional[str] = None
+    current_code: Optional[str] = None
 
 
 CODE_TASKS = {
     "sum_pos": {
         "title": "1. Сумма положительных чисел",
+        "stage": "Разминка",
         "difficulty": "Лёгкая",
         "est_minutes": 2,
         "description": "Функция solve(numbers) принимает список чисел и возвращает сумму всех чисел > 0 (если положительных нет, верни 0).",
-        "prompt": "Напиши на Python функцию solve(numbers: list) -> int, которая возвращает сумму всех положительных чисел (> 0) из переданного списка. Если чисел > 0 нет, верни 0. Напиши только рабочий код функции в блоке ```python ... ``` без лишних объяснений.",
+        "prompt": "Напиши на Python функцию solve(numbers: list) -> int, которая возвращает сумму всех положительных чисел (> 0) из переданного списка. Если чисел > 0 нет, верни 0. Напиши только рабочий код функции в блоке ```python ... ```.",
         "tests": [
             {"label": "solve([1, -2, 3, 4, -5]) == 8", "call": "solve([1, -2, 3, 4, -5])", "expected": 8},
             {"label": "solve([-1, -2, -3]) == 0", "call": "solve([-1, -2, -3])", "expected": 0},
@@ -708,68 +720,87 @@ CODE_TASKS = {
     },
     "vowels": {
         "title": "2. Счётчик русских гласных",
+        "stage": "Разминка",
         "difficulty": "Лёгкая",
-        "est_minutes": 3,
-        "description": "Функция count_vowels(text) считает количество гласных русских букв (а, е, ё, и, о, у, ы, э, ю, я) без учета регистра.",
-        "prompt": "Напиши на Python функцию count_vowels(text: str) -> int, которая считает количество гласных русских букв (а, е, ё, и, о, у, ы, э, ю, я) в переданной строке без учета регистра. Обязательно учти букву 'ё' и заглавные буквы. Напиши только рабочий код функции в блоке ```python ... ```.",
+        "est_minutes": 2,
+        "description": "Функция count_vowels(text) считает количество гласных русских букв в строке независимо от регистра.",
+        "prompt": "Напиши на Python функцию count_vowels(text: str) -> int, которая считает количество русских гласных букв в переданной строке. Напиши только рабочий код функции в блоке ```python ... ```.",
         "tests": [
             {"label": 'count_vowels("Привет") == 2', "call": 'count_vowels("Привет")', "expected": 2},
             {"label": 'count_vowels("Ёжик в тумане") == 5', "call": 'count_vowels("Ёжик в тумане")', "expected": 5},
             {"label": 'count_vowels("КОЛЛЕДЖ 54") == 2', "call": 'count_vowels("КОЛЛЕДЖ 54")', "expected": 2},
+            {"label": 'count_vowels("ЭЮЯ ёжик") == 5', "call": 'count_vowels("ЭЮЯ ёжик")', "expected": 5},
             {"label": 'count_vowels("бвгдж") == 0', "call": 'count_vowels("бвгдж")', "expected": 0},
         ],
     },
-    "palindrome": {
-        "title": "3. Умный палиндром",
+    "bug_discount": {
+        "title": "3. Отладка ИИ: скидка и доставка",
+        "stage": "Отладка ИИ",
         "difficulty": "Средняя",
         "est_minutes": 3,
-        "description": "Функция is_palindrome(s) проверяет, читается ли строка одинаково слева направо и справа налево, игнорируя пробелы, знаки препинания (.,!?:;-) и регистр.",
-        "prompt": "Напиши на Python функцию is_palindrome(s: str) -> bool, которая проверяет, является ли строка палиндромом. Игнорируй пробелы, знаки препинания (.,!?:;-) и регистр букв (оставляй только буквы и цифры). Напиши только рабочий код функции в блоке ```python ... ```.",
+        "mode": "debug",
+        "description": "Почини код в редакторе: calc_order(prices, is_vip) суммирует только цены > 0 (пустая корзина -> 0), при is_vip=True даёт скидку 20% (total * 80 // 100), и если итог ПОСЛЕ скидки < 1000 и > 0, добавляет доставку 300 руб (при >= 1000 доставка 0).",
+        "prompt": "Исправь ошибки в Python-функции calc_order(prices: list, is_vip: bool) -> int по ТЗ:\n1) Суммируются только положительные цены (> 0); пустой список -> 0 без доставки.\n2) Если is_vip=True, к сумме применяется скидка 20% (total * 80 // 100).\n3) Если итог после скидки > 0 и строго меньше 1000, добавляется доставка 300 руб; при >= 1000 доставка бесплатна.\nВерни только исправленный рабочий код в блоке ```python ... ```.",
         "tests": [
-            {"label": 'is_palindrome("шалаш") is True', "call": 'is_palindrome("шалаш")', "expected": True},
-            {"label": 'is_palindrome("А роза упала на лапу Азора!") is True', "call": 'is_palindrome("А роза упала на лапу Азора!")', "expected": True},
-            {"label": 'is_palindrome("питон") is False', "call": 'is_palindrome("питон")', "expected": False},
-            {"label": 'is_palindrome("12 3 21") is True', "call": 'is_palindrome("12 3 21")', "expected": True},
+            {"label": "calc_order([500, 700], False) == 1200", "call": "calc_order([500, 700], False)", "expected": 1200},
+            {"label": "calc_order([400, 200], False) == 900", "call": "calc_order([400, 200], False)", "expected": 900},
+            {"label": "calc_order([1000], False) == 1000", "call": "calc_order([1000], False)", "expected": 1000},
+            {"label": "calc_order([], True) == 0", "call": "calc_order([], True)", "expected": 0},
+            {"label": "calc_order([500, -100, 600], True) == 1180", "call": "calc_order([500, -100, 600], True)", "expected": 1180},
+            {"label": "calc_order([1500], True) == 1200", "call": "calc_order([1500], True)", "expected": 1200},
         ],
     },
-    "password_check": {
-        "title": "4. Валидатор надёжного пароля",
+    "bug_grades": {
+        "title": "4. Отладка ИИ: балл с пересдачами",
+        "stage": "Отладка ИИ",
         "difficulty": "Средняя",
         "est_minutes": 4,
-        "description": "Функция check_password(pwd) возвращает True, только если длина пароля >= 8 символов и в нём есть минимум 1 заглавная буква, 1 строчная буква и 1 цифра.",
-        "prompt": "Напиши на Python функцию check_password(pwd: str) -> bool, которая возвращает True, только если длина строки >= 8 символов И в ней есть хотя бы одна заглавная буква, хотя бы одна строчная буква и хотя бы одна цифра. Иначе верни False. Напиши только рабочий код функции в блоке ```python ... ```.",
+        "mode": "debug",
+        "description": "Почини код в редакторе: calc_gpa(record) разбирает строку оценок через запятую ('5, 2, 4*, н'). 'н' (в любом регистре) и пустые элементы игнорируются; оценка со звёздочкой (4*) — пересдача, она заменяет предыдущую числовую оценку; при отсутствии оценок вернуть 0.0; иначе среднее, округлённое до 2 знаков.",
+        "prompt": "Исправь ошибки в Python-функции calc_gpa(record: str) -> float по ТЗ:\n- На вход подаётся строка оценок через запятую (например '2, н, 4*, 5').\n- 'н'/'Н' и пустые элементы пропускаются.\n- Оценка со звёздочкой (например '4*') заменяет предыдущую оценку (или добавляется, если она первая).\n- Если оценок нет, вернуть 0.0, иначе round(sum/len, 2).\nВерни только исправленный рабочий код в блоке ```python ... ```.",
         "tests": [
-            {"label": 'check_password("Qwerty12") is True', "call": 'check_password("Qwerty12")', "expected": True},
-            {"label": 'check_password("qwerty12") is False', "call": 'check_password("qwerty12")', "expected": False},
-            {"label": 'check_password("QWERTY12") is False', "call": 'check_password("QWERTY12")', "expected": False},
-            {"label": 'check_password("Qwertyui") is False', "call": 'check_password("Qwertyui")', "expected": False},
-            {"label": 'check_password("Ab1") is False', "call": 'check_password("Ab1")', "expected": False},
+            {"label": 'calc_gpa("5, 4, 3") == 4.0', "call": 'calc_gpa("5, 4, 3")', "expected": 4.0},
+            {"label": 'calc_gpa("4, 5, 4, 5") == 4.5', "call": 'calc_gpa("4, 5, 4, 5")', "expected": 4.5},
+            {"label": 'calc_gpa("2, 5*, 4") == 4.5', "call": 'calc_gpa("2, 5*, 4")', "expected": 4.5},
+            {"label": 'calc_gpa("2, н, 4*, 5") == 4.5', "call": 'calc_gpa("2, н, 4*, 5")', "expected": 4.5},
+            {"label": 'calc_gpa("Н, , 5*") == 5.0', "call": 'calc_gpa("Н, , 5*")', "expected": 5.0},
+            {"label": 'calc_gpa("") == 0.0', "call": 'calc_gpa("")', "expected": 0.0},
+            {"label": 'calc_gpa("н, Н") == 0.0', "call": 'calc_gpa("н, Н")', "expected": 0.0},
         ],
     },
-    "parse_orders": {
-        "title": "5. Парсер выручки из логов",
+    "safe_json": {
+        "title": "5. Парсер грязного JSON от LLM",
+        "stage": "Хардкор",
         "difficulty": "Продвинутая",
         "est_minutes": 4,
-        "description": "Функция calc_revenue(logs) получает список строк вида 'Заказ #12: 450 руб', 'Отмена: 200 руб'. Нужно просуммировать суммы только из строк, начинающихся с 'Заказ', игнорируя отмены и битые строки.",
-        "prompt": "Напиши на Python функцию calc_revenue(logs: list) -> int. Она принимает список строк. Учитывай только строки, которые начинаются со слова 'Заказ' (с учётом пробелов по краям). Из каждой такой строки извлеки целое число (сумму заказа перед словом 'руб', например из 'Заказ #12: 450 руб' нужно взять 450, а не 12!) и верни общую сумму. Отмены и некорректные строки без суммы игнорируй. Напиши только рабочий код функции в блоке ```python ... ```.",
+        "mode": "hard",
+        "description": "Функция safe_parse_llm_json(raw) извлекает первый валидный JSON-объект (dict) из произвольного ответа нейросети: вырезает обёртку ```json ... ``` и окружающий текст, убирает висячие запятые перед } или ], и возвращает None (без исключений), если валидного JSON-объекта нет или пришёл массив/мусор.",
+        "prompt": "Напиши на Python функцию safe_parse_llm_json(raw: str), которая извлекает валидный JSON-объект (dict) из ответа LLM и возвращает его (или None, если извлечь словарь нельзя).\nТребования:\n- Учитывай лишний текст вокруг и markdown-блоки.\n- Учитывай висячие запятые перед закрывающими скобками.\n- Если в тексте до валидного JSON есть случайная фигурная скобка {мусор, функция не должна ломаться.\n- Если результат не dict (например список) или текст битый — верни None без исключений.\nНапиши только рабочий код в блоке ```python ... ```.",
         "tests": [
-            {"label": 'calc_revenue(["Заказ #1: 500 руб", "Отмена: 200 руб", "Заказ #2: 300 руб"]) == 800', "call": 'calc_revenue(["Заказ #1: 500 руб", "Отмена: 200 руб", "Заказ #2: 300 руб"])', "expected": 800},
-            {"label": 'calc_revenue(["Отмена: 100 руб"]) == 0', "call": 'calc_revenue(["Отмена: 100 руб"])', "expected": 0},
-            {"label": 'calc_revenue([]) == 0', "call": 'calc_revenue([])', "expected": 0},
-            {"label": 'calc_revenue(["Заказ #9: 1200 руб", "Ошибка чтения", "Заказ #10: 50 руб"]) == 1250', "call": 'calc_revenue(["Заказ #9: 1200 руб", "Ошибка чтения", "Заказ #10: 50 руб"])', "expected": 1250},
+            {"label": 'safe_parse_llm_json(\'{"status": "ok", "count": 3}\')', "call": 'safe_parse_llm_json(\'{"status": "ok", "count": 3}\')', "expected": {"status": "ok", "count": 3}},
+            {"label": 'markdown ```json ... ```', "call": 'safe_parse_llm_json(\'Вот ответ:\\n```json\\n{"name": "Bot", "active": true}\\n```\\nУдачи!\')', "expected": {"name": "Bot", "active": True}},
+            {"label": 'trailing commas {"items": [1, 2,], "ok": true,}', "call": 'safe_parse_llm_json(\'Результат: {"items": [1, 2,], "ok": true,}\')', "expected": {"items": [1, 2], "ok": True}},
+            {"label": 'нет JSON -> None', "call": 'safe_parse_llm_json("Не смог сформировать JSON.")', "expected": None},
+            {"label": 'битый {"broken": 123 -> None', "call": 'safe_parse_llm_json(\'{"broken": 123\')', "expected": None},
+            {"label": 'массив [1, 2, 3] -> None', "call": 'safe_parse_llm_json("[1, 2, 3]")', "expected": None},
+            {"label": 'лишняя { перед {"id": 42, "ok": true}', "call": 'safe_parse_llm_json(\'Текст с {ошибкой внутри, потом {"id": 42, "ok": true}\')', "expected": {"id": 42, "ok": True}},
         ],
     },
-    "rate_limiter": {
-        "title": "6. Анти-спам фильтр для бота",
+    "robot_undo": {
+        "title": "6. Робот с UNDO и границами поля",
+        "stage": "Хардкор",
         "difficulty": "Продвинутая",
-        "est_minutes": 4,
-        "description": "Функция filter_spam(messages, max_len) очищает пробелы по краям, удаляет пустые сообщения и строки длиннее max_len, а также убирает подряд идущие дубликаты (без учета регистра).",
-        "prompt": "Напиши на Python функцию filter_spam(messages: list, max_len: int) -> list. Для каждой строки: 1) обрежь пробелы по краям (.strip()); 2) пропусти пустые строки и строки длиной больше max_len; 3) если текущее сообщение совпадает с предыдущим добавленным в результат без учёта регистра (.lower()), не добавляй его (удали подряд идущие дубликаты, оставив первое вхождение). Верни отфильтрованный список строк. Напиши только рабочий код функции в блоке ```python ... ```.",
+        "est_minutes": 5,
+        "mode": "hard",
+        "description": "Робот стартует в [0, 0] на сетке 0..10 по X и 0..10 по Y. Функция run_robot(commands) выполняет команды через ';': UP n (+y), DOWN n (-y), RIGHT n (+x), LEFT n (-x), RESET (в [0, 0]), UNDO (отмена последнего шага с возвратом точных координат до него). Координаты всегда зажаты в [0, 10]. Верни список [x, y].",
+        "prompt": "Напиши на Python функцию run_robot(commands: str) -> list.\nПравила:\n- Старт в [0, 0], допустимые координаты 0 <= x <= 10 и 0 <= y <= 10 (при выходе за границу значение зажимается).\n- Команды разделяются ';', регистр не важен, пустые игнорируются: UP n (+y), DOWN n (-y), RIGHT n (+x), LEFT n (-x), RESET (переход в [0, 0]), UNDO (возврат к точным координатам до предыдущей выполненной команды).\n- Верни итоговый список [x, y].\nНапиши только рабочий код в блоке ```python ... ```.",
         "tests": [
-            {"label": 'filter_spam(["Привет", "привет", "Как дела?", "   ", "Очень длинное сообщение"], 12) == ["Привет", "Как дела?"]', "call": 'filter_spam(["Привет", "привет", "Как дела?", "   ", "Очень длинное сообщение"], 12)', "expected": ["Привет", "Как дела?"]},
-            {"label": 'filter_spam(["  Ок  ", "ок", "Ок"], 10) == ["Ок"]', "call": 'filter_spam(["  Ок  ", "ок", "Ок"], 10)', "expected": ["Ок"]},
-            {"label": 'filter_spam(["a", "b", "a"], 5) == ["a", "b", "a"]', "call": 'filter_spam(["a", "b", "a"], 5)', "expected": ["a", "b", "a"]},
-            {"label": 'filter_spam([], 10) == []', "call": 'filter_spam([], 10)', "expected": []},
+            {"label": 'run_robot("UP 3; RIGHT 2") == [2, 3]', "call": 'run_robot("UP 3; RIGHT 2")', "expected": [2, 3]},
+            {"label": 'run_robot("RIGHT 15; DOWN 4") == [10, 0]', "call": 'run_robot("RIGHT 15; DOWN 4")', "expected": [10, 0]},
+            {"label": 'run_robot("RIGHT 8; RIGHT 5; UNDO") == [8, 0]', "call": 'run_robot("RIGHT 8; RIGHT 5; UNDO")', "expected": [8, 0]},
+            {"label": 'run_robot("UP 4; RIGHT 3; UNDO; UNDO; UNDO") == [0, 0]', "call": 'run_robot("UP 4; RIGHT 3; UNDO; UNDO; UNDO")', "expected": [0, 0]},
+            {"label": 'run_robot("up 5 ; right 2 ; RESET ; UNDO") == [2, 5]', "call": 'run_robot("up 5 ; right 2 ; RESET ; UNDO")', "expected": [2, 5]},
+            {"label": 'run_robot("") == [0, 0]', "call": 'run_robot("")', "expected": [0, 0]},
         ],
     },
 }
@@ -943,9 +974,13 @@ async def verify_code_task(payload: CodeTaskRequest):
 
     temp = float(payload.temperature if payload.temperature is not None else 0.2)
 
+    user_prompt = task["prompt"]
+    if task.get("mode") == "debug" and payload.current_code and payload.current_code.strip():
+        user_prompt = f"{user_prompt}\n\nТекущий код в редакторе:\n```python\n{payload.current_code.strip()}\n```"
+
     messages = [
         {"role": "system", "content": sys_prompt},
-        {"role": "user", "content": task["prompt"]},
+        {"role": "user", "content": user_prompt},
     ]
 
     try:
@@ -998,6 +1033,61 @@ async def verify_code_task(payload: CodeTaskRequest):
         "stdout": run_res["stdout"],
         "tests_labels": tests_labels,
         "tests_results": run_res["tests_results"],
+    }
+
+
+@app.get("/api/workstation")
+async def get_or_assign_workstation(request: Request, user_id: Optional[str] = None):
+    forwarded = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip()
+    client_ip = forwarded or ((request.client.host if request.client else "") or "unknown")
+    clean_uid = (user_id or "").strip()
+
+    if client_ip in ("127.0.0.1", "::1", "localhost") and clean_uid:
+        client_key = f"local:{clean_uid}"
+    else:
+        client_key = f"ip:{client_ip}"
+
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT pc_number, pc_name, user_id FROM workstations WHERE client_key = ?",
+            (client_key,),
+        ).fetchone()
+        if row:
+            return {
+                "pc_number": row["pc_number"],
+                "pc_name": row["pc_name"],
+                "user_id": row["user_id"],
+                "client_ip": client_ip,
+                "locked": True,
+            }
+
+        max_row = conn.execute("SELECT COALESCE(MAX(pc_number), 0) FROM workstations").fetchone()
+        next_num = int(max_row[0]) + 1
+        pc_name = f"ПК-{next_num:02d}"
+
+        assigned_uid = clean_uid
+        if not assigned_uid:
+            assigned_uid = f"ws_{next_num:02d}_{secrets.token_hex(3)}"
+        else:
+            existing_uid = conn.execute(
+                "SELECT 1 FROM workstations WHERE user_id = ?",
+                (assigned_uid,),
+            ).fetchone()
+            if existing_uid:
+                assigned_uid = f"ws_{next_num:02d}_{secrets.token_hex(3)}"
+
+        conn.execute(
+            "INSERT INTO workstations (client_key, pc_number, pc_name, user_id) VALUES (?, ?, ?, ?)",
+            (client_key, next_num, pc_name, assigned_uid),
+        )
+        conn.commit()
+
+    return {
+        "pc_number": next_num,
+        "pc_name": pc_name,
+        "user_id": assigned_uid,
+        "client_ip": client_ip,
+        "locked": True,
     }
 
 

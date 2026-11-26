@@ -4368,7 +4368,7 @@
             <div class="code-editor-toolbar">
               <span style="font-size:12px; font-weight:700; color:var(--text);">📝 Редактор кода (Python)</span>
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                <button type="button" class="btn-sm-action" onclick="insertCodeStub()" title="Вставить заготовку функции">↺ Шаблон функции</button>
+                <button type="button" class="btn-sm-action" id="btnCodeStubReset" onclick="insertCodeStub()" title="Вставить заготовку функции">↺ Шаблон функции</button>
                 <button type="button" class="btn-sm-action" onclick="copyEditorCode()" title="Копировать код из редактора">📋 Копировать</button>
               </div>
             </div>
@@ -4637,8 +4637,8 @@
         targetSelector: "#btnUserProfile",
         badge: "Шаг 11 из 12 • Рабочее место",
         icon: "🖥️",
-        title: "Твоё «Рабочее место» (профиль)",
-        body: "В правом верхнем углу отображается твой номер ПК или имя. Все созданные тобой боты привязываются к этой сессии, чтобы не теряться в списке.<ul><li>Нажми на кнопку, чтобы указать своё имя или номер компьютера.</li><li>Кнопка <b>«Сбросить»</b> создаёт чистый профиль с новым номером.</li></ul>",
+        title: "Твоё «Рабочее место» (номер ПК)",
+        body: "В правом верхнем углу отображается номер твоего рабочего места (например, <code>ПК-01</code>). Сервер выдает и закрепляет его автоматически для каждого компьютера — изменить или сбросить номер нельзя, а все твои боты и прогресс автоматически привязываются к нему.",
         tip: "💡 Тему оформления всегда можно переключить кнопкой <b>☀️ Светлая / 🌙 Тёмная</b> рядом."
       },
       {
@@ -5121,7 +5121,7 @@
 
     
     // --- Task Progress Persistence (LocalStorage + Server SQLite Sync) ---
-    const CODE_TASK_IDS = ['sum_pos', 'vowels', 'palindrome', 'password_check', 'parse_orders', 'rate_limiter'];
+    const CODE_TASK_IDS = ['sum_pos', 'vowels', 'bug_discount', 'bug_grades', 'safe_json', 'robot_undo'];
 
     function getDefaultCodeTasksMap() {
       const m = {};
@@ -6014,15 +6014,17 @@
       }
     }
 
-    // --- Code Practice IDE (~20 min, 6 Python Coding Challenges + Editor) ---
+    // --- Code Practice IDE (~20 min: 2 Warm-up + 2 AI Debugging + 2 Hardcore Tasks) ---
     const CODE_TASKS_META = [
       {
         id: 'sum_pos',
         num: 1,
+        mode: 'code',
+        stageLabel: 'Разминка',
         shortTitle: 'Сумма положительных',
         title: '1. Сумма положительных чисел',
         diffClass: 'easy',
-        diffLabel: 'Лёгкая',
+        diffLabel: 'Разминка • 2 мин',
         minutes: 2,
         desc: 'Функция <code>solve(numbers)</code> принимает список чисел и возвращает сумму всех элементов строго больше нуля (<code>&gt; 0</code>). Если положительных нет — возвращает <code>0</code>.',
         examples: 'solve([1, -2, 3, 4, -5]) -> 8\nsolve([-1, -2, -3]) -> 0\nsolve([]) -> 0',
@@ -6032,67 +6034,77 @@
       {
         id: 'vowels',
         num: 2,
+        mode: 'code',
+        stageLabel: 'Разминка',
         shortTitle: 'Счётчик гласных',
         title: '2. Счётчик русских гласных',
         diffClass: 'easy',
-        diffLabel: 'Лёгкая',
-        minutes: 3,
-        desc: 'Функция <code>count_vowels(text)</code> считает количество русских гласных букв (<code>а, е, ё, и, о, у, ы, э, ю, я</code>) без учёта регистра.',
-        examples: 'count_vowels("Привет") -> 2\ncount_vowels("Ёжик в тумане") -> 5\ncount_vowels("КОЛЛЕДЖ 54") -> 2',
-        hint: 'Ловушка для ИИ: маленькие модели часто забывают букву «ё» или заглавные буквы. Упомяните внимательность к деталям в Инструкции.',
-        stub: 'def count_vowels(text: str) -> int:\n    # Гласные: а, е, ё, и, о, у, ы, э, ю, я (без учёта регистра)\n    pass\n'
+        diffLabel: 'Разминка • 2 мин',
+        minutes: 2,
+        desc: 'Функция <code>count_vowels(text)</code> считает количество русских гласных букв в строке независимо от регистра. (5 тестов)',
+        examples: 'count_vowels("Привет") -> 2\ncount_vowels("Ёжик в тумане") -> 5\ncount_vowels("ЭЮЯ ёжик") -> 5',
+        hint: 'Сервер больше не подсказывает модели про букву «ё» и регистр — проверьте, справится ли бот или допишите проверку в промпт/код!',
+        stub: 'def count_vowels(text: str) -> int:\n    # Посчитайте русские гласные буквы в любом регистре\n    pass\n'
       },
       {
-        id: 'palindrome',
+        id: 'bug_discount',
         num: 3,
-        shortTitle: 'Умный палиндром',
-        title: '3. Умный палиндром',
+        mode: 'debug',
+        stageLabel: 'Отладка ИИ',
+        shortTitle: '🐛 Скидка и доставка',
+        title: '3. Отладка ИИ: скидка и доставка',
         diffClass: 'med',
-        diffLabel: 'Средняя',
+        diffLabel: 'Отладка • 3 мин',
         minutes: 3,
-        desc: 'Функция <code>is_palindrome(s)</code> возвращает <code>True</code>, если строка читается одинаково слева направо и справа налево, игнорируя пробелы, знаки препинания (<code>.,!?:;-</code>) и регистр.',
-        examples: 'is_palindrome("А роза упала на лапу Азора!") -> True\nis_palindrome("питон") -> False\nis_palindrome("12 3 21") -> True',
-        hint: 'Нужно очистить строку от пробелов и пунктуации (например, через <code>isalnum()</code>) перед переворотом <code>[::-1]</code>.',
-        stub: 'def is_palindrome(s: str) -> bool:\n    # Оставьте только буквы/цифры в нижнем регистре и проверьте срез [::-1]\n    pass\n'
+        desc: '<b>В редакторе уже лежит «кривой» код от ИИ!</b> Почини <code>calc_order(prices, is_vip)</code>: учитываются только цены <code>&gt; 0</code> (пустая корзина → <code>0</code>); если <code>is_vip=True</code>, скидка <code>20%</code> (<code>total * 80 // 100</code>); если итог <b>после скидки</b> строго <code>&lt; 1000</code> (и <code>&gt; 0</code>), добавляется доставка <code>300</code> руб (от 1000 руб доставка 0).',
+        examples: 'calc_order([500, 700], False) -> 1200\ncalc_order([1000], False) -> 1000\ncalc_order([], True) -> 0\ncalc_order([500, -100, 600], True) -> 1180',
+        hint: 'Сначала нажмите «▶ Запустить код и unit-тесты», посмотрите какие из 6 тестов упали, и найдите 3 логических бага в коде ИИ!',
+        stub: 'def calc_order(prices: list, is_vip: bool) -> int:\n    # Код сгенерирован слабой нейросетью (есть 3 ошибки!):\n    total = sum(prices)\n    if total <= 1000:\n        total += 300\n    if is_vip:\n        total = total * 80 // 100\n    return total\n'
       },
       {
-        id: 'password_check',
+        id: 'bug_grades',
         num: 4,
-        shortTitle: 'Валидатор пароля',
-        title: '4. Валидатор надёжного пароля',
+        mode: 'debug',
+        stageLabel: 'Отладка ИИ',
+        shortTitle: '🐛 Балл с пересдачами',
+        title: '4. Отладка ИИ: средний балл с пересдачами',
         diffClass: 'med',
-        diffLabel: 'Средняя',
+        diffLabel: 'Отладка • 4 мин',
         minutes: 4,
-        desc: 'Функция <code>check_password(pwd)</code> возвращает <code>True</code>, только если длина <code>&gt;= 8</code> символов и есть минимум 1 заглавная буква, 1 строчная буква и 1 цифра.',
-        examples: 'check_password("Qwerty12") -> True\ncheck_password("qwerty12") -> False\ncheck_password("Ab1") -> False',
-        hint: 'Если модель путается в регулярных выражениях, добавьте в Few-Shot пример с проверкой символов через <code>any(c.isupper() ...)</code>.',
-        stub: 'def check_password(pwd: str) -> bool:\n    # Длина >= 8, есть хотя бы 1 заглавная, 1 строчная и 1 цифра\n    pass\n'
+        desc: '<b>В редакторе код от ИИ с ошибками на крайних случаях!</b> <code>calc_gpa(record)</code> разбирает строку оценок через запятую (<code>"2, н, 4*, 5"</code>): <code>н</code>/<code>Н</code> и пустые элементы пропускаются; оценка со звёздочкой <code>4*</code> — пересдача, она <b>заменяет предыдущую оценку</b> (или добавляется первой); если оценок нет — вернуть <code>0.0</code>; иначе <code>round(сумма / кол-во, 2)</code>.',
+        examples: 'calc_gpa("2, 5*, 4") -> 4.5\ncalc_gpa("2, н, 4*, 5") -> 4.5\ncalc_gpa("Н, , 5*") -> 5.0\ncalc_gpa("") -> 0.0',
+        hint: 'Запустите 7 unit-тестов на текущем коде — посмотрите на ZeroDivisionError, ValueError и работу пересдачи <code>*</code>.',
+        stub: 'def calc_gpa(record: str) -> float:\n    # Код от ИИ падает на пересдачах и пропусках — почини его!\n    grades = []\n    for item in record.split(","):\n        s = item.strip()\n        if s == "н":\n            continue\n        if s.endswith("*"):\n            grades.append(int(s[:-1]))\n        else:\n            grades.append(int(s))\n    return round(sum(grades) / len(grades), 2)\n'
       },
       {
-        id: 'parse_orders',
+        id: 'safe_json',
         num: 5,
-        shortTitle: 'Парсер выручки',
-        title: '5. Парсер выручки из логов',
+        mode: 'hard',
+        stageLabel: 'Хардкор',
+        shortTitle: '🔥 Парсер JSON от LLM',
+        title: '5. Парсер «грязного» JSON от нейросети',
         diffClass: 'hard',
-        diffLabel: 'Продвинутая',
+        diffLabel: 'Хардкор • 4 мин',
         minutes: 4,
-        desc: 'Функция <code>calc_revenue(logs)</code> получает список строк вида <code>"Заказ #12: 450 руб"</code>, <code>"Отмена: 200 руб"</code>. Нужно сложить суммы только строк, начинающихся с <code>"Заказ"</code> (взять сумму заказа, а не его номер #12!).',
-        examples: 'calc_revenue(["Заказ #1: 500 руб", "Отмена: 200 руб", "Заказ #2: 300 руб"]) -> 800\ncalc_revenue(["Ошибка чтения"]) -> 0',
-        hint: 'Частая ошибка ИИ — сложить номер заказа #1 вместо цены 500! В системном промпте научите бота учитывать формат входных данных.',
-        stub: 'def calc_revenue(logs: list) -> int:\n    # Учитывайте только строки, начинающиеся с "Заказ"\n    pass\n'
+        desc: 'Функция <code>safe_parse_llm_json(raw)</code> извлекает первый валидный JSON-объект (<code>dict</code>) из ответа LLM: снимает обёртку <code>```json ... ```</code> и лишний текст, очищает висячие запятые перед <code>}</code> или <code>]</code>, не падает на тексте со случайной скобкой <code>{ошибка ...</code> до реального JSON, и возвращает <code>None</code> для битого JSON или массивов <code>[1, 2]</code>. (7 жёстких тестов)',
+        examples: 'safe_parse_llm_json(\'{"items": [1, 2,], "ok": true,}\') -> {"items": [1, 2], "ok": True}\nsafe_parse_llm_json(\'[1, 2, 3]\') -> None\nsafe_parse_llm_json(\'Текст {мусор, а потом {"id": 42, "ok": true}\') -> {"id": 42, "ok": True}',
+        hint: 'Сложное ТЗ! Пробуйте перебирать позиции <code>{</code> + <code>json.JSONDecoder().raw_decode</code> после удаления висячих запятых через regex.',
+        stub: 'import json\nimport re\n\ndef safe_parse_llm_json(raw: str):\n    # Извлеките первый валидный dict из грязного ответа LLM или верните None\n    pass\n'
       },
       {
-        id: 'rate_limiter',
+        id: 'robot_undo',
         num: 6,
-        shortTitle: 'Анти-спам фильтр',
-        title: '6. Анти-спам фильтр для бота',
+        mode: 'hard',
+        stageLabel: 'Хардкор',
+        shortTitle: '🔥 Робот с UNDO',
+        title: '6. Интерпретатор команд робота с UNDO',
         diffClass: 'hard',
-        diffLabel: 'Продвинутая',
-        minutes: 4,
-        desc: 'Функция <code>filter_spam(messages, max_len)</code> обрезает пробелы по краям (<code>.strip()</code>), убирает пустые строки и строки длиннее <code>max_len</code>, а также удаляет повторяющиеся <b>подряд</b> сообщения (без учёта регистра).',
-        examples: 'filter_spam(["Привет", "привет", "Ок", "   ", "Очень длинно"], 10) -> ["Привет", "Ок"]\nfilter_spam(["a", "b", "a"], 5) -> ["a", "b", "a"]',
-        hint: 'Важно сохранять порядок и удалять только <b>подряд идущие</b> повторы, а не все дубликаты в списке!',
-        stub: 'def filter_spam(messages: list, max_len: int) -> list:\n    # Обрежьте пробелы, проверьте max_len и удалите повторы подряд\n    pass\n'
+        diffLabel: 'Хардкор • 5 мин',
+        minutes: 5,
+        desc: 'Робот стартует в <code>[0, 0]</code> на поле <code>0..10</code> по X и Y. Функция <code>run_robot(commands)</code> читает команды через <code>;</code> (регистр не важен, пустые игнорируются): <code>UP n</code> (+y), <code>DOWN n</code> (-y), <code>RIGHT n</code> (+x), <code>LEFT n</code> (-x), <code>RESET</code> (в [0, 0]), <code>UNDO</code> (откат к точным координатам до предыдущей команды). После каждого шага координаты зажимаются в <code>[0, 10]</code>. Вернуть список <code>[x, y]</code>. (6 жёстких тестов)',
+        examples: 'run_robot("RIGHT 8; RIGHT 5; UNDO") -> [8, 0]\nrun_robot("UP 4; RIGHT 3; UNDO; UNDO; UNDO") -> [0, 0]\nrun_robot("up 5 ; right 2 ; RESET ; UNDO") -> [2, 5]',
+        hint: 'Главная ловушка: после «RIGHT 8; RIGHT 5» (упёрлись в стенку 10) команда UNDO должна вернуть [8, 0], а не [5, 0]! Храните стек истории состояний.',
+        stub: 'def run_robot(commands: str) -> list:\n    x, y = 0, 0\n    history = []\n    # Разберите команды через ";" и реализуйте движение, границы 0..10, RESET и UNDO\n    return [x, y]\n'
       }
     ];
 
@@ -6238,16 +6250,22 @@
       const hintEl = document.getElementById('activeCodeTaskHint');
       const editor = document.getElementById('codeEditorTextarea');
       const runBtn = document.getElementById('btnRunCodeTaskAI');
+      const stubBtn = document.getElementById('btnCodeStubReset');
       const resultBox = document.getElementById('verifyBox_code_ai');
       const runModeBadge = document.getElementById('codeRunModeBadge');
 
       if (titleEl) titleEl.textContent = meta.title;
-      if (badgeEl) badgeEl.textContent = `${meta.diffLabel} • ~${meta.minutes} мин`;
+      if (badgeEl) badgeEl.textContent = meta.diffLabel;
       if (descEl) descEl.innerHTML = meta.desc;
       if (exEl) exEl.innerText = meta.examples;
       if (hintEl) hintEl.innerHTML = `💡 <b>Подсказка AI-интегратору:</b> ${meta.hint}`;
+      if (stubBtn) {
+        stubBtn.textContent = meta.mode === 'debug' ? '↺ Сбросить к багу ИИ' : '↺ Шаблон функции';
+      }
       if (runBtn && !runBtn.disabled) {
-        runBtn.textContent = `🤖 Сгенерировать через ИИ (${meta.num}/6) и проверить`;
+        runBtn.textContent = meta.mode === 'debug'
+          ? `🤖 Попросить ИИ починить (${meta.num}/6)`
+          : `🤖 Сгенерировать через ИИ (${meta.num}/6) и проверить`;
       }
 
       const savedTask = taskProgressState.codeTasks?.[meta.id] || {};
@@ -6263,12 +6281,14 @@
           renderCodeTaskResultBox(resultBox, savedResult);
           if (runModeBadge) runModeBadge.textContent = savedResult.passed ? 'Все тесты пройдены ✅' : 'Есть ошибки в тестах';
         } else {
-          if (runModeBadge) runModeBadge.textContent = 'Готово к запуску';
-          resultBox.innerHTML = `
-            <div style="font-size:11.5px; color:var(--text-dim); padding:10px; background:var(--bg-deep); border:1px dashed var(--border-subtle); border-radius:6px; line-height:1.5;">
-              Напишите решение в редакторе слева и нажмите <b>«▶ Запустить код и unit-тесты»</b> или сгенерируйте код вашим ИИ-ботом. Здесь появится вывод <code>print()</code> и статус каждого теста.
-            </div>
-          `;
+          if (runModeBadge) runModeBadge.textContent = meta.mode === 'debug' ? '🐛 Код с багом загружен' : 'Готово к запуску';
+          resultBox.innerHTML = meta.mode === 'debug'
+            ? `<div style="font-size:11.5px; color:var(--text-dim); padding:10px; background:var(--bg-deep); border:1px dashed var(--border-subtle); border-radius:6px; line-height:1.5;">
+                 В редакторе слева уже загружен код с ошибками от нейросети. Нажмите <b>«▶ Запустить код и unit-тесты»</b>, чтобы увидеть, какие проверки падают, и почините баги!
+               </div>`
+            : `<div style="font-size:11.5px; color:var(--text-dim); padding:10px; background:var(--bg-deep); border:1px dashed var(--border-subtle); border-radius:6px; line-height:1.5;">
+                 Напишите решение в редакторе слева и нажмите <b>«▶ Запустить код и unit-тесты»</b> или сгенерируйте код вашим ИИ-ботом. Здесь появится вывод <code>print()</code> и статус каждого теста.
+               </div>`;
         }
       }
 
@@ -6503,7 +6523,8 @@
             task_id: taskId,
             system_prompt: arch.compiledPrompt,
             temperature: arch.tempVal,
-            kb_text: arch.kbText || null
+            kb_text: arch.kbText || null,
+            current_code: meta.mode === 'debug' && editor ? editor.value : null
           })
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -6545,7 +6566,9 @@
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = `🤖 Сгенерировать через ИИ (${meta.num}/6) и проверить`;
+          btn.textContent = meta.mode === 'debug'
+            ? `🤖 Попросить ИИ починить (${meta.num}/6)`
+            : `🤖 Сгенерировать через ИИ (${meta.num}/6) и проверить`;
         }
       }
     }
@@ -6759,6 +6782,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', async () => {
+      await initAssignedWorkstation();
       updateProfileBadge();
       restoreAuditChecklist();
       initTheme();
@@ -9152,8 +9176,36 @@
       }
     }
 
-    // --- User Profile & Privacy Isolation (100% Automatic) ---
+    // --- User Profile & Privacy Isolation (100% Automatic & Server-Locked) ---
+    let assignedWorkstation = null;
+
+    async function initAssignedWorkstation() {
+      let localUid = '';
+      try {
+        localUid = localStorage.getItem('ks54_user_id') || '';
+      } catch(e) {}
+
+      try {
+        const res = await fetch(`/api/workstation?user_id=${encodeURIComponent(localUid)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.user_id && data.pc_name) {
+            assignedWorkstation = data;
+            try {
+              localStorage.setItem('ks54_user_id', data.user_id);
+              localStorage.setItem('ks54_user_name', data.pc_name);
+            } catch(e) {}
+            return data;
+          }
+        }
+      } catch(e) {}
+      return null;
+    }
+
     function getOrCreateUserId() {
+      if (assignedWorkstation && assignedWorkstation.user_id) {
+        return assignedWorkstation.user_id;
+      }
       let uId = null;
       try {
         uId = localStorage.getItem('ks54_user_id');
@@ -9168,15 +9220,11 @@
     }
 
     function getCurrentUserName() {
+      if (assignedWorkstation && assignedWorkstation.pc_name) {
+        return assignedWorkstation.pc_name;
+      }
       try {
-        let name = localStorage.getItem('ks54_user_name');
-        if (!name || name === 'Студент') {
-          // Automatic workstation name generation e.g. ПК-07 (clean, unique per PC/browser)
-          const randNum = Math.floor(1 + Math.random() * 30);
-          name = `ПК-${randNum < 10 ? '0' + randNum : randNum}`;
-          localStorage.setItem('ks54_user_name', name);
-        }
-        return name;
+        return localStorage.getItem('ks54_user_name') || 'ПК-01';
       } catch(e) {
         return 'ПК-01';
       }
@@ -9190,47 +9238,18 @@
 
     function openUserProfileModal() {
       const modal = document.getElementById('userProfileModal');
-      const input = document.getElementById('inputUserName');
-      if (input) input.value = getCurrentUserName();
+      const nameEl = document.getElementById('modalWorkstationName');
+      const uidEl = document.getElementById('modalWorkstationUid');
+      const ipEl = document.getElementById('modalWorkstationIp');
+      if (nameEl) nameEl.textContent = getCurrentUserName();
+      if (uidEl) uidEl.textContent = getOrCreateUserId();
+      if (ipEl) ipEl.textContent = (assignedWorkstation && assignedWorkstation.client_ip) ? assignedWorkstation.client_ip : 'локальная сеть';
       if (modal) modal.classList.add('active');
     }
 
     function closeUserProfileModal() {
       const modal = document.getElementById('userProfileModal');
       if (modal) modal.classList.remove('active');
-    }
-
-    function saveUserProfile() {
-      const input = document.getElementById('inputUserName');
-      const val = (input ? input.value : '').trim() || getCurrentUserName();
-      try {
-        localStorage.setItem('ks54_user_name', val);
-      } catch(e) {}
-      updateProfileBadge();
-      closeUserProfileModal();
-      showToast(`Имя рабочего места обновлено: ${val}`, 'success');
-      renderGallery();
-    }
-
-    function resetUserSession() {
-      if (!confirm('Сбросить сессию и сгенерировать новый номер ПК?')) return;
-      try {
-        const newUId = 'user_' + Math.random().toString(36).substring(2, 10);
-        const randNum = Math.floor(1 + Math.random() * 30);
-        const newName = `ПК-${randNum < 10 ? '0' + randNum : randNum}`;
-        localStorage.setItem('ks54_user_id', newUId);
-        localStorage.setItem('ks54_user_name', newName);
-      } catch(e) {}
-      chatHistories = {};
-      currentBotId = null;
-      editingBotId = null;
-      updateEditingBanner();
-      showEmptyChatState();
-      updateProfileBadge();
-      closeUserProfileModal();
-      showToast('Сессия обновлена', 'info');
-      fetchBotsList();
-      loadTaskProgress();
     }
 
     function renderGallery() {
@@ -10468,9 +10487,9 @@
     </div>
   </aside>
 
-  <!-- USER PROFILE MODAL -->
+  <!-- USER PROFILE MODAL (Read-Only Server-Assigned Workstation) -->
   <div class="modal-overlay" id="userProfileModal">
-    <div class="modal-card" style="max-width: 380px;">
+    <div class="modal-card" style="max-width: 390px;">
       <div class="modal-head">
         <div class="modal-head-title">
           <div class="modal-icon">🖥️</div>
@@ -10480,15 +10499,23 @@
         </div>
         <button type="button" class="btn-modal-close" onclick="closeUserProfileModal()">✕</button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:10px;">
         <div class="info-section">
-          <div class="info-label">👤 Номер ПК или имя:</div>
-          <input type="text" class="control-input" id="inputUserName" placeholder="Например: ПК-07" style="margin-top:6px; font-size:13px; font-weight:600;">
+          <div class="info-label">🔒 Назначенный номер ПК:</div>
+          <div id="modalWorkstationName" style="margin-top:4px; font-size:18px; font-weight:800; color:var(--wire-char);">ПК-01</div>
+        </div>
+        <div class="info-section">
+          <div class="info-label">🌐 Адрес / ID сессии:</div>
+          <div style="margin-top:4px; font-size:11.5px; color:var(--text-dim); font-family:monospace;">
+            <span id="modalWorkstationIp">127.0.0.1</span> • <span id="modalWorkstationUid">user</span>
+          </div>
+        </div>
+        <div style="font-size:11px; color:var(--text-dim); background:var(--bg-deep); border:1px solid var(--border-subtle); border-radius:6px; padding:8px 10px; line-height:1.45;">
+          Номер рабочего места выдаётся и закрепляется сервером автоматически — изменить или сбросить его вручную нельзя.
         </div>
       </div>
-      <div class="modal-footer" style="gap:8px;">
-        <button type="button" class="btn-sm-action" onclick="resetUserSession()">Сбросить</button>
-        <button type="button" class="btn-modal-ok" onclick="saveUserProfile()">Сохранить</button>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-ok" onclick="closeUserProfileModal()">Понятно</button>
       </div>
     </div>
   </div>
