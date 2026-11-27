@@ -11,6 +11,7 @@ bots.db-shm
 bots.db-journal
 .DS_Store
 *.log
+logs/
 .idea/
 .vscode/
 

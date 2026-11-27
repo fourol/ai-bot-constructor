@@ -2213,6 +2213,575 @@
       align-items: center;
     }
 
+    /* Mini-Blocks Visual Logic Editor */
+    .code-mode-switch {
+      display: inline-flex;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .code-mode-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-dim);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .code-mode-btn.active {
+      background: var(--nav-active-bg);
+      color: var(--nav-active-color);
+      box-shadow: var(--shadow-sm);
+      font-weight: 700;
+    }
+
+    .code-blocks-workspace {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--bg-deep);
+    }
+
+    .cb-palette {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 10px;
+      background: var(--bg-node);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      align-items: center;
+    }
+
+    .cb-pal-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 11px;
+      border-radius: 7px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.26);
+      cursor: grab;
+      border: 1px solid rgba(0, 0, 0, 0.16);
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.14);
+      transition: transform 0.1s, filter 0.12s;
+      user-select: none;
+    }
+
+    .cb-pal-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+
+    .cb-pal-btn:active {
+      cursor: grabbing;
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    .cb-pal-var    { background: #FF8C1A; border-color: #DB6E00; }
+    .cb-pal-for    { background: #F0A000; border-color: #C78200; }
+    .cb-pal-if     { background: #38B249; border-color: #268634; }
+    .cb-pal-update { background: #8B5CF6; border-color: #6D28D9; }
+    .cb-pal-ai     { background: #0EA5E9; border-color: #0284C7; }
+    .cb-pal-return { background: #EC4869; border-color: #C21D45; border-radius: 7px 7px 14px 14px; }
+    .cb-pal-stmt   { background: #4C97FF; border-color: #2B6FD6; }
+
+    .cb-helper-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      padding: 5px 8px;
+      background: var(--bg-node);
+      border: 1px dashed var(--border-subtle);
+      border-radius: 7px;
+    }
+
+    .cb-token-chip {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      border: 1px solid var(--border-node);
+      background: var(--bg-deep);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .cb-token-chip:hover {
+      border-color: var(--wire-char);
+      background: var(--chip-hover-bg);
+    }
+
+    .cb-canvas {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 14px 12px 16px;
+      background-color: #f8fafc;
+      background-image: radial-gradient(#cbd5e1 1.3px, transparent 1.3px);
+      background-size: 16px 16px;
+      border: 1px solid var(--border-node);
+      border-radius: 10px;
+      min-height: 200px;
+      overflow-x: auto;
+    }
+
+    [data-theme="dark"] .cb-canvas {
+      background-color: #1a202c;
+      background-image: radial-gradient(#334155 1.3px, transparent 1.3px);
+    }
+
+    /* Function Hat Block ("когда вызвана...") */
+    .cb-hat-block {
+      position: relative;
+      display: inline-flex;
+      min-width: min(100%, 420px);
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      background: #F5A623;
+      border: 1px solid #C9820B;
+      border-radius: 22px 14px 4px 0;
+      padding: 10px 12px 8px;
+      margin-bottom: 0;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    }
+
+    /* Trapezoid Jigsaw Tabs (flush zero-gap interlock) */
+    .cb-hat-block::before,
+    .cb-block:not(.cb-return) > .cb-block-head::before,
+    .cb-else-head::before,
+    .cb-c-footer::before {
+      content: "";
+      position: absolute;
+      left: 16px;
+      bottom: -8px;
+      width: 30px;
+      height: 7px;
+      background: rgba(0, 0, 0, 0.24);
+      clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .cb-hat-block::after,
+    .cb-block:not(.cb-return) > .cb-block-head::after,
+    .cb-else-head::after,
+    .cb-c-footer::after {
+      content: "";
+      position: absolute;
+      left: 17px;
+      bottom: -7px;
+      width: 28px;
+      height: 7px;
+      background: inherit;
+      clip-path: polygon(0 0, 100% 0, 100% 1px, 80% 100%, 20% 100%, 0 1px);
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .cb-for > .cb-block-head::before,
+    .cb-if > .cb-block-head::before,
+    .cb-else-head::before {
+      left: 31px;
+    }
+
+    .cb-for > .cb-block-head::after,
+    .cb-if > .cb-block-head::after,
+    .cb-else-head::after {
+      left: 32px;
+    }
+
+    .cb-hat-sig {
+      font-family: ui-monospace, monospace;
+      font-size: 11.5px;
+      background: rgba(255, 255, 255, 0.92);
+      color: #0f172a;
+      text-shadow: none;
+      padding: 2px 9px;
+      border-radius: 99px;
+      font-weight: 700;
+    }
+
+    .cb-target-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 99px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      background: rgba(0, 0, 0, 0.18);
+      color: #ffffff;
+      text-shadow: none;
+      cursor: pointer;
+    }
+
+    .cb-target-pill:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .cb-target-pill.active {
+      border-color: #ffffff;
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+    }
+
+    .cb-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      min-height: 24px;
+    }
+
+    /* Solid Visual Blocks & C-Wrapper Architecture */
+    .cb-block {
+      position: relative;
+      margin-top: -1px;
+      border-radius: 4px;
+      transition: transform 0.1s;
+    }
+
+    .cb-block.drag-over-top    { box-shadow: inset 0 3px 0 0 #0284c7, 0 -2px 0 0 #0284c7; }
+    .cb-block.drag-over-bottom { box-shadow: inset 0 -3px 0 0 #0284c7, 0 2px 0 0 #0284c7; }
+
+    .cb-block-head {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 8px 9px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 0, 0, 0.22);
+      color: #ffffff;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.22);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    /* Per-category Solid Block Colors */
+    .cb-var > .cb-block-head    { background: #FF8C1A; border-color: #DB6E00; }
+    .cb-update > .cb-block-head { background: #8B5CF6; border-color: #6D28D9; }
+    .cb-ai > .cb-block-head     { background: #0EA5E9; border-color: #0284C7; }
+    .cb-stmt > .cb-block-head   { background: #4C97FF; border-color: #2B6FD6; }
+    .cb-return > .cb-block-head { background: #EC4869; border-color: #C21D45; border-radius: 4px 4px 14px 14px; }
+
+    /* C-Blocks ("for" loop & "if/else" conditional wrap) */
+    .cb-for > .cb-block-head {
+      background: #F0A000;
+      border-color: #C78200;
+      border-radius: 4px 4px 4px 0;
+    }
+
+    .cb-if > .cb-block-head {
+      background: #38B249;
+      border-color: #268634;
+      border-radius: 4px 4px 4px 0;
+    }
+
+    .cb-c-wrap {
+      padding: 0 0 0 15px;
+      min-height: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .cb-for > .cb-c-wrap {
+      background: linear-gradient(90deg, #C78200 0 1px, #F0A000 1px 15px, transparent 15px);
+    }
+
+    .cb-if > .cb-c-wrap {
+      background: linear-gradient(90deg, #268634 0 1px, #38B249 1px 15px, transparent 15px);
+    }
+
+    .cb-for > .cb-c-wrap.drag-over-inside {
+      background: linear-gradient(90deg, #C78200 0 1px, #F0A000 1px 15px, rgba(2, 132, 199, 0.16) 15px);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .cb-if > .cb-c-wrap.drag-over-inside {
+      background: linear-gradient(90deg, #268634 0 1px, #38B249 1px 15px, rgba(2, 132, 199, 0.16) 15px);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .cb-else-head {
+      position: relative;
+      margin-top: -1px;
+      padding: 7px 10px 5px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.22);
+      background: #38B249;
+      border: 1px solid #268634;
+      border-radius: 0 4px 4px 0;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .cb-c-footer {
+      position: relative;
+      margin-top: -1px;
+      height: 19px;
+      width: 210px;
+      max-width: 100%;
+      border: 1px solid rgba(0, 0, 0, 0.22);
+      border-radius: 0 4px 6px 6px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 10px;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    }
+
+    .cb-for > .cb-c-footer { background: #F0A000; border-color: #C78200; }
+    .cb-if > .cb-c-footer  { background: #38B249; border-color: #268634; }
+
+    .cb-block-slots {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      flex: 1 1 240px;
+      min-width: 0;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .cb-grip {
+      cursor: grab;
+      color: rgba(255, 255, 255, 0.85);
+      background: rgba(0, 0, 0, 0.15);
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 5px;
+      user-select: none;
+      letter-spacing: -1px;
+      text-shadow: none;
+    }
+
+    .cb-grip:hover { background: rgba(0, 0, 0, 0.28); color: #ffffff; }
+    .cb-grip:active { cursor: grabbing; }
+
+    /* White Oval Inputs & Darker Tinted Pill Dropdowns */
+    .cb-input {
+      font-family: ui-monospace, monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      background: #ffffff;
+      color: #0f172a;
+      border: 1px solid rgba(0, 0, 0, 0.22);
+      border-radius: 99px;
+      padding: 3px 9px;
+      min-width: 48px;
+      text-shadow: none;
+      outline: none;
+    }
+
+    .cb-input:focus {
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.75);
+    }
+
+    .cb-select {
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.2);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      border-radius: 99px;
+      padding: 3px 8px;
+      text-shadow: none;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .cb-select option {
+      background: #1e293b;
+      color: #ffffff;
+    }
+
+    /* Blue Hexagon Condition Capsule */
+    .cb-hex-cond {
+      position: relative;
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+      background: #2CA3D9;
+      border: 1px solid #1E7EAD;
+      border-radius: 14px;
+      padding: 3px 10px;
+      margin: 0 4px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+
+    .cb-hex-cond::before,
+    .cb-hex-cond::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 0;
+      height: 0;
+      transform: translateY(-50%);
+      border-style: solid;
+    }
+
+    .cb-hex-cond::before {
+      left: -6px;
+      border-width: 11px 6px 11px 0;
+      border-color: transparent #2CA3D9 transparent transparent;
+    }
+
+    .cb-hex-cond::after {
+      right: -6px;
+      border-width: 11px 0 11px 6px;
+      border-color: transparent transparent transparent #2CA3D9;
+    }
+
+    .cb-cond-toggle {
+      background: rgba(0, 0, 0, 0.2);
+      color: #ffffff;
+      border: none;
+      border-radius: 99px;
+      font-size: 10px;
+      padding: 2px 6px;
+      cursor: pointer;
+      text-shadow: none;
+    }
+
+    .cb-cond-toggle:hover { background: rgba(0, 0, 0, 0.35); }
+
+    .cb-input.xs { width: 76px; }
+    .cb-input.sm { width: 96px; }
+    .cb-input.md { width: 150px; flex: 1 1 115px; max-width: 300px; }
+    .cb-input.lg { width: 200px; flex: 1 1 155px; max-width: 340px; }
+
+    .cb-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+
+    .cb-ctrl-btn {
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(0, 0, 0, 0.16);
+      color: #ffffff;
+      border-radius: 99px;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      text-shadow: none;
+      cursor: pointer;
+    }
+
+    .cb-ctrl-btn:hover { background: rgba(0, 0, 0, 0.32); border-color: #ffffff; }
+    .cb-ctrl-btn.del:hover { background: #dc2626; border-color: #ffffff; }
+
+    .cb-empty-slot {
+      margin: 7px 6px 6px 0;
+      padding: 9px 11px;
+      border: 1.5px dashed #94a3b8;
+      border-radius: 8px;
+      font-size: 11.5px;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.72);
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .cb-c-wrap > .cb-empty-slot {
+      margin: 8px 6px 6px 8px;
+    }
+
+    [data-theme="dark"] .cb-empty-slot {
+      background: rgba(15, 23, 42, 0.65);
+      color: #cbd5e1;
+      border-color: #475569;
+    }
+
+    .cb-empty-slot:hover {
+      border-color: var(--wire-char);
+      color: var(--text);
+      background: var(--tour-tip-bg);
+    }
+
+    .cb-sync-warn {
+      padding: 7px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(217, 119, 6, 0.5);
+      background: rgba(245, 158, 11, 0.1);
+      font-size: 11.5px;
+      color: var(--text);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .cb-preview-wrap {
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #0f172a;
+    }
+
+    .cb-preview-head {
+      padding: 4px 9px;
+      background: #1e293b;
+      color: #94a3b8;
+      font-size: 10.5px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cb-preview-pre {
+      margin: 0;
+      padding: 8px 10px;
+      color: #e2e8f0;
+      font-family: ui-monospace, monospace;
+      font-size: 11.5px;
+      line-height: 1.45;
+      max-height: 150px;
+      overflow: auto;
+      white-space: pre;
+    }
+
     .code-results-pane {
       background: var(--bg-node);
       border: 1px solid var(--border-node);
@@ -4311,13 +4880,13 @@
 
       <div class="guide-card" style="padding:9px 10px;">
         <div class="guide-card-head">
-          <span class="guide-card-title" style="font-size:11.5px;">1️⃣ Схема ИИ-Кодера на холсте</span>
+          <span class="guide-card-title" style="font-size:11.5px;">1️⃣ Схема ИИ-бота для ask_ai()</span>
         </div>
         <p class="guide-desc" style="font-size:10.5px; margin-top:3px;">
-          Для генерации через ИИ: <b>Формат → Чистый код</b>, <b>Temp ≤ 0.3</b>, <b>Few-Shot</b> с примером на Python.
+          Для живого запуска <code>ask_ai(...)</code>: связка <b>Персонаж + Инструкция → Мозг → Терминал</b> и <b>Temp ≤ 0.4</b>.
         </p>
         <div style="display:flex; flex-direction:column; gap:5px; margin-top:6px;">
-          <button type="button" class="btn-verify-task" id="btnVerifyCodeSchema" onclick="verifyCodeSchema()" style="padding:6px 8px; font-size:11px;">Проверить схему нод</button>
+          <button type="button" class="btn-verify-task" id="btnVerifyCodeSchema" onclick="verifyCodeSchema()" style="padding:6px 8px; font-size:11px;">Проверить готовность бота</button>
           <div class="verify-results-box" id="verifyBox_code_schema"></div>
           <button type="button" class="btn-restore-task" id="btnRestore_code" onclick="restoreTaskSnapshot('code')" style="display:none; font-size:10.5px;">📂 Загрузить сохранённую схему</button>
         </div>
@@ -4340,10 +4909,10 @@
       <div class="code-workspace-head">
         <div style="min-width:0;">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span id="activeCodeTaskTitle" style="font-size:14.5px; font-weight:700; color:var(--text);">1. Сумма положительных чисел</span>
-            <span class="guide-badge" id="activeCodeTaskBadge">Лёгкая • ~2 мин</span>
+            <span id="activeCodeTaskTitle" style="font-size:14.5px; font-weight:700; color:var(--text);">1. Маршрутизатор тикетов (классификатор ИИ)</span>
+            <span class="guide-badge" id="activeCodeTaskBadge">Лёгкая • ~3 мин</span>
           </div>
-          <div id="codeWorkspaceSubtitle" style="font-size:11px; color:var(--text-dim); margin-top:2px;">Пишите код вручную в редакторе или сгенерируйте решение своим ИИ-ботом</div>
+          <div id="codeWorkspaceSubtitle" style="font-size:11px; color:var(--text-dim); margin-top:2px;">Пишите интеграционный код с ask_ai(...) или собирайте алгоритм в «Мини-блоках»</div>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap; flex-shrink:0;">
           <button type="button" class="btn-sm-action" id="btnCodeBeginnerHelp" onclick="openCodeHelpModal('general')" style="background:rgba(245, 158, 11, 0.14); border-color:rgba(245, 158, 11, 0.5); color:#d97706; font-weight:700;">🆘 Помощь новичкам</button>
@@ -4373,19 +4942,69 @@
             <div class="step-why" id="activeCodeTaskHint" style="margin-top:8px;"></div>
           </div>
 
-          <!-- Dedicated Python Code Editor -->
+          <!-- Dedicated Python Code Editor & Mini-Blocks -->
           <div class="code-editor-card">
             <div class="code-editor-toolbar">
-              <span style="font-size:12px; font-weight:700; color:var(--text);">📝 Редактор кода (Python)</span>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="font-size:12px; font-weight:700; color:var(--text);">🧩 Редактор решения</span>
+                <div class="code-mode-switch" role="tablist" aria-label="Режим редактора">
+                  <button type="button" class="code-mode-btn" id="btnModeBlocks" onclick="setCodeEditorMode('blocks')">🧩 Мини-блоки</button>
+                  <button type="button" class="code-mode-btn active" id="btnModeCode" onclick="setCodeEditorMode('code')">📝 Python-код</button>
+                </div>
+              </div>
               <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button type="button" class="btn-sm-action" id="btnBlocksTour" onclick="startCodeBlocksTour()" style="display:none; font-weight:700; color:var(--wire-char); border-color:var(--wire-char);" title="Пошаговое обучение работе с мини-блоками">🎓 Обучение блокам</button>
+                <button type="button" class="btn-sm-action" id="btnBlocksHelp" onclick="openCodeHelpModal('blocks')" style="display:none; font-weight:700;" title="Шпаргалка и пример сборки из блоков">📖 Пример сборки</button>
                 <button type="button" class="btn-sm-action" id="btnCodeStubReset" onclick="insertCodeStub()" title="Вставить заготовку функции">↺ Шаблон функции</button>
+                <button type="button" class="btn-sm-action" id="btnBlocksReset" onclick="resetTaskBlocks()" style="display:none;" title="Сбросить блоки к начальному виду">↺ Сбросить блоки</button>
                 <button type="button" class="btn-sm-action" onclick="copyEditorCode()" title="Копировать код из редактора">📋 Копировать</button>
               </div>
             </div>
-            <textarea id="codeEditorTextarea" class="code-ide-editor" spellcheck="false" autocomplete="off" placeholder="# Напишите функцию на Python здесь или нажмите «Сгенерировать через ИИ»..." oninput="onCodeEditorInput()" onkeydown="onCodeEditorKeyDown(event)"></textarea>
+
+            <div id="codeBlocksWorkspace" class="code-blocks-workspace" style="display:none;">
+              <div id="cbSyncWarnBanner" class="cb-sync-warn" style="display:none;">
+                <span>⚠️ В текстовом редакторе есть код, отличающийся от блоков. Любое изменение блоков перепишет его, либо можете:</span>
+                <div style="display:flex; gap:6px;">
+                  <button type="button" class="btn-sm-action" onclick="applyBlocksToEditorNow()" style="font-weight:700;">▶ Применить блоки в код</button>
+                  <button type="button" class="btn-sm-action" onclick="setCodeEditorMode('code')">Остаться в Python</button>
+                </div>
+              </div>
+
+              <div class="cb-palette" aria-label="Палитра блоков логики">
+                <button type="button" class="cb-pal-btn cb-pal-ai" draggable="true" ondragstart="onCbPaletteDragStart(event, 'ai')" onclick="addLogicBlock('ai')" title="Вызвать нейросеть ask_ai(...) и сохранить ответ в переменную">🤖 спросить ИИ</button>
+                <button type="button" class="cb-pal-btn cb-pal-var" draggable="true" ondragstart="onCbPaletteDragStart(event, 'var')" onclick="addLogicBlock('var')" title="Создать или задать переменную">задать [имя] = (0)</button>
+                <button type="button" class="cb-pal-btn cb-pal-for" draggable="true" ondragstart="onCbPaletteDragStart(event, 'for')" onclick="addLogicBlock('for')" title="Повторить для каждого элемента списка или диапазона">повторять для каждого</button>
+                <button type="button" class="cb-pal-btn cb-pal-if" draggable="true" ondragstart="onCbPaletteDragStart(event, 'if')" onclick="addLogicBlock('if')" title="Проверить условие с веткой «иначе»">если &lt;условие&gt;, то</button>
+                <button type="button" class="cb-pal-btn cb-pal-update" draggable="true" ondragstart="onCbPaletteDragStart(event, 'update')" onclick="addLogicBlock('update')" title="Прибавить, вычесть или заменить переменную">изменить [переменную]</button>
+                <button type="button" class="cb-pal-btn cb-pal-return" draggable="true" ondragstart="onCbPaletteDragStart(event, 'return')" onclick="addLogicBlock('return')" title="Вернуть готовый результат функции">вернуть (ответ)</button>
+                <button type="button" class="cb-pal-btn cb-pal-stmt" draggable="true" ondragstart="onCbPaletteDragStart(event, 'stmt')" onclick="addLogicBlock('stmt')" title="Особая команда (continue, append, break)">выполнить команду</button>
+              </div>
+
+              <div class="cb-helper-bar">
+                <div id="cbParamChipsWrap" style="display:flex; flex-wrap:wrap; align-items:center; gap:5px;"></div>
+                <span id="cbTargetIndicator" style="font-weight:600; color:var(--nav-active-color);">Вставка: корень функции</span>
+              </div>
+
+              <div class="cb-canvas" id="cbCanvasArea"></div>
+
+              <div class="cb-preview-wrap">
+                <div class="cb-preview-head">
+                  <span>🐍 Сгенерированный Python-код (подставляется в редактор автоматически)</span>
+                  <span id="cbPreviewSyncBadge">Готово</span>
+                </div>
+                <pre class="cb-preview-pre" id="cbLivePythonPre"></pre>
+              </div>
+
+              <datalist id="cbSugVars"></datalist>
+              <datalist id="cbSugIter"></datalist>
+              <datalist id="cbSugCond"></datalist>
+              <datalist id="cbSugExpr"></datalist>
+            </div>
+
+            <textarea id="codeEditorTextarea" class="code-ide-editor" spellcheck="false" autocomplete="off" placeholder="# Напишите код интеграции с ask_ai(...) или переключитесь в «🧩 Мини-блоки»..." oninput="onCodeEditorInput()" onkeydown="onCodeEditorKeyDown(event)"></textarea>
             <div class="code-ide-actions">
-              <button type="button" class="btn-verify-task" id="btnRunEditorTests" onclick="runEditorCodeTests()" style="flex:1; min-width:190px; padding:8px 12px; font-size:12px;">▶ Запустить код и unit-тесты</button>
-              <button type="button" class="btn-verify-task secondary" id="btnRunCodeTaskAI" onclick="runCodeTaskAI()" style="flex:1; min-width:210px; padding:8px 12px; font-size:12px;">🤖 Сгенерировать через ИИ и проверить</button>
+              <button type="button" class="btn-verify-task" id="btnRunEditorTests" onclick="runEditorCodeTests()" style="flex:1; min-width:200px; padding:8px 12px; font-size:12px;">▶ Запустить код и unit-тесты</button>
+              <button type="button" class="btn-verify-task secondary" id="btnRunLiveAiTest" onclick="runEditorCodeLiveAI()" style="flex:1; min-width:200px; padding:8px 12px; font-size:12px;">🔌 Тест моего кода на живом ИИ</button>
             </div>
           </div>
         </div>
@@ -4398,7 +5017,7 @@
           </div>
           <div class="verify-results-box active" id="verifyBox_code_ai" style="margin-top:0;">
             <div style="font-size:11.5px; color:var(--text-dim); padding:10px; background:var(--bg-deep); border:1px dashed var(--border-subtle); border-radius:6px; line-height:1.5;">
-              Напишите решение в редакторе слева и нажмите <b>«▶ Запустить код и unit-тесты»</b> или сгенерируйте код вашим ИИ-ботом. Здесь появится вывод <code>print()</code> и статус каждого теста.
+              Напишите интеграционный код в редакторе слева (или соберите в «Мини-блоках») и нажмите <b>«▶ Запустить код и unit-тесты»</b>. Здесь появится вывод <code>print()</code> и проверка обращений к <code>ask_ai(...)</code>.
             </div>
           </div>
         </div>
@@ -4661,8 +5280,90 @@
       }
     ];
 
+    const CODE_BLOCKS_TOUR_STEPS = [
+      {
+        targetSelector: '#codeBlocksWorkspace',
+        badge: 'Мини-блоки • 1 из 6',
+        icon: '🧩',
+        title: 'Конструктор логики без зубрёжки синтаксиса',
+        body: 'Режим <b>«🧩 Мини-блоки»</b> работает как визуальный конструктор: вместо того чтобы запоминать двоеточия и пробелы Python, ты собираешь решение из цветных блоков на русском языке.<ul><li>Идеально для задач 1–4, даже если ты никогда раньше не программировал.</li><li>В любой момент можно переключиться в <b>📝 Python-код</b> и посмотреть готовый код.</li></ul>',
+        tip: '💡 Пройдём 6 коротких шагов за 30 секунд — и ты сразу сможешь собрать свою первую программу!'
+      },
+      {
+        targetSelector: '.cb-palette',
+        badge: 'Шаг 2 из 6 • Цветные блоки',
+        icon: '🎨',
+        title: 'Что означает каждый цвет блоков',
+        body: 'Нажимай на блоки сверху или перетаскивай их на поле в клеточку:<ul><li><code>🤖 спросить ИИ</code> (голубой) — отправить запрос в нейросеть <code>ask_ai(...)</code> и сохранить ответ.</li><li><code>задать [имя] = (0)</code> (оранжевый) — создать переменную для результата или списка.</li><li><code>повторять для каждого</code> (жёлтая скоба) — пройти по списку документов, попыток или шагов.</li><li><code>если &lt;условие&gt;, то</code> (зелёная скоба) — проверить ответ ИИ через удобный конструктор условий.</li><li><code>вернуть (ответ)</code> (розовый низ) — выдать готовый ответ на проверку тестам!</li></ul>',
+        tip: '💡 Кнопка <code>выполнить команду</code> пригодится для особых строк вроде <code>continue</code>, <code>break</code> или парсинга.'
+      },
+      {
+        targetSelector: '.cb-canvas',
+        badge: 'Шаг 3 из 6 • Скоба-матрёшка',
+        icon: '🪆',
+        title: 'Толстые С-скобы и вложенность блоков',
+        body: 'С-скобы наглядно показывают, что внутри цикла или условия, а что снаружи:<ul><li>Когда ты добавляешь <b>повторять</b> или <b>если</b>, следующие блоки вкладываются внутрь цветной левой стенки (до нижней закрывающей скобы).</li><li>Перед тем как поставить финальный <b>вернуть ответ</b>, нажми <b><code>+ В корень</code></b> на жёлтой шапке <i>«когда вызвана…»</i> — блок окажется снаружи внизу!</li><li>Передвигать блоки можно за <code>⋮⋮</code> или кнопками <code>↑</code> <code>↓</code> <code>↳</code> <code>↰</code>.</li></ul>',
+        tip: '⚠️ <b>Главное правило:</b> если оставить <b>вернуть ответ</b> внутри цикла, функция остановится на самом первом элементе!'
+      },
+      {
+        targetSelector: '.cb-helper-bar',
+        badge: 'Шаг 4 из 6 • Готовые подсказки',
+        icon: '⚡',
+        title: 'Быстрая вставка имён без опечаток',
+        body: 'Сверху над полем лежат кнопки с точными именами входных данных текущей задачи (например, <code>numbers</code> или <code>text.lower()</code>).<ul><li>Кликни в нужное белое поле внутри блока (чтобы появился курсор).</li><li>Затем кликни по кнопке-подсказке — слово вставится точно без опечатки!</li></ul>',
+        tip: '💡 Также в текстовых полях блоков работают подсказки автодополнения при двойном клике.'
+      },
+      {
+        targetSelector: '.cb-preview-wrap',
+        badge: 'Шаг 5 из 6 • Переводчик в Python',
+        icon: '🐍',
+        title: 'Живой Python-код в реальном времени',
+        body: 'Внизу ты видишь настоящий Python-код, который собирается из твоих блоков прямо при каждом нажатии.<ul><li>Отступы в 4 пробела расставляются автоматически.</li><li>Это помогает постепенно привыкнуть читать настоящий код!</li></ul>',
+        tip: '💡 В задачах 3 и 4 («Отладка ИИ») в поле блоков сразу загружен ошибочный код — найди 2–3 бага и поправь их прямо в блоках!'
+      },
+      {
+        targetSelector: '#btnRunEditorTests',
+        badge: 'Финиш • Шаг 6 из 6',
+        icon: '🧪',
+        title: 'Запуск проверки и шпаргалка с примером',
+        body: 'Когда логика собрана и в корне в конце стоит <code>🟧 Вернуть итоговую_переменную</code> — жми синюю кнопку <b>«▶ Запустить код и unit-тесты»</b>!',
+        tip: '👉 Забыл порядок сборки? Всегда можно открыть <a href="#" onclick="finishOnboarding(); openCodeHelpModal(\'blocks\'); return false;" style="color:var(--wire-char); font-weight:700; text-decoration:underline;">📖 Пример сборки («Считаем пятёрки»)</a> прямо из панели!'
+      }
+    ];
+
     let currentTourStep = 0;
     let isTourActive = false;
+    let activeTourList = TOUR_STEPS;
+    let activeTourKey = 'main';
+
+    function startCodeBlocksTour() {
+      if (codeTaskViewHidden()) {
+        switchTab('code');
+      }
+      if (codeEditorMode !== 'blocks') {
+        setCodeEditorMode('blocks', true);
+      }
+      closeCodeHelpModal();
+
+      isTourActive = true;
+      activeTourList = CODE_BLOCKS_TOUR_STEPS;
+      activeTourKey = 'codeblocks';
+      currentTourStep = 0;
+
+      const backdrop = document.getElementById('tourBackdrop');
+      const highlight = document.getElementById('tourHighlight');
+      const card = document.getElementById('tourCard');
+      if (backdrop) backdrop.classList.add('active');
+      if (highlight) highlight.classList.add('active');
+      if (card) card.classList.add('active');
+
+      renderTourStep();
+    }
+
+    function codeTaskViewHidden() {
+      const view = document.getElementById('codeView');
+      return !view || !view.classList.contains('active');
+    }
 
     function startOnboarding(manual = false) {
       if (!manual) {
@@ -4687,6 +5388,8 @@
       updateAllWires();
 
       isTourActive = true;
+      activeTourList = TOUR_STEPS;
+      activeTourKey = 'main';
       currentTourStep = 0;
 
       const backdrop = document.getElementById('tourBackdrop');
@@ -4703,7 +5406,7 @@
     function renderTourStep() {
       if (!isTourActive) return;
 
-      const step = TOUR_STEPS[currentTourStep];
+      const step = activeTourList[currentTourStep];
       if (!step) {
         finishOnboarding();
         return;
@@ -4717,7 +5420,7 @@
       // Update dots
       const dotsContainer = document.getElementById('tourDots');
       dotsContainer.innerHTML = '';
-      TOUR_STEPS.forEach((_, idx) => {
+      activeTourList.forEach((_, idx) => {
         const dot = document.createElement('div');
         dot.className = `tour-dot ${idx === currentTourStep ? 'active' : ''}`;
         dot.title = `Шаг ${idx + 1}`;
@@ -4730,7 +5433,7 @@
       const btnNext = document.getElementById('btnTourNext');
       btnPrev.disabled = currentTourStep === 0;
 
-      if (currentTourStep === TOUR_STEPS.length - 1) {
+      if (currentTourStep === activeTourList.length - 1) {
         btnNext.textContent = 'Понятно, к сборке! 🚀';
       } else {
         btnNext.textContent = 'Далее ➔';
@@ -4745,6 +5448,9 @@
       }
 
       if (targetEl) {
+        if (activeTourKey === 'codeblocks') {
+          targetEl.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        }
         const rect = targetEl.getBoundingClientRect();
         const pad = 6;
         highlight.style.display = 'block';
@@ -4810,7 +5516,7 @@
     }
 
     function nextTourStep() {
-      if (currentTourStep < TOUR_STEPS.length - 1) {
+      if (currentTourStep < activeTourList.length - 1) {
         currentTourStep++;
         renderTourStep();
       } else {
@@ -4826,13 +5532,14 @@
     }
 
     function goToTourStep(idx) {
-      if (idx >= 0 && idx < TOUR_STEPS.length) {
+      if (idx >= 0 && idx < activeTourList.length) {
         currentTourStep = idx;
         renderTourStep();
       }
     }
 
     function finishOnboarding() {
+      const completedKey = activeTourKey;
       isTourActive = false;
       const backdrop = document.getElementById('tourBackdrop');
       const highlight = document.getElementById('tourHighlight');
@@ -4846,10 +5553,14 @@
       if (card) card.classList.remove('active');
 
       try {
-        localStorage.setItem('bot_onboarding_completed', 'true');
+        if (completedKey === 'codeblocks') {
+          localStorage.setItem('ks54_cb_tour_done', '1');
+        } else {
+          localStorage.setItem('bot_onboarding_completed', 'true');
+        }
       } catch(e) {}
 
-      showToast('Обучение завершено! Приятного творчества 🚀', 'success');
+      showToast(completedKey === 'codeblocks' ? 'Обучение блокам завершено! Собирайте логику 🧩' : 'Обучение завершено! Приятного творчества 🚀', 'success');
     }
 
     window.addEventListener('resize', () => {
@@ -5131,12 +5842,12 @@
 
     
     // --- Task Progress Persistence (LocalStorage + Server SQLite Sync) ---
-    const CODE_TASK_IDS = ['sum_pos', 'vowels', 'bug_discount', 'bug_grades', 'safe_json', 'robot_undo'];
+    const CODE_TASK_IDS = ['ai_router', 'ai_rag', 'ai_privacy', 'ai_retry', 'ai_structured', 'ai_agent'];
 
     function getDefaultCodeTasksMap() {
       const m = {};
       CODE_TASK_IDS.forEach(id => {
-        m[id] = { passed: false, aiResult: null, editorCode: '' };
+        m[id] = { passed: false, aiResult: null, editorCode: '', blocks: null, editorMode: null };
       });
       return m;
     }
@@ -5147,7 +5858,7 @@
         activeGuideTab: 'about',
         activeTaskLevel: 'lvl1',
         activeExamVariant: 'space',
-        activeCodeTaskId: 'sum_pos',
+        activeCodeTaskId: 'ai_router',
         levels: {
           lvl1: { passed: false, checks: null, snapshot: null },
           lvl2: { passed: false, checks: null, snapshot: null },
@@ -5402,7 +6113,7 @@
       selectExamVariant(taskProgressState.activeExamVariant || 'space', true);
       if (typeof renderCodeTaskCardsGrid === 'function') {
         renderCodeTaskCardsGrid();
-        selectCodeTask(taskProgressState.activeCodeTaskId || 'sum_pos', true);
+        selectCodeTask(taskProgressState.activeCodeTaskId || 'ai_router', true);
       }
 
       // 3. Restore audit checklist checkboxes
@@ -5954,7 +6665,8 @@
               temperature: arch.tempVal,
               max_tokens: 600,
               kb_text: arch.kbText || null,
-              history: []
+              history: [],
+              user_id: getOrCreateUserId()
             })
           });
 
@@ -6024,166 +6736,214 @@
       }
     }
 
-    // --- Code Practice IDE (~20 min: 2 Warm-up + 2 AI Debugging + 2 Hardcore Tasks) ---
+    // --- Code Practice IDE (6 AI-Integration Tasks: Classifier, RAG, Privacy Guard, Retry, Structured Output, Agent) ---
     const CODE_TASKS_META = [
       {
-        id: 'sum_pos',
+        id: 'ai_router',
         num: 1,
         mode: 'code',
-        stageLabel: 'Разминка',
-        shortTitle: 'Сумма положительных',
-        title: '1. Сумма положительных чисел',
+        stageLabel: 'База ИИ',
+        shortTitle: 'Маршрутизатор тикетов',
+        title: '1. Маршрутизатор тикетов (классификатор ИИ)',
         diffClass: 'easy',
-        diffLabel: 'Разминка • 2 мин',
-        minutes: 2,
-        desc: 'Функция <code>solve(numbers)</code> принимает список чисел и возвращает сумму всех элементов строго больше нуля (<code>&gt; 0</code>). Если положительных нет — возвращает <code>0</code>.',
-        examples: 'solve([1, -2, 3, 4, -5]) -> 8\nsolve([-1, -2, -3]) -> 0\nsolve([]) -> 0',
-        hint: 'Разминка: проверьте, что бот выдаёт чистый Python-код без приветствий и лишних рассуждений.',
-        stub: 'def solve(numbers: list) -> int:\n    # Верните сумму всех чисел > 0\n    pass\n',
+        diffLabel: 'ИИ-база • 3 мин',
+        minutes: 3,
+        desc: 'Функция <code>route_ticket(message)</code> вызывает <code>ask_ai(...)</code> с текстом обращения, очищает ответ модели (пробелы, регистр и лишние знаки <code>.!?"\'</code>) и возвращает строго <code>"billing"</code>, <code>"tech"</code> или <code>"other"</code>. Если модель ответила нестандартной фразой — вернуть <code>"other"</code>.',
+        examples: 'ask_ai(...) -> "  BILLING.\\n"  => "billing"\nask_ai(...) -> "Tech!"          => "tech"\nask_ai(...) -> "Не уверен..."   => "other"',
+        hint: 'Нейросети любят добавлять точку в конце или писать заглавными буквами! Обязательно нормализуйте ответ через .strip().lower().strip(".!?\\"\' ").',
+        stub: 'def route_ticket(message: str) -> str:\n    # 1. Вызовите ask_ai(...) для message\n    # 2. Очистите ответ и верните "billing", "tech" или "other"\n    pass\n',
+        signatureLine: 'def route_ticket(message: str) -> str:',
+        params: ['message'],
+        defaultIterable: '["billing", "tech", "other"]',
+        quickTokens: ['message', 'ask_ai(message)', 'raw.strip().lower().strip(".!? ")', '"billing"', '"tech"', '"other"'],
         beginnerHelp: {
-          analogy: 'Представьте обычную кассу магазина. Вам дают список чеков: среди них есть покупки с плюсом (1, 3, 4) и возвраты с минусом (-2, -5). Ваша задача — сложить только покупки больше нуля.',
+          analogy: 'Клиенты пишут в поддержку, а ваш бот работает сортировщиком. Проблема в том, что модель может ответить «BILLING.» с точкой или «Извините, не знаю» вместо одного слова — ваша программа должна привести ответ к стандарту.',
           steps: [
-            'Заведите переменную для суммы: <code>total = 0</code>.',
-            'Пройдитесь по каждому числу в списке <code>numbers</code> с помощью цикла <code>for x in numbers:</code>.',
-            'Если число больше нуля (<code>if x > 0:</code>), прибавьте его к сумме: <code>total += x</code>.',
-            'В самом конце напишите <code>return total</code> (и обязательно удалите слово <code>pass</code>).'
+            'Вызовите модель через блок <b>🤖 спросить ИИ</b> (или <code>raw = ask_ai(message, "Ответь одним словом: billing, tech или other")</code>).',
+            'Приведите ответ к чистому виду: <code>clean = raw.strip().lower().strip(".!?\\"\' ")</code>.',
+            'Если <code>clean == "billing"</code> → верните <code>"billing"</code>; если <code>clean == "tech"</code> → верните <code>"tech"</code>.',
+            'Во всех остальных случаях (мусор, пустота, длинная фраза) верните запасной вариант: <code>return "other"</code>.'
           ],
-          syntaxTip: 'total = 0\nfor x in numbers:\n    if x > 0:\n        total += x\nreturn total',
-          aiPromptTip: 'Ты Python-программист. Напиши короткую рабочую функцию без пояснений и всегда возвращай результат через return.'
+          syntaxTip: 'raw = ask_ai(message, "Ответь одним словом: billing, tech или other")\nclean = raw.strip().lower().strip(".!?\\"\' ")\nif clean in ("billing", "tech", "other"):\n    return clean\nreturn "other"',
+          aiPromptTip: 'Ты строгий классификатор обращений. Отвечай ТОЛЬКО одним словом в нижнем регистре: billing, tech или other. Без точек и пояснений.'
         }
       },
       {
-        id: 'vowels',
+        id: 'ai_rag',
         num: 2,
         mode: 'code',
-        stageLabel: 'Разминка',
-        shortTitle: 'Счётчик гласных',
-        title: '2. Счётчик русских гласных',
+        stageLabel: 'Мини-RAG',
+        shortTitle: 'Мини-RAG (поиск фактов)',
+        title: '2. Мини-RAG (поиск контекста до вызова ИИ)',
         diffClass: 'easy',
-        diffLabel: 'Разминка • 2 мин',
-        minutes: 2,
-        desc: 'Функция <code>count_vowels(text)</code> считает количество русских гласных букв в строке независимо от регистра. (5 тестов)',
-        examples: 'count_vowels("Привет") -> 2\ncount_vowels("Ёжик в тумане") -> 5\ncount_vowels("ЭЮЯ ёжик") -> 5',
-        hint: 'Сервер больше не подсказывает модели про букву «ё» и регистр — проверьте, справится ли бот или допишите проверку в промпт/код!',
-        stub: 'def count_vowels(text: str) -> int:\n    # Посчитайте русские гласные буквы в любом регистре\n    pass\n',
+        diffLabel: 'Мини-RAG • 4 мин',
+        minutes: 4,
+        desc: 'Функция <code>answer_with_rag(question, docs)</code> ищет в списке строк <code>docs</code> фрагменты, содержащие хотя бы одно слово вопроса (длиной <code>&gt;= 3</code> символов без учёта регистра). Если совпадений нет — возвращает <code>"Нет данных в базе"</code> <b>не вызывая ИИ</b>. Иначе передаёт найденные фрагменты + вопрос в <code>ask_ai(...)</code> и возвращает ответ.',
+        examples: 'answer_with_rag("Во сколько открывается колледж?", docs) -> ask_ai(контекст + вопрос)\nanswer_with_rag("Билет на Марс?", docs) -> "Нет данных в базе" (0 вызовов ask_ai)',
+        hint: 'Не давайте модели «галлюцинировать»! Сначала извлеките слова <code>re.findall(r"[a-zа-яё0-9-]{3,}", question.lower())</code>, отфильтруйте нужные строки <code>docs</code> и прервитесь, если список пуст.',
+        stub: 'import re\n\ndef answer_with_rag(question: str, docs: list) -> str:\n    # 1. Найдите ключевые слова >= 3 символов в question.lower()\n    # 2. Соберите matched = [d for d in docs if ...]\n    # 3. Если matched пуст -> верните "Нет данных в базе" без ask_ai\n    # 4. Иначе отправьте matched + question в ask_ai(...)\n    pass\n',
+        importsPrefix: 'import re\n\n',
+        signatureLine: 'def answer_with_rag(question: str, docs: list) -> str:',
+        params: ['question', 'docs'],
+        defaultIterable: 'docs',
+        quickTokens: ['docs', 're.findall(r"[a-zа-яё0-9-]{3,}", question.lower())', 'matched', '"Нет данных в базе"', 'ask_ai(prompt)'],
         beginnerHelp: {
-          analogy: 'Нужно взять слово или фразу и по очереди проверить каждую букву: является ли она русской гласной (всего их 10: а, е, ё, и, о, у, ы, э, ю, я). Большие буквы (А, Ё, Э) тоже считаются!',
+          analogy: 'Это главный приём RAG (Retrieval-Augmented Generation): вместо того чтобы скармливать модели всю огромную энциклопедию и позволять ей выдумывать факты, мы сначала сами находим нужные абзацы. А если их нет — честно отвечаем «Нет данных в базе» и не тратим токены.',
           steps: [
-            'Сначала превратите весь текст в маленькие буквы командой <code>text.lower()</code> — тогда не придётся отдельно перечислять заглавные.',
-            'Заведите счётчик <code>count = 0</code> и строку со всеми 10 гласными: <code>"аеёиоуыэюя"</code>.',
-            'Для каждой буквы <code>ch</code> в <code>text.lower()</code> проверьте: <code>if ch in "аеёиоуыэюя": count += 1</code>.',
-            'Верните <code>return count</code>.'
+            'Достаньте слова вопроса длиной от 3 букв: <code>words = re.findall(r"[a-zа-яё0-9-]{3,}", question.lower())</code>.',
+            'Пройдитесь циклом по <code>docs</code>: если какое-то слово из <code>words</code> есть в <code>doc.lower()</code>, добавьте документ в список <code>matched</code>.',
+            'Если <code>not matched:</code> — сразу верните <code>"Нет данных в базе"</code> (модель НЕ вызывайте!).',
+            'Иначе склейте факты <code>ctx = "\\n".join(matched)</code> и верните <code>ask_ai(f"Контекст:\\n{ctx}\\n\\nВопрос: {question}")</code>.'
           ],
-          syntaxTip: 'vowels = "аеёиоуыэюя"\ncount = 0\nfor ch in text.lower():\n    if ch in vowels:\n        count += 1\nreturn count',
-          aiPromptTip: 'Ты внимательный Python-разработчик. В задачах со строками всегда учитывай верхний и нижний регистр и все 10 русских гласных (включая букву ё).'
+          syntaxTip: 'words = re.findall(r"[a-zа-яё0-9-]{3,}", question.lower())\nmatched = [d for d in docs if any(w in d.lower() for w in words)]\nif not matched:\n    return "Нет данных в базе"\nprompt = "Контекст:\\n" + "\\n".join(matched) + "\\nВопрос: " + question\nreturn ask_ai(prompt)',
+          aiPromptTip: 'Отвечай строго на основе переданного в сообщении Контекста. Не выдумывай факты от себя.'
         }
       },
       {
-        id: 'bug_discount',
+        id: 'ai_privacy',
         num: 3,
-        mode: 'debug',
-        stageLabel: 'Отладка ИИ',
-        shortTitle: '🐛 Скидка и доставка',
-        title: '3. Отладка ИИ: скидка и доставка',
+        mode: 'code',
+        stageLabel: 'Privacy Guard',
+        shortTitle: '🛡️ Маскировка данных (PII)',
+        title: '3. Маскировка персональных данных (Privacy Guard)',
         diffClass: 'med',
-        diffLabel: 'Отладка • 3 мин',
-        minutes: 3,
-        desc: '<b>В редакторе уже лежит «кривой» код от ИИ!</b> Почини <code>calc_order(prices, is_vip)</code>: учитываются только цены <code>&gt; 0</code> (пустая корзина → <code>0</code>); если <code>is_vip=True</code>, скидка <code>20%</code> (<code>total * 80 // 100</code>); если итог <b>после скидки</b> строго <code>&lt; 1000</code> (и <code>&gt; 0</code>), добавляется доставка <code>300</code> руб (от 1000 руб доставка 0).',
-        examples: 'calc_order([500, 700], False) -> 1200\ncalc_order([1000], False) -> 1000\ncalc_order([], True) -> 0\ncalc_order([500, -100, 600], True) -> 1180',
-        hint: 'Сначала нажмите «▶ Запустить код и unit-тесты», посмотрите какие из 6 тестов упали, и найдите 3 логических бага в коде ИИ!',
-        stub: 'def calc_order(prices: list, is_vip: bool) -> int:\n    # Код сгенерирован слабой нейросетью (есть 3 ошибки!):\n    total = sum(prices)\n    if total <= 1000:\n        total += 300\n    if is_vip:\n        total = total * 80 // 100\n    return total\n',
+        diffLabel: 'Защита ПДн • 4 мин',
+        minutes: 4,
+        desc: 'Функция <code>safe_ai_support(user_text)</code> до вызова <code>ask_ai(...)</code> заменяет email на <code>[EMAIL]</code> и телефон (вида <code>+7-999-111-22-33</code> / <code>+79165554433</code>) на <code>[PHONE]</code>, отправляет в <code>ask_ai(...)</code> <b>уже очищенный текст</b>, а затем подставляет оригинальные значения обратно в ответ модели.',
+        examples: 'Вход: "Позвоните на +7-999-111-22-33" -> в ask_ai уходит "Позвоните на [PHONE]"\nОтвет ИИ: "Свяжемся по [PHONE]." -> Пользователю: "Свяжемся по +7-999-111-22-33."',
+        hint: 'Тесты проверяют не только финальную строку, но и сам промпт внутри ask_ai(...): если туда попадёт реальный email или номер телефона, тест сразу зафиксирует утечку!',
+        stub: 'import re\n\ndef safe_ai_support(user_text: str) -> str:\n    # 1. Найдите email и телефон, сохраните их и замените на [EMAIL] и [PHONE]\n    # 2. Вызовите ask_ai(masked_text)\n    # 3. Замените [EMAIL] и [PHONE] обратно в ответе модели\n    pass\n',
+        importsPrefix: 'import re\n\n',
+        signatureLine: 'def safe_ai_support(user_text: str) -> str:',
+        params: ['user_text'],
+        defaultIterable: 'emails',
+        quickTokens: ['r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"', 'r"(?:\\+7|8)[\\d\\-()]{9,14}\\d"', '"[EMAIL]"', '"[PHONE]"', 'ask_ai(masked)'],
         beginnerHelp: {
-          analogy: 'Здесь писать с нуля не нужно! Код уже есть, но нейросеть перепутала порядок действий на кассе: посчитала доставку ДО скидки, взяла деньги за доставку пустой корзины и забыла выкинуть отрицательные цены.',
+          analogy: 'В реальных компаниях запрещено отправлять номера телефонов и почты клиентов на внешние сервера ИИ. Шлюз безопасности (Privacy Guard) перед запросом меняет личные данные на метки <code>[PHONE]</code> и <code>[EMAIL]</code>, а после ответа аккуратно возвращает их клиенту.',
           steps: [
-            'Сначала нажмите синюю кнопку <b>«▶ Запустить код и unit-тесты»</b> — вы увидите 3 красные строки справа.',
-            '<b>Ошибка 1:</b> вместо <code>sum(prices)</code> нужно складывать только цены больше нуля: <code>sum(p for p in prices if p > 0)</code>. А если <code>total == 0</code>, сразу сделать <code>return 0</code>.',
-            '<b>Ошибка 2:</b> сначала примените VIP-скидку (<code>if is_vip: total = total * 80 // 100</code>), и только ПОТОМ проверяйте доставку.',
-            '<b>Ошибка 3:</b> доставка берётся при сумме строго меньше 1000: замените <code><= 1000</code> на <code>< 1000</code>.'
+            'Через <code>re.findall(...)</code> сохраните найденные email и телефон (если есть) и замените их через <code>re.sub(...)</code> на <code>"[EMAIL]"</code> и <code>"[PHONE]"</code>.',
+            'Обязательно передавайте в <code>ask_ai(masked)</code> именно замаскированный текст <code>masked</code>!',
+            'Получив <code>reply = ask_ai(masked)</code>, замените <code>reply.replace("[EMAIL]", saved_email)</code> и <code>reply.replace("[PHONE]", saved_phone)</code>.',
+            'Верните восстановленную строку.'
           ],
-          syntaxTip: '1) Отфильтруй p > 0 и проверь total == 0 -> return 0\n2) Сначала блок if is_vip:\n3) Потом блок if total < 1000: total += 300',
-          aiPromptTip: 'Найди все логические ошибки на граничных условиях (пустой список, знак < вместо <=, порядок скидки и доставки) и верни исправленный код.'
+          syntaxTip: 'email_re = r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"\nphone_re = r"(?:\\+7|8)[\\d\\-()]{9,14}\\d"\nemails = re.findall(email_re, user_text)\nphones = re.findall(phone_re, user_text)\nmasked = re.sub(email_re, "[EMAIL]", user_text)\nmasked = re.sub(phone_re, "[PHONE]", masked)\nreply = ask_ai(masked)\nif emails: reply = reply.replace("[EMAIL]", emails[0])\nif phones: reply = reply.replace("[PHONE]", phones[0])\nreturn reply',
+          aiPromptTip: 'Ты оператор поддержки. Используй в ответе маркеры [PHONE] и [EMAIL] точно так же, как они написаны в обращении клиента, не меняя скобки.'
         }
       },
       {
-        id: 'bug_grades',
+        id: 'ai_retry',
         num: 4,
         mode: 'debug',
         stageLabel: 'Отладка ИИ',
-        shortTitle: '🐛 Балл с пересдачами',
-        title: '4. Отладка ИИ: средний балл с пересдачами',
+        shortTitle: '🐛 Retry и Fallback для ИИ',
+        title: '4. Отладка AI-пайплайна (Retry + Fallback)',
         diffClass: 'med',
-        diffLabel: 'Отладка • 4 мин',
+        diffLabel: 'Отладка ИИ • 4 мин',
         minutes: 4,
-        desc: '<b>В редакторе код от ИИ с ошибками на крайних случаях!</b> <code>calc_gpa(record)</code> разбирает строку оценок через запятую (<code>"2, н, 4*, 5"</code>): <code>н</code>/<code>Н</code> и пустые элементы пропускаются; оценка со звёздочкой <code>4*</code> — пересдача, она <b>заменяет предыдущую оценку</b> (или добавляется первой); если оценок нет — вернуть <code>0.0</code>; иначе <code>round(сумма / кол-во, 2)</code>.',
-        examples: 'calc_gpa("2, 5*, 4") -> 4.5\ncalc_gpa("2, н, 4*, 5") -> 4.5\ncalc_gpa("Н, , 5*") -> 5.0\ncalc_gpa("") -> 0.0',
-        hint: 'Запустите 7 unit-тестов на текущем коде — посмотрите на ZeroDivisionError, ValueError и работу пересдачи <code>*</code>.',
-        stub: 'def calc_gpa(record: str) -> float:\n    # Код от ИИ падает на пересдачах и пропусках — почини его!\n    grades = []\n    for item in record.split(","):\n        s = item.strip()\n        if s == "н":\n            continue\n        if s.endswith("*"):\n            grades.append(int(s[:-1]))\n        else:\n            grades.append(int(s))\n    return round(sum(grades) / len(grades), 2)\n',
+        desc: '<b>В редакторе лежит хрупкий код интеграции!</b> Почини <code>ask_json_with_retry(prompt, max_attempts=3)</code>: нейросеть может сначала ответить текстом или обернуть ответ в <code>```json ... ```</code>. Код должен делать до <code>max_attempts</code> попыток, снимать обёртку <code>```json</code>, при ошибке повторять запрос, а если все попытки провалились — безопасно вернуть <code>None</code>.',
+        examples: 'Попытка 1: "Вот ответ..." -> Попытка 2: "```json\\n{\\"ok\\": true}\\n```" => {"ok": True}\nВсе попытки плохие (max_attempts=2) => None (и максимум 2 вызова ask_ai)',
+        hint: 'Запустите 5 unit-тестов на текущем коде — увидите падение JSONDecodeError! Добавьте цикл по range(max_attempts), блок try/except и очистку markdown-обёртки.',
+        stub: 'import json\nimport re\n\ndef ask_json_with_retry(prompt: str, max_attempts: int = 3):\n    # Кривой код интеграции: нет цикла повторов, очистки ```json и fallback!\n    raw = ask_ai(prompt)\n    return json.loads(raw)\n',
+        importsPrefix: 'import json\nimport re\n\n',
+        signatureLine: 'def ask_json_with_retry(prompt: str, max_attempts: int = 3):',
+        params: ['prompt', 'max_attempts'],
+        defaultIterable: 'range(max_attempts)',
+        quickTokens: ['for attempt in range(max_attempts):', 're.sub(r"^```(?:json)?|```$", "", raw.strip(), flags=re.I|re.M)', 'try:', 'except Exception:', 'return None'],
+        starterBlocks: [
+          { id: 'ar_1', type: 'ai', varName: 'raw', promptExpr: 'prompt', systemExpr: '' },
+          { id: 'ar_2', type: 'return', expr: 'json.loads(raw)' }
+        ],
         beginnerHelp: {
-          analogy: 'Представьте электронный дневник: если студент получил «2», а потом пересдал на «5*», старая «2» стирается и остаётся только «5». А «н» (не был) и пустые запятые не считаются вообще.',
+          analogy: 'Модели не всегда слушаются с первого раза: могут написать лишний markdown-блок или просто текст. Надёжный бэкенд не падает с ошибкой, а «переспрашивает» до N раз и в крайнем случае возвращает безопасное значение <code>None</code>.',
           steps: [
-            '<b>Ошибка 1 (пропуски и пустоты):</b> строка <code>if s == "н":</code> не ловит большую <code>"Н"</code> и пустую строку <code>""</code>. Замените на <code>if not s or s.lower() == "н": continue</code>.',
-            '<b>Ошибка 2 (пересдача *):</b> перед тем как добавить новую оценку в <code>if s.endswith("*"):</code>, нужно удалить последнюю (если список не пуст): <code>if grades: grades.pop()</code>.',
-            '<b>Ошибка 3 (пустой список):</b> перед делением <code>sum(grades) / len(grades)</code> проверьте <code>if not grades: return 0.0</code>, иначе программа упадёт с ошибкой деления на 0.'
+            'Оберните логику в цикл <code>for attempt in range(max_attempts):</code>.',
+            'При <code>attempt &gt; 0</code> добавляйте к запросу напоминание <code>cur_prompt = prompt + "\\nВерни ТОЛЬКО чистый JSON!"</code>.',
+            'Очищайте ответ от тройных кавычек <code>```json ... ```</code> (например вырезая от первой <code>{</code> до последней <code>}</code> или regex).',
+            'Внутри <code>try ... except Exception:</code> парсите <code>obj = json.loads(clean)</code> и возвращайте только <code>dict</code>. После цикла напишите <code>return None</code>.'
           ],
-          syntaxTip: 'if not s or s.lower() == "н": continue\nif s.endswith("*"):\n    if grades: grades.pop()\n    ...\nif not grades: return 0.0',
-          aiPromptTip: 'Исправь код: учитывай пустые элементы, любой регистр буквы н, удаление предыдущей оценки через pop() при пересдаче и защиту от деления на ноль.'
+          syntaxTip: 'cur = prompt\nfor _ in range(max_attempts):\n    raw = ask_ai(cur).strip()\n    clean = re.sub(r"```(?:json)?|```", "", raw, flags=re.IGNORECASE).strip()\n    try:\n        obj = json.loads(clean)\n        if isinstance(obj, dict): return obj\n    except Exception:\n        pass\n    cur = prompt + "\\nОшибка: верни строго валидный JSON!"\nreturn None',
+          aiPromptTip: 'Возвращай строго валидный JSON-объект без markdown-блоков ```json и без комментариев.'
         }
       },
       {
-        id: 'safe_json',
+        id: 'ai_structured',
         num: 5,
         mode: 'hard',
-        stageLabel: 'Хардкор',
-        shortTitle: '🔥 Парсер JSON от LLM',
-        title: '5. Парсер «грязного» JSON от нейросети',
+        stageLabel: 'Хардкор ИИ',
+        shortTitle: '🔥 Парсер + схема JSON',
+        title: '5. Парсер + валидатор Structured Output',
         diffClass: 'hard',
-        diffLabel: 'Хардкор • 4 мин',
+        diffLabel: 'Хардкор ИИ • 4 мин',
         minutes: 4,
-        desc: 'Функция <code>safe_parse_llm_json(raw)</code> извлекает первый валидный JSON-объект (<code>dict</code>) из ответа LLM: снимает обёртку <code>```json ... ```</code> и лишний текст, очищает висячие запятые перед <code>}</code> или <code>]</code>, не падает на тексте со случайной скобкой <code>{ошибка ...</code> до реального JSON, и возвращает <code>None</code> для битого JSON или массивов <code>[1, 2]</code>. (7 жёстких тестов)',
-        examples: 'safe_parse_llm_json(\'{"items": [1, 2,], "ok": true,}\') -> {"items": [1, 2], "ok": True}\nsafe_parse_llm_json(\'[1, 2, 3]\') -> None\nsafe_parse_llm_json(\'Текст {мусор, а потом {"id": 42, "ok": true}\') -> {"id": 42, "ok": True}',
-        hint: 'Сложное ТЗ! Пробуйте перебирать позиции <code>{</code> + <code>json.JSONDecoder().raw_decode</code> после удаления висячих запятых через regex.',
-        stub: 'import json\nimport re\n\ndef safe_parse_llm_json(raw: str):\n    # Извлеките первый валидный dict из грязного ответа LLM или верните None\n    pass\n',
+        desc: 'Функция <code>parse_order_from_ai(user_query)</code> вызывает <code>ask_ai(user_query)</code>, достаёт первый валидный JSON-объект (<code>dict</code>) даже среди мусора, <code>```json</code>, висячих запятых и лишней скобки <code>{ошибка...</code>, и проверяет схему: <code>"item"</code> — непустая строка, <code>"qty"</code> — строго <code>int</code> (не <code>bool</code>!) и <code>&gt; 0</code>. Иначе возвращает <code>None</code>.',
+        examples: 'ИИ: "Лог {err}, итог: {\\"item\\": \\"мышка\\", \\"qty\\": 2,}" => {"item": "мышка", "qty": 2}\nИИ: "{\\"item\\": \\"монитор\\", \\"qty\\": true}" => None (bool в Python это подкласс int!)',
+        hint: 'Две главные ловушки: 1) используйте <code>json.JSONDecoder().raw_decode</code> с перебором всех <code>"{"</code>; 2) в Python <code>isinstance(True, int) == True</code>, поэтому обязательно проверяйте <code>not isinstance(qty, bool)</code>!',
+        stub: 'import json\nimport re\n\ndef parse_order_from_ai(user_query: str):\n    # 1. Вызовите ask_ai(user_query)\n    # 2. Извлеките первый валидный JSON dict (учтите ```json, висячие запятые и лишние "{")\n    # 3. Проверьте схему: item -> непустая str, qty -> int (не bool) и > 0\n    pass\n',
+        importsPrefix: 'import json\nimport re\n\n',
+        signatureLine: 'def parse_order_from_ai(user_query: str):',
+        params: ['user_query'],
+        defaultIterable: 'enumerate(raw)',
+        quickTokens: ['ask_ai(user_query)', 'json.JSONDecoder().raw_decode', 're.sub(r",\\s*([}\\]])", r"\\1", chunk)', 'not isinstance(qty, bool)'],
         beginnerHelp: {
-          analogy: 'Это задача уровня настоящего AI-разработчика! Нейросети часто болтают лишнее вокруг JSON-анкеты («Вот ваш ответ: ...») или ставят лишнюю запятую в конце. Нам нужно аккуратно достать оттуда словарь <code>{...}</code>, чтобы программа не «сломалась» даже от мусора.',
+          analogy: 'Даже если нейросеть вернула JSON, она могла подсунуть число строкой (<code>"2"</code>), булево <code>true</code> или забыть товар. Structured Output — это «таможня», которая и мусор вычистит, и типы полей проверит до записи в базу.',
           steps: [
-            'Сразу проверьте: если строка пустая (<code>if not raw: return None</code>).',
-            'Удалите лишние запятые перед закрывающими скобками командой <code>re.sub(r",\\s*([}\\]])", r"\\1", текст)</code>.',
-            'Пройдитесь по строке и на каждой открывающей скобке <code>{</code> попробуйте прочитать объект через <code>json.JSONDecoder().raw_decode(...)</code> внутри блока <code>try ... except:</code>.',
-            'Если получилось и это именно словарь (<code>isinstance(obj, dict)</code>) — сразу делайте <code>return obj</code>. Если дошли до конца и ничего не нашли — <code>return None</code>.'
+            'Получите <code>raw = ask_ai(user_query)</code>. Если пусто — верните <code>None</code>.',
+            'Пройдитесь по позициям <code>{</code>: очистите хвост от висячих запятых <code>re.sub(r",\\s*([}\\]])", r"\\1", raw[i:])</code> и вызовите <code>json.JSONDecoder().raw_decode(...)</code> в <code>try/except</code>.',
+            'Как только нашли <code>dict</code>: проверьте <code>item = obj.get("item")</code> (строка и <code>item.strip()</code>) и <code>qty = obj.get("qty")</code>.',
+            'Обязательно проверьте <code>isinstance(qty, int) and not isinstance(qty, bool) and qty &gt; 0</code>. Если всё ок — верните <code>obj</code>, иначе <code>None</code>.'
           ],
-          syntaxTip: 'dec = json.JSONDecoder()\nfor idx, ch in enumerate(raw):\n    if ch == "{":\n        clean = re.sub(r",\\s*([}\\]])", r"\\1", raw[idx:])\n        try: obj, _ = dec.raw_decode(clean) ...',
-          aiPromptTip: 'Напиши надёжный парсер на Python через json.JSONDecoder().raw_decode с перебором всех позиций "{", очисткой висячих запятых regex и проверкой isinstance(obj, dict).'
+          syntaxTip: 'raw = ask_ai(user_query) or ""\ndec = json.JSONDecoder()\nfor i, ch in enumerate(raw):\n    if ch == "{":\n        clean = re.sub(r",\\s*([}\\]])", r"\\1", raw[i:])\n        try: obj, _ = dec.raw_decode(clean)\n        except Exception: continue\n        if isinstance(obj, dict):\n            item, qty = obj.get("item"), obj.get("qty")\n            if isinstance(item, str) and item.strip() and isinstance(qty, int) and not isinstance(qty, bool) and qty > 0:\n                return obj\n            return None\nreturn None',
+          aiPromptTip: 'Верни только JSON-объект заказа с полями "item" (строка) и "qty" (целое положительное число), например {"item": "ноутбук", "qty": 2}.'
         }
       },
       {
-        id: 'robot_undo',
+        id: 'ai_agent',
         num: 6,
         mode: 'hard',
-        stageLabel: 'Хардкор',
-        shortTitle: '🔥 Робот с UNDO',
-        title: '6. Интерпретатор команд робота с UNDO',
+        stageLabel: 'Хардкор ИИ',
+        shortTitle: '🔥 Агент с калькулятором',
+        title: '6. Мини-агент с инструментом (Tool-Calling Loop)',
         diffClass: 'hard',
-        diffLabel: 'Хардкор • 5 мин',
+        diffLabel: 'Хардкор ИИ • 5 мин',
         minutes: 5,
-        desc: 'Робот стартует в <code>[0, 0]</code> на поле <code>0..10</code> по X и Y. Функция <code>run_robot(commands)</code> читает команды через <code>;</code> (регистр не важен, пустые игнорируются): <code>UP n</code> (+y), <code>DOWN n</code> (-y), <code>RIGHT n</code> (+x), <code>LEFT n</code> (-x), <code>RESET</code> (в [0, 0]), <code>UNDO</code> (откат к точным координатам до предыдущей команды). После каждого шага координаты зажимаются в <code>[0, 10]</code>. Вернуть список <code>[x, y]</code>. (6 жёстких тестов)',
-        examples: 'run_robot("RIGHT 8; RIGHT 5; UNDO") -> [8, 0]\nrun_robot("UP 4; RIGHT 3; UNDO; UNDO; UNDO") -> [0, 0]\nrun_robot("up 5 ; right 2 ; RESET ; UNDO") -> [2, 5]',
-        hint: 'Главная ловушка: после «RIGHT 8; RIGHT 5» (упёрлись в стенку 10) команда UNDO должна вернуть [8, 0], а не [5, 0]! Храните стек истории состояний.',
-        stub: 'def run_robot(commands: str) -> list:\n    x, y = 0, 0\n    history = []\n    # Разберите команды через ";" и реализуйте движение, границы 0..10, RESET и UNDO\n    return [x, y]\n',
+        desc: 'Реализуйте настоящий агентский цикл <code>run_math_agent(question, max_steps=4)</code>: в цикле (до <code>max_steps</code>) вызывайте <code>ask_ai(context)</code>. Если модель отвечает <code>"CALC: &lt;выражение&gt;"</code>, код сам считает арифметику и дописывает результат в контекст для следующего шага. Как только модель отвечает <code>"FINAL: &lt;ответ&gt;"</code> — возвращайте текст после <code>FINAL:</code>. Если шаги закончились — <code>"Лимит шагов"</code>.',
+        examples: 'Шаг 1 ask_ai -> "CALC: 12 * 4 + 2" -> код считает 50 и шлёт в ask_ai\nШаг 2 ask_ai -> "FINAL: Ответ: 50"  => "Ответ: 50"',
+        hint: 'Так устроены реальные AI-агенты (ReAct / Tool Calling): LLM сама не умеет точно умножать большие числа, но может попросить внешний инструмент <code>CALC:</code>, получить факт и дать финальный ответ!',
+        stub: 'def run_math_agent(question: str, max_steps: int = 4) -> str:\n    context = question\n    for _ in range(max_steps):\n        reply = ask_ai(context).strip()\n        # Если reply начинается с "FINAL:" -> вернуть reply[6:].strip()\n        # Если начинается с "CALC:" -> вычислить и добавить в context для ask_ai\n    return "Лимит шагов"\n',
+        signatureLine: 'def run_math_agent(question: str, max_steps: int = 4) -> str:',
+        params: ['question', 'max_steps'],
+        defaultIterable: 'range(max_steps)',
+        quickTokens: ['reply.startswith("FINAL:")', 'reply.startswith("CALC:")', 'eval(expr, {"__builtins__": {}}, {})', '"Лимит шагов"'],
+        starterBlocks: [
+          { id: 'ag_1', type: 'var', name: 'context', value: 'question' },
+          {
+            id: 'ag_2', type: 'for', item: '_', iterable: 'range(max_steps)',
+            children: [
+              { id: 'ag_3', type: 'ai', varName: 'reply', promptExpr: 'context', systemExpr: '' },
+              {
+                id: 'ag_4', type: 'if', condition: 'reply.strip().startswith("FINAL:")', hasElse: false,
+                children: [{ id: 'ag_5', type: 'return', expr: 'reply.strip()[6:].strip()' }],
+                elseChildren: []
+              }
+            ]
+          },
+          { id: 'ag_6', type: 'return', expr: '"Лимит шагов"' }
+        ],
         beginnerHelp: {
-          analogy: 'Представьте фишку на клеточном поле 10×10. Перед тем как передвинуть фишку или нажать RESET, вы записываете в блокнот (<code>history</code>), где она стояла раньше. Когда звучит команда <code>UNDO</code> (отмена), вы просто берёте последнюю запись из блокнота!',
+          analogy: 'Вы управляете роботом-помощником: если нейросеть пишет <code>CALC: 100 - 25</code>, она просит ваш код воспользоваться калькулятором. Вы считаете <code>75</code>, дописываете в диалог <code>Результат: 75</code> и снова спрашиваете нейросеть — пока не увидите <code>FINAL:</code>.',
           steps: [
-            'Разбейте строку команд по точке с запятой: <code>for part in commands.split(";"):</code> и приведите к верхнему регистру: <code>cmd = part.strip().upper()</code>.',
-            'Если команда пустая — пропустите (<code>if not cmd: continue</code>).',
-            'Если <code>cmd == "UNDO"</code> — если список <code>history</code> не пуст, верните прошлые координаты: <code>x, y = history.pop()</code>.',
-            'Перед каждым движением или <code>RESET</code> сохраняйте текущее место: <code>history.append((x, y))</code>. После движения зажимайте координаты от 0 до 10 через <code>min(10, max(0, ...))</code>.'
+            'Заведите <code>context = question</code> и цикл <code>for _ in range(max_steps):</code>.',
+            'На каждом шаге вызывайте <code>reply = ask_ai(context).strip()</code>.',
+            'Если <code>reply.startswith("FINAL:")</code> → сразу возвращайте <code>reply[6:].strip()</code>.',
+            'Если <code>reply.startswith("CALC:")</code> → возьмите выражение <code>expr = reply[5:].strip()</code>, вычислите <code>val = eval(expr, {"__builtins__": {}}, {})</code> (после проверки разрешённых символов <code>0123456789+-*/(). </code>) и допишите <code>context += f"\\n{reply}\\nRESULT: {val}"</code>. Если цикл закончился — верните <code>"Лимит шагов"</code>.'
           ],
-          syntaxTip: 'history.append((x, y))  # запомнили позицию до шага\nx = min(10, max(0, x + n))  # не вылезаем за 0..10\nif cmd == "UNDO" and history:\n    x, y = history.pop()',
-          aiPromptTip: 'Реализуй интерпретатор команд робота со стеком истории (history.append((x, y)) перед каждым изменением, UNDO делает history.pop(), координаты зажаты min(10, max(0, ...))).'
+          syntaxTip: 'if reply.startswith("FINAL:"):\n    return reply[6:].strip()\nif reply.startswith("CALC:"):\n    expr = reply[5:].strip()\n    val = eval(expr, {"__builtins__": {}}, {})\n    context += f"\\n{reply}\\nRESULT: {val}"',
+          aiPromptTip: 'Ты математический агент с калькулятором. Если нужно посчитать выражение — ответь строго "CALC: выражение". Когда результат известен — ответь строго "FINAL: итог".'
         }
       }
     ];
 
-    let activeCodeTaskId = 'sum_pos';
+    let activeCodeTaskId = 'ai_router';
     let codeWorkspaceMode = 'tasks';
     let codeTimerSeconds = 20 * 60;
     let codeTimerInterval = null;
@@ -6215,7 +6975,7 @@
         if (btnTasks) btnTasks.style.fontWeight = '700';
         if (btnSandbox) btnSandbox.style.fontWeight = '500';
         if (sandboxNav) sandboxNav.classList.remove('active');
-        if (subEl) subEl.textContent = 'Пишите код вручную в редакторе или сгенерируйте решение своим ИИ-ботом';
+        if (subEl) subEl.textContent = 'Пишите интеграционный код с ask_ai(...) или собирайте алгоритм в «Мини-блоках»';
         const meta = CODE_TASKS_META.find(t => t.id === activeCodeTaskId) || CODE_TASKS_META[0];
         if (titleEl) titleEl.textContent = meta.title;
         if (badgeEl) badgeEl.textContent = `${meta.diffLabel} • ~${meta.minutes} мин`;
@@ -6324,7 +7084,6 @@
       const exEl = document.getElementById('activeCodeTaskExamples');
       const hintEl = document.getElementById('activeCodeTaskHint');
       const editor = document.getElementById('codeEditorTextarea');
-      const runBtn = document.getElementById('btnRunCodeTaskAI');
       const stubBtn = document.getElementById('btnCodeStubReset');
       const resultBox = document.getElementById('verifyBox_code_ai');
       const runModeBadge = document.getElementById('codeRunModeBadge');
@@ -6335,12 +7094,7 @@
       if (exEl) exEl.innerText = meta.examples;
       if (hintEl) hintEl.innerHTML = `💡 <b>Подсказка AI-интегратору:</b> ${meta.hint}`;
       if (stubBtn) {
-        stubBtn.textContent = meta.mode === 'debug' ? '↺ Сбросить к багу ИИ' : '↺ Шаблон функции';
-      }
-      if (runBtn && !runBtn.disabled) {
-        runBtn.textContent = meta.mode === 'debug'
-          ? `🤖 Попросить ИИ починить (${meta.num}/6)`
-          : `🤖 Сгенерировать через ИИ (${meta.num}/6) и проверить`;
+        stubBtn.textContent = meta.mode === 'debug' ? '↺ Сбросить к багу' : '↺ Шаблон функции';
       }
 
       const savedTask = taskProgressState.codeTasks?.[meta.id] || {};
@@ -6350,6 +7104,9 @@
       if (editor) {
         editor.value = initialCode;
       }
+      blockInsertTarget = { parentId: null, branch: 'root' };
+      const targetMode = savedTask.editorMode || codeEditorMode || 'code';
+      setCodeEditorMode(targetMode, true);
 
       if (resultBox) {
         resultBox.classList.add('active');
@@ -6360,10 +7117,10 @@
           if (runModeBadge) runModeBadge.textContent = meta.mode === 'debug' ? '🐛 Код с багом загружен' : 'Готово к запуску';
           resultBox.innerHTML = meta.mode === 'debug'
             ? `<div style="font-size:11.5px; color:var(--text-dim); padding:10px; background:var(--bg-deep); border:1px dashed var(--border-subtle); border-radius:6px; line-height:1.5;">
-                 В редакторе слева уже загружен код с ошибками от нейросети. Нажмите <b>«▶ Запустить код и unit-тесты»</b>, чтобы увидеть, какие проверки падают, и почините баги!
+                 В редакторе слева уже загружен хрупкий код интеграции. Нажмите <b>«▶ Запустить код и unit-тесты»</b>, чтобы увидеть, где он падает, и почините логику!
                </div>`
             : `<div style="font-size:11.5px; color:var(--text-dim); padding:10px; background:var(--bg-deep); border:1px dashed var(--border-subtle); border-radius:6px; line-height:1.5;">
-                 Напишите решение в редакторе слева и нажмите <b>«▶ Запустить код и unit-тесты»</b> или сгенерируйте код вашим ИИ-ботом. Здесь появится вывод <code>print()</code> и статус каждого теста.
+                 Напишите код с вызовом <code>ask_ai(...)</code> слева (или соберите в «Мини-блоках») и нажмите <b>«▶ Запустить код и unit-тесты»</b>.
                </div>`;
         }
       }
@@ -6376,14 +7133,19 @@
       }
     }
 
+    function ensureCodeTaskEntry(taskId) {
+      if (!taskProgressState.codeTasks) taskProgressState.codeTasks = getDefaultCodeTasksMap();
+      if (!taskProgressState.codeTasks[taskId]) {
+        taskProgressState.codeTasks[taskId] = { passed: false, aiResult: null, editorCode: '', blocks: null, editorMode: null };
+      }
+      return taskProgressState.codeTasks[taskId];
+    }
+
     function onCodeEditorInput() {
       const editor = document.getElementById('codeEditorTextarea');
       if (!editor) return;
-      if (!taskProgressState.codeTasks) taskProgressState.codeTasks = getDefaultCodeTasksMap();
-      if (!taskProgressState.codeTasks[activeCodeTaskId]) {
-        taskProgressState.codeTasks[activeCodeTaskId] = { passed: false, aiResult: null, editorCode: '' };
-      }
-      taskProgressState.codeTasks[activeCodeTaskId].editorCode = editor.value;
+      const entry = ensureCodeTaskEntry(activeCodeTaskId);
+      entry.editorCode = editor.value;
       saveTaskProgress();
     }
 
@@ -6397,6 +7159,826 @@
         ta.selectionStart = ta.selectionEnd = start + 4;
         onCodeEditorInput();
       }
+    }
+
+    // --- Mini-Blocks Visual Logic Engine ---
+    let codeEditorMode = 'code';
+    let blockInsertTarget = { parentId: null, branch: 'root' };
+    let cbDragPayload = null;
+    let cbLastFocusedInput = null;
+    let cbSeqCounter = 1;
+
+    function nextCbId() {
+      return `cb_${Date.now().toString(36)}_${cbSeqCounter++}`;
+    }
+
+    function cloneBlockTree(list) {
+      return JSON.parse(JSON.stringify(Array.isArray(list) ? list : []));
+    }
+
+    function getActiveCodeMeta() {
+      return CODE_TASKS_META.find(t => t.id === activeCodeTaskId) || CODE_TASKS_META[0];
+    }
+
+    function stripCommentsAndBlank(code) {
+      return String(code || '')
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith('#'))
+        .join('\n');
+    }
+
+    function getCurrentBlocksReadonly() {
+      const meta = getActiveCodeMeta();
+      const entry = taskProgressState.codeTasks?.[meta.id];
+      if (entry && Array.isArray(entry.blocks)) return entry.blocks;
+      return Array.isArray(meta.starterBlocks) ? cloneBlockTree(meta.starterBlocks) : [];
+    }
+
+    function getMutableBlocksForActiveTask() {
+      const meta = getActiveCodeMeta();
+      const entry = ensureCodeTaskEntry(meta.id);
+      if (!Array.isArray(entry.blocks)) {
+        entry.blocks = Array.isArray(meta.starterBlocks) ? cloneBlockTree(meta.starterBlocks) : [];
+      }
+      return entry.blocks;
+    }
+
+    function compileBlocksToPython(blocks, meta) {
+      const prefix = meta?.importsPrefix || '';
+      const sig = meta?.signatureLine || 'def solve(x):';
+      const lines = [];
+      if (prefix) lines.push(prefix.replace(/\n+$/, ''), '');
+      lines.push(sig);
+
+      const cleanVal = (val, fb) => {
+        const s = String(val ?? '').trim();
+        return s || fb;
+      };
+
+      const walk = (list, depth) => {
+        const pad = '    '.repeat(depth);
+        if (!Array.isArray(list) || list.length === 0) {
+          lines.push(`${pad}pass`);
+          return;
+        }
+        list.forEach(b => {
+          if (!b || !b.type) return;
+          if (b.type === 'ai') {
+            const vName = cleanVal(b.varName, 'reply');
+            const pExpr = cleanVal(b.promptExpr, meta?.params?.[0] || 'prompt');
+            const sExpr = String(b.systemExpr ?? '').trim();
+            const callExpr = sExpr && sExpr !== '""' ? `ask_ai(${pExpr}, ${sExpr})` : `ask_ai(${pExpr})`;
+            lines.push(`${pad}${vName} = ${callExpr}`);
+          } else if (b.type === 'var') {
+            lines.push(`${pad}${cleanVal(b.name, 'total')} = ${cleanVal(b.value, '0')}`);
+          } else if (b.type === 'update') {
+            const allowedOps = ['=', '+=', '-=', '*=', '//='];
+            const op = allowedOps.includes(b.op) ? b.op : '+=';
+            lines.push(`${pad}${cleanVal(b.target, 'total')} ${op} ${cleanVal(b.value, '1')}`);
+          } else if (b.type === 'for') {
+            lines.push(`${pad}for ${cleanVal(b.item, 'x')} in ${cleanVal(b.iterable, meta?.defaultIterable || 'items')}:`);
+            walk(b.children, depth + 1);
+          } else if (b.type === 'if') {
+            lines.push(`${pad}if ${cleanVal(b.condition, 'True')}:`);
+            walk(b.children, depth + 1);
+            if (b.hasElse) {
+              lines.push(`${pad}else:`);
+              walk(b.elseChildren, depth + 1);
+            }
+          } else if (b.type === 'return') {
+            lines.push(`${pad}return ${cleanVal(b.expr, '0')}`);
+          } else if (b.type === 'stmt') {
+            lines.push(`${pad}${cleanVal(b.code, 'pass')}`);
+          }
+        });
+      };
+
+      walk(blocks, 1);
+      return lines.join('\n') + '\n';
+    }
+
+    function setCodeEditorMode(mode, skipSave = false) {
+      codeEditorMode = mode === 'blocks' ? 'blocks' : 'code';
+      const meta = getActiveCodeMeta();
+      if (!skipSave) {
+        const entry = ensureCodeTaskEntry(meta.id);
+        entry.editorMode = codeEditorMode;
+        saveTaskProgress();
+      }
+
+      const btnBlocks = document.getElementById('btnModeBlocks');
+      const btnCode = document.getElementById('btnModeCode');
+      const blocksPane = document.getElementById('codeBlocksWorkspace');
+      const editorEl = document.getElementById('codeEditorTextarea');
+      const stubBtn = document.getElementById('btnCodeStubReset');
+      const blocksResetBtn = document.getElementById('btnBlocksReset');
+      const blocksTourBtn = document.getElementById('btnBlocksTour');
+      const blocksHelpBtn = document.getElementById('btnBlocksHelp');
+
+      if (btnBlocks) btnBlocks.classList.toggle('active', codeEditorMode === 'blocks');
+      if (btnCode) btnCode.classList.toggle('active', codeEditorMode === 'code');
+      if (blocksPane) blocksPane.style.display = codeEditorMode === 'blocks' ? 'flex' : 'none';
+      if (editorEl) editorEl.style.display = codeEditorMode === 'blocks' ? 'none' : 'block';
+      if (stubBtn) stubBtn.style.display = codeEditorMode === 'blocks' ? 'none' : 'inline-flex';
+      if (blocksResetBtn) blocksResetBtn.style.display = codeEditorMode === 'blocks' ? 'inline-flex' : 'none';
+      if (blocksTourBtn) blocksTourBtn.style.display = codeEditorMode === 'blocks' ? 'inline-flex' : 'none';
+      if (blocksHelpBtn) blocksHelpBtn.style.display = codeEditorMode === 'blocks' ? 'inline-flex' : 'none';
+
+      if (codeEditorMode === 'blocks') {
+        renderCodeBlocksWorkspace();
+        if (!skipSave) {
+          try {
+            if (!localStorage.getItem('ks54_cb_tour_done')) {
+              setTimeout(() => startCodeBlocksTour(), 120);
+            }
+          } catch (e) {}
+        }
+      }
+    }
+
+    function findBlockLocation(list, blockId, parentId = null, branch = 'root') {
+      if (!Array.isArray(list)) return null;
+      for (let i = 0; i < list.length; i++) {
+        const b = list[i];
+        if (b.id === blockId) {
+          return { list, index: i, block: b, parentId, branch };
+        }
+        if (Array.isArray(b.children)) {
+          const found = findBlockLocation(b.children, blockId, b.id, 'children');
+          if (found) return found;
+        }
+        if (Array.isArray(b.elseChildren)) {
+          const foundElse = findBlockLocation(b.elseChildren, blockId, b.id, 'elseChildren');
+          if (foundElse) return foundElse;
+        }
+      }
+      return null;
+    }
+
+    function isBlockDescendant(containerBlock, searchId) {
+      if (!containerBlock || !searchId) return false;
+      if (containerBlock.id === searchId) return true;
+      const inChildren = (containerBlock.children || []).some(ch => isBlockDescendant(ch, searchId));
+      if (inChildren) return true;
+      return (containerBlock.elseChildren || []).some(ch => isBlockDescendant(ch, searchId));
+    }
+
+    function getTargetBranchList(tree) {
+      if (!blockInsertTarget || !blockInsertTarget.parentId) {
+        blockInsertTarget = { parentId: null, branch: 'root' };
+        return tree;
+      }
+      const loc = findBlockLocation(tree, blockInsertTarget.parentId);
+      if (!loc || (loc.block.type !== 'for' && loc.block.type !== 'if')) {
+        blockInsertTarget = { parentId: null, branch: 'root' };
+        return tree;
+      }
+      if (blockInsertTarget.branch === 'elseChildren' && loc.block.type === 'if' && loc.block.hasElse) {
+        if (!Array.isArray(loc.block.elseChildren)) loc.block.elseChildren = [];
+        return loc.block.elseChildren;
+      }
+      if (!Array.isArray(loc.block.children)) loc.block.children = [];
+      blockInsertTarget.branch = 'children';
+      return loc.block.children;
+    }
+
+    function createDefaultBlock(type, meta) {
+      const firstParam = (meta?.params && meta.params[0]) || 'message';
+      const defIter = meta?.defaultIterable || firstParam || 'items';
+      if (type === 'ai') return { id: nextCbId(), type: 'ai', varName: 'reply', promptExpr: firstParam, systemExpr: '' };
+      if (type === 'var') return { id: nextCbId(), type: 'var', name: 'clean', value: 'reply.strip().lower()' };
+      if (type === 'for') return { id: nextCbId(), type: 'for', item: 'item', iterable: defIter, children: [] };
+      if (type === 'if') return { id: nextCbId(), type: 'if', condition: 'clean == "billing"', hasElse: false, children: [], elseChildren: [] };
+      if (type === 'update') return { id: nextCbId(), type: 'update', target: 'context', op: '+=', value: '""' };
+      if (type === 'return') return { id: nextCbId(), type: 'return', expr: '"other"' };
+      return { id: nextCbId(), type: 'stmt', code: 'continue' };
+    }
+
+    function syncBlocksToCode(commitToTextarea = true, renderDom = true) {
+      const meta = getActiveCodeMeta();
+      const blocks = getCurrentBlocksReadonly();
+      const compiled = compileBlocksToPython(blocks, meta);
+      const pre = document.getElementById('cbLivePythonPre');
+      const syncBadge = document.getElementById('cbPreviewSyncBadge');
+      const editor = document.getElementById('codeEditorTextarea');
+
+      if (pre) pre.textContent = compiled;
+
+      if (commitToTextarea && editor) {
+        editor.value = compiled;
+        const entry = ensureCodeTaskEntry(meta.id);
+        entry.editorCode = compiled;
+        entry.editorMode = codeEditorMode;
+        if (syncBadge) syncBadge.textContent = 'Синхронизировано ✅';
+        saveTaskProgress();
+      } else if (syncBadge && editor) {
+        const same = stripCommentsAndBlank(editor.value) === stripCommentsAndBlank(compiled);
+        syncBadge.textContent = same ? 'Совпадает с редактором ✅' : 'Редактор отличается';
+      }
+
+      updateSyncWarningBanner(blocks, compiled, meta);
+      if (renderDom) renderCodeBlocksWorkspace();
+    }
+
+    function updateSyncWarningBanner(blocks, compiled, meta) {
+      const warnEl = document.getElementById('cbSyncWarnBanner');
+      const editor = document.getElementById('codeEditorTextarea');
+      if (!warnEl || !editor) return;
+      const curNorm = stripCommentsAndBlank(editor.value);
+      const stubNorm = stripCommentsAndBlank(meta.stub);
+      const compNorm = stripCommentsAndBlank(compiled);
+      const isModifiedText = Boolean(curNorm) && curNorm !== stubNorm && curNorm !== compNorm;
+      warnEl.style.display = isModifiedText ? 'flex' : 'none';
+    }
+
+    function applyBlocksToEditorNow() {
+      const tree = getMutableBlocksForActiveTask();
+      ensureCodeTaskEntry(activeCodeTaskId).blocks = tree;
+      syncBlocksToCode(true, true);
+      showToast('Код из блоков подставлен в редактор', 'success');
+    }
+
+    function setBlockInsertTarget(parentId, branch = 'root') {
+      blockInsertTarget = { parentId: parentId || null, branch: parentId ? branch : 'root' };
+      renderCodeBlocksWorkspace();
+    }
+
+    function addLogicBlock(type) {
+      const meta = getActiveCodeMeta();
+      const tree = getMutableBlocksForActiveTask();
+      const targetList = getTargetBranchList(tree);
+      const newBlock = createDefaultBlock(type, meta);
+      targetList.push(newBlock);
+      if (type === 'for' || type === 'if') {
+        blockInsertTarget = { parentId: newBlock.id, branch: 'children' };
+      }
+      syncBlocksToCode(true, true);
+    }
+
+    function updateBlockField(blockId, field, value) {
+      const tree = getMutableBlocksForActiveTask();
+      const loc = findBlockLocation(tree, blockId);
+      if (!loc) return;
+      loc.block[field] = value;
+      // Only update code & live preview without tearing down active DOM input focus!
+      syncBlocksToCode(true, false);
+    }
+
+    function toggleBlockElse(blockId) {
+      const tree = getMutableBlocksForActiveTask();
+      const loc = findBlockLocation(tree, blockId);
+      if (!loc || loc.block.type !== 'if') return;
+      loc.block.hasElse = !loc.block.hasElse;
+      if (!Array.isArray(loc.block.elseChildren)) loc.block.elseChildren = [];
+      if (loc.block.hasElse) {
+        blockInsertTarget = { parentId: loc.block.id, branch: 'elseChildren' };
+      } else if (blockInsertTarget.parentId === loc.block.id && blockInsertTarget.branch === 'elseChildren') {
+        blockInsertTarget = { parentId: loc.block.id, branch: 'children' };
+      }
+      syncBlocksToCode(true, true);
+    }
+
+    function moveLogicBlock(blockId, dir) {
+      const tree = getMutableBlocksForActiveTask();
+      const loc = findBlockLocation(tree, blockId);
+      if (!loc) return;
+      const newIdx = loc.index + dir;
+      if (newIdx < 0 || newIdx >= loc.list.length) return;
+      const [item] = loc.list.splice(loc.index, 1);
+      loc.list.splice(newIdx, 0, item);
+      syncBlocksToCode(true, true);
+    }
+
+    function nestLogicBlock(blockId) {
+      const tree = getMutableBlocksForActiveTask();
+      const loc = findBlockLocation(tree, blockId);
+      if (!loc || loc.index === 0) return;
+      const prev = loc.list[loc.index - 1];
+      if (!prev || (prev.type !== 'for' && prev.type !== 'if')) return;
+      if (isBlockDescendant(loc.block, prev.id)) return;
+      const [item] = loc.list.splice(loc.index, 1);
+      if (!Array.isArray(prev.children)) prev.children = [];
+      prev.children.push(item);
+      syncBlocksToCode(true, true);
+    }
+
+    function unnestLogicBlock(blockId) {
+      const tree = getMutableBlocksForActiveTask();
+      const loc = findBlockLocation(tree, blockId);
+      if (!loc || !loc.parentId) return;
+      const parentLoc = findBlockLocation(tree, loc.parentId);
+      if (!parentLoc) return;
+      const [item] = loc.list.splice(loc.index, 1);
+      parentLoc.list.splice(parentLoc.index + 1, 0, item);
+      syncBlocksToCode(true, true);
+    }
+
+    function deleteLogicBlock(blockId) {
+      const tree = getMutableBlocksForActiveTask();
+      const loc = findBlockLocation(tree, blockId);
+      if (!loc) return;
+      loc.list.splice(loc.index, 1);
+      if (blockInsertTarget.parentId && !findBlockLocation(tree, blockInsertTarget.parentId)) {
+        blockInsertTarget = { parentId: null, branch: 'root' };
+      }
+      syncBlocksToCode(true, true);
+    }
+
+    function resetTaskBlocks() {
+      const meta = getActiveCodeMeta();
+      const hasStarter = Array.isArray(meta.starterBlocks) && meta.starterBlocks.length > 0;
+      const msg = hasStarter
+        ? 'Вернуть начальные блоки этой задачи?'
+        : 'Удалить все блоки и очистить сборку?';
+      if (!confirm(msg)) return;
+      const entry = ensureCodeTaskEntry(meta.id);
+      entry.blocks = hasStarter ? cloneBlockTree(meta.starterBlocks) : [];
+      blockInsertTarget = { parentId: null, branch: 'root' };
+      syncBlocksToCode(true, true);
+      showToast('Блоки сброшены', 'info');
+    }
+
+    function insertHelperToken(token) {
+      if (cbLastFocusedInput && document.body.contains(cbLastFocusedInput.el)) {
+        const el = cbLastFocusedInput.el;
+        const start = el.selectionStart ?? el.value.length;
+        const end = el.selectionEnd ?? el.value.length;
+        const nextVal = el.value.slice(0, start) + token + el.value.slice(end);
+        el.value = nextVal;
+        el.focus();
+        el.selectionStart = el.selectionEnd = start + token.length;
+        updateBlockField(cbLastFocusedInput.blockId, cbLastFocusedInput.field, nextVal);
+      } else {
+        copyTextToClipboard(token).then(() => {
+          showToast(`Скопировано «${token}» — вставьте в нужное поле блока`, 'info');
+        }).catch(() => {});
+      }
+    }
+
+    // Drag & Drop handlers
+    function onCbGripMouseDown(blockId) {
+      const el = document.querySelector(`.cb-block[data-block-id="${blockId}"]`);
+      if (el) el.setAttribute('draggable', 'true');
+    }
+
+    function onCbPaletteDragStart(e, type) {
+      cbDragPayload = { source: 'palette', type };
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'copy';
+        e.dataTransfer.setData('text/plain', `palette:${type}`);
+      }
+    }
+
+    function onCbBlockDragStart(e, blockId) {
+      e.stopPropagation();
+      cbDragPayload = { source: 'existing', blockId };
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', `block:${blockId}`);
+      }
+    }
+
+    function onCbBlockDragEnd(blockId) {
+      const el = document.querySelector(`.cb-block[data-block-id="${blockId}"]`);
+      if (el) el.setAttribute('draggable', 'false');
+      clearCbDragHighlights();
+      cbDragPayload = null;
+    }
+
+    function clearCbDragHighlights() {
+      document.querySelectorAll('.cb-block.drag-over-top, .cb-block.drag-over-bottom').forEach(el => {
+        el.classList.remove('drag-over-top', 'drag-over-bottom');
+      });
+      document.querySelectorAll('.cb-c-wrap.drag-over-inside').forEach(el => {
+        el.classList.remove('drag-over-inside');
+      });
+    }
+
+    function onCbBlockDragOver(e, targetId) {
+      if (!cbDragPayload) return;
+      if (cbDragPayload.source === 'existing' && cbDragPayload.blockId === targetId) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const el = e.currentTarget;
+      const rect = el.getBoundingClientRect();
+      const isTop = (e.clientY - rect.top) < rect.height * 0.48;
+      clearCbDragHighlights();
+      el.classList.add(isTop ? 'drag-over-top' : 'drag-over-bottom');
+    }
+
+    function onCbBlockDrop(e, targetId) {
+      if (!cbDragPayload) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const el = e.currentTarget;
+      const rect = el.getBoundingClientRect();
+      const insertBefore = (e.clientY - rect.top) < rect.height * 0.48;
+      clearCbDragHighlights();
+
+      const meta = getActiveCodeMeta();
+      const tree = getMutableBlocksForActiveTask();
+      const targetLoc = findBlockLocation(tree, targetId);
+      if (!targetLoc) return;
+
+      let movingBlock = null;
+      if (cbDragPayload.source === 'palette') {
+        movingBlock = createDefaultBlock(cbDragPayload.type, meta);
+      } else if (cbDragPayload.source === 'existing') {
+        if (cbDragPayload.blockId === targetId) return;
+        const srcLoc = findBlockLocation(tree, cbDragPayload.blockId);
+        if (!srcLoc) return;
+        if (targetLoc.parentId && isBlockDescendant(srcLoc.block, targetLoc.parentId)) {
+          showToast('Нельзя вложить блок внутрь самого себя', 'info');
+          return;
+        }
+        [movingBlock] = srcLoc.list.splice(srcLoc.index, 1);
+      }
+      if (!movingBlock) return;
+
+      const updatedTargetLoc = findBlockLocation(tree, targetId);
+      if (!updatedTargetLoc) return;
+      const destIdx = insertBefore ? updatedTargetLoc.index : updatedTargetLoc.index + 1;
+      updatedTargetLoc.list.splice(destIdx, 0, movingBlock);
+      cbDragPayload = null;
+      syncBlocksToCode(true, true);
+    }
+
+    function onCbBranchDragOver(e) {
+      if (!cbDragPayload) return;
+      e.preventDefault();
+      e.stopPropagation();
+      clearCbDragHighlights();
+      e.currentTarget.classList.add('drag-over-inside');
+    }
+
+    function onCbBranchDrop(e, parentId, branch) {
+      if (!cbDragPayload) return;
+      e.preventDefault();
+      e.stopPropagation();
+      clearCbDragHighlights();
+
+      const meta = getActiveCodeMeta();
+      const tree = getMutableBlocksForActiveTask();
+      let destList = tree;
+      if (parentId) {
+        const pLoc = findBlockLocation(tree, parentId);
+        if (!pLoc || (pLoc.block.type !== 'for' && pLoc.block.type !== 'if')) return;
+        if (branch === 'elseChildren') {
+          if (!Array.isArray(pLoc.block.elseChildren)) pLoc.block.elseChildren = [];
+          destList = pLoc.block.elseChildren;
+        } else {
+          if (!Array.isArray(pLoc.block.children)) pLoc.block.children = [];
+          destList = pLoc.block.children;
+        }
+      }
+
+      let movingBlock = null;
+      if (cbDragPayload.source === 'palette') {
+        movingBlock = createDefaultBlock(cbDragPayload.type, meta);
+      } else if (cbDragPayload.source === 'existing') {
+        const srcLoc = findBlockLocation(tree, cbDragPayload.blockId);
+        if (!srcLoc) return;
+        if (parentId && isBlockDescendant(srcLoc.block, parentId)) {
+          showToast('Нельзя вложить блок внутрь самого себя', 'info');
+          return;
+        }
+        [movingBlock] = srcLoc.list.splice(srcLoc.index, 1);
+      }
+      if (!movingBlock) return;
+
+      destList.push(movingBlock);
+      blockInsertTarget = { parentId: parentId || null, branch: parentId ? branch : 'root' };
+      cbDragPayload = null;
+      syncBlocksToCode(true, true);
+    }
+
+    function parseIfCondition(b) {
+      if (b.condMode === 'custom') {
+        return { mode: 'custom', condition: String(b.condition || '') };
+      }
+      if (b.condMode === 'parts' && b.cmp) {
+        return {
+          mode: 'parts',
+          left: String(b.left ?? 'x'),
+          cmp: String(b.cmp || '>'),
+          right: String(b.right ?? '0')
+        };
+      }
+      const raw = String(b.condition || '').trim();
+      if (raw && !/\b(and|or)\b/.test(raw)) {
+        const m = raw.match(/^(.+?)\s*(<=|>=|==|!=|not in|in|<|>)\s*(.+)$/);
+        if (m) {
+          const left = m[1].trim();
+          const cmp = m[2].trim();
+          const right = m[3].trim();
+          const bal = s => (s.match(/\(/g) || []).length === (s.match(/\)/g) || []).length;
+          if (bal(left) && bal(right)) {
+            return { mode: 'parts', left, cmp, right };
+          }
+        }
+      }
+      if (!raw) {
+        return { mode: 'parts', left: 'x', cmp: '>', right: '0' };
+      }
+      return { mode: 'custom', condition: raw };
+    }
+
+    function updateIfConditionPart(blockId, part, val) {
+      const tree = getMutableBlocksForActiveTask();
+      const loc = findBlockLocation(tree, blockId);
+      if (!loc || loc.block.type !== 'if') return;
+      if (part === 'cmp' && val === 'custom') {
+        const cur = parseIfCondition(loc.block);
+        loc.block.condMode = 'custom';
+        loc.block.condition = cur.mode === 'parts' ? `${cur.left} ${cur.cmp} ${cur.right}` : cur.condition;
+        syncBlocksToCode(true, true);
+        return;
+      }
+      const parsed = parseIfCondition(loc.block);
+      const next = {
+        left: parsed.mode === 'parts' ? parsed.left : 'x',
+        cmp: parsed.mode === 'parts' ? parsed.cmp : '>',
+        right: parsed.mode === 'parts' ? parsed.right : '0'
+      };
+      next[part] = val;
+      loc.block.condMode = 'parts';
+      loc.block.left = next.left;
+      loc.block.cmp = next.cmp;
+      loc.block.right = next.right;
+      const lClean = String(next.left || '').trim() || 'x';
+      const rClean = String(next.right || '').trim() || '0';
+      loc.block.condition = `${lClean} ${next.cmp} ${rClean}`;
+      syncBlocksToCode(true, false);
+    }
+
+    function toggleIfCondMode(blockId) {
+      const tree = getMutableBlocksForActiveTask();
+      const loc = findBlockLocation(tree, blockId);
+      if (!loc || loc.block.type !== 'if') return;
+      const cur = parseIfCondition(loc.block);
+      if (cur.mode === 'custom') {
+        loc.block.condMode = 'parts';
+        const tryParts = parseIfCondition({ condition: cur.condition });
+        if (tryParts.mode === 'parts') {
+          loc.block.left = tryParts.left;
+          loc.block.cmp = tryParts.cmp;
+          loc.block.right = tryParts.right;
+        } else {
+          loc.block.left = cur.condition || 'x';
+          loc.block.cmp = '>';
+          loc.block.right = '0';
+          loc.block.condition = `${loc.block.left} > 0`;
+        }
+      } else {
+        loc.block.condMode = 'custom';
+        loc.block.condition = `${cur.left} ${cur.cmp} ${cur.right}`;
+      }
+      syncBlocksToCode(true, true);
+    }
+
+    function renderCbListHtml(list, parentId, branch) {
+      const items = Array.isArray(list) ? list : [];
+      if (items.length === 0) {
+        if (!parentId) {
+          return `
+            <div class="cb-empty-slot" onclick="setBlockInsertTarget(null, 'root')" style="text-align:left; padding:12px; line-height:1.5;">
+              <div style="font-weight:700; color:var(--text); margin-bottom:4px;">👋 Холст пуст — соберите программу из блоков-пазлов за 3 шага:</div>
+              <div>1) Заведите счётчик блоком <b>задать [имя] = (0)</b>.</div>
+              <div>2) Нажмите <b>повторять для каждого</b> — внутрь вложите <b>если &lt;условие&gt;, то</b> и <b>изменить</b>.</div>
+              <div>3) Нажмите <b>+ В корень</b> на жёлтой шапке сверху и поставьте финальный блок <b>вернуть (ответ)</b>.</div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+                <button type="button" class="btn-sm-action" onclick="event.stopPropagation(); startCodeBlocksTour();" style="font-weight:700; color:var(--wire-char); border-color:var(--wire-char);">🎓 Мини-тур по блокам (1 мин)</button>
+                <button type="button" class="btn-sm-action" onclick="event.stopPropagation(); openCodeHelpModal('blocks');" style="font-weight:700;">📖 Посмотреть готовый пример</button>
+              </div>
+            </div>
+          `;
+        }
+        const isTarget = (blockInsertTarget.parentId || null) === (parentId || null) && blockInsertTarget.branch === branch;
+        const label = isTarget
+          ? '🎯 Сюда вставятся новые блоки (жмите цветные блоки сверху или перетащите блок)'
+          : 'Нажмите сюда, чтобы вставлять блоки внутрь, или перетащите блок';
+        return `<div class="cb-empty-slot" onclick="setBlockInsertTarget('${parentId}', '${branch}')">${label}</div>`;
+      }
+
+      const cmpChoices = [
+        { val: '>', label: '> больше' },
+        { val: '<', label: '< меньше' },
+        { val: '==', label: '== равно' },
+        { val: '!=', label: '!= не равно' },
+        { val: '>=', label: '>= не меньше' },
+        { val: '<=', label: '<= не больше' },
+        { val: 'in', label: 'входит в' },
+        { val: 'not in', label: 'не входит' },
+        { val: 'custom', label: 'своё условие...' }
+      ];
+
+      const opChoices = [
+        { val: '+=', label: 'прибавить (+=)' },
+        { val: '-=', label: 'убавить (-=)' },
+        { val: '=', label: 'заменить (=)' },
+        { val: '*=', label: 'умножить (*=)' },
+        { val: '//=', label: 'делить (//=)' }
+      ];
+
+      return items.map((b, idx) => {
+        const prev = idx > 0 ? items[idx - 1] : null;
+        const canNest = Boolean(prev && (prev.type === 'for' || prev.type === 'if'));
+        const canUnnest = Boolean(parentId);
+        const inpAttr = (field, listId) =>
+          `list="${listId}" onmousedown="event.stopPropagation()" onfocus="cbLastFocusedInput={blockId:'${b.id}',field:'${field}',el:this}" oninput="updateBlockField('${b.id}','${field}',this.value)"`;
+
+        let slotsHtml = '';
+        let extraCtrl = '';
+        let nestedHtml = '';
+
+        if (b.type === 'ai') {
+          slotsHtml = `
+            <span>🤖 задать</span>
+            <input type="text" class="cb-input sm" placeholder="reply" value="${escapeHtml(b.varName || '')}" ${inpAttr('varName', 'cbSugVars')}>
+            <span>= спросить ИИ (</span>
+            <input type="text" class="cb-input md" placeholder="запрос" value="${escapeHtml(b.promptExpr ?? '')}" ${inpAttr('promptExpr', 'cbSugExpr')}>
+            <span>)</span>
+            <input type="text" class="cb-input sm" placeholder="system (опц.)" value="${escapeHtml(b.systemExpr ?? '')}" ${inpAttr('systemExpr', 'cbSugExpr')} title="Необязательная инструкция system для ask_ai">
+          `;
+        } else if (b.type === 'var') {
+          slotsHtml = `
+            <span>задать</span>
+            <input type="text" class="cb-input sm" placeholder="имя" value="${escapeHtml(b.name || '')}" ${inpAttr('name', 'cbSugVars')}>
+            <span>значение</span>
+            <input type="text" class="cb-input md" placeholder="0, [], &quot;&quot;" value="${escapeHtml(b.value ?? '')}" ${inpAttr('value', 'cbSugExpr')}>
+          `;
+        } else if (b.type === 'for') {
+          const isThenTarget = blockInsertTarget.parentId === b.id && blockInsertTarget.branch === 'children';
+          slotsHtml = `
+            <span>повторять для каждого</span>
+            <input type="text" class="cb-input xs" placeholder="x" value="${escapeHtml(b.item || '')}" ${inpAttr('item', 'cbSugVars')}>
+            <span>из</span>
+            <input type="text" class="cb-input md" placeholder="список / строка" value="${escapeHtml(b.iterable || '')}" ${inpAttr('iterable', 'cbSugIter')}>
+            <button type="button" class="cb-target-pill ${isThenTarget ? 'active' : ''}" onclick="setBlockInsertTarget('${b.id}', 'children')" title="Вставлять новые блоки внутрь цикла">${isThenTarget ? '🎯 Внутрь' : '+ Внутрь'}</button>
+          `;
+          nestedHtml = `
+            <div class="cb-c-wrap" ondragover="onCbBranchDragOver(event)" ondrop="onCbBranchDrop(event, '${b.id}', 'children')">
+              ${renderCbListHtml(b.children, b.id, 'children')}
+            </div>
+            <div class="cb-c-footer" title="Конец тела цикла">↩</div>
+          `;
+        } else if (b.type === 'if') {
+          const isThenTarget = blockInsertTarget.parentId === b.id && blockInsertTarget.branch === 'children';
+          const isElseTarget = blockInsertTarget.parentId === b.id && blockInsertTarget.branch === 'elseChildren';
+          const parsedCond = parseIfCondition(b);
+          let condCapsuleHtml = '';
+          if (parsedCond.mode === 'parts') {
+            const cmpOpts = cmpChoices.map(c =>
+              `<option value="${escapeHtml(c.val)}" ${parsedCond.cmp === c.val ? 'selected' : ''}>${escapeHtml(c.label)}</option>`
+            ).join('');
+            condCapsuleHtml = `
+              <span class="cb-hex-cond">
+                <input type="text" class="cb-input xs" placeholder="x" list="cbSugVars" value="${escapeHtml(parsedCond.left)}" onmousedown="event.stopPropagation()" onfocus="cbLastFocusedInput={blockId:'${b.id}',field:'left',el:this}" oninput="updateIfConditionPart('${b.id}','left',this.value)">
+                <select class="cb-select" onmousedown="event.stopPropagation()" onchange="updateIfConditionPart('${b.id}','cmp',this.value)">${cmpOpts}</select>
+                <input type="text" class="cb-input sm" placeholder="0" list="cbSugExpr" value="${escapeHtml(parsedCond.right)}" onmousedown="event.stopPropagation()" onfocus="cbLastFocusedInput={blockId:'${b.id}',field:'right',el:this}" oninput="updateIfConditionPart('${b.id}','right',this.value)">
+                <button type="button" class="cb-cond-toggle" onclick="toggleIfCondMode('${b.id}')" title="Переключить в ручное условие Python">✎</button>
+              </span>
+            `;
+          } else {
+            condCapsuleHtml = `
+              <span class="cb-hex-cond">
+                <input type="text" class="cb-input lg" placeholder="условие (например: is_vip)" value="${escapeHtml(parsedCond.condition)}" ${inpAttr('condition', 'cbSugCond')}>
+                <button type="button" class="cb-cond-toggle" onclick="toggleIfCondMode('${b.id}')" title="Переключить в конструктор &lt; = &gt;">🧩</button>
+              </span>
+            `;
+          }
+
+          slotsHtml = `
+            <span>если</span>
+            ${condCapsuleHtml}
+            <span>, то</span>
+            <button type="button" class="cb-target-pill ${isThenTarget ? 'active' : ''}" onclick="setBlockInsertTarget('${b.id}', 'children')" title="Вставлять новые блоки внутрь ветки «то»">${isThenTarget ? '🎯 То' : '+ Внутрь'}</button>
+          `;
+          extraCtrl = `<button type="button" class="cb-ctrl-btn" onclick="toggleBlockElse('${b.id}')" title="Добавить или убрать ветку «иначе»">${b.hasElse ? '− Иначе' : '+ Иначе'}</button>`;
+          nestedHtml = `
+            <div class="cb-c-wrap" ondragover="onCbBranchDragOver(event)" ondrop="onCbBranchDrop(event, '${b.id}', 'children')">
+              ${renderCbListHtml(b.children, b.id, 'children')}
+            </div>
+            ${b.hasElse ? `
+              <div class="cb-else-head">
+                <span>иначе</span>
+                <button type="button" class="cb-target-pill ${isElseTarget ? 'active' : ''}" onclick="setBlockInsertTarget('${b.id}', 'elseChildren')">${isElseTarget ? '🎯 Иначе' : '+ В Иначе'}</button>
+              </div>
+              <div class="cb-c-wrap" ondragover="onCbBranchDragOver(event)" ondrop="onCbBranchDrop(event, '${b.id}', 'elseChildren')">
+                ${renderCbListHtml(b.elseChildren, b.id, 'elseChildren')}
+              </div>
+            ` : ''}
+            <div class="cb-c-footer" title="Конец блока «если»"></div>
+          `;
+        } else if (b.type === 'update') {
+          const opOpts = opChoices.map(o => `<option value="${o.val}" ${(b.op || '+=') === o.val ? 'selected' : ''}>${o.label}</option>`).join('');
+          slotsHtml = `
+            <span>изменить</span>
+            <input type="text" class="cb-input sm" placeholder="имя" value="${escapeHtml(b.target || '')}" ${inpAttr('target', 'cbSugVars')}>
+            <select class="cb-select" onmousedown="event.stopPropagation()" onchange="updateBlockField('${b.id}','op',this.value)">${opOpts}</select>
+            <input type="text" class="cb-input md" placeholder="значение" value="${escapeHtml(b.value ?? '')}" ${inpAttr('value', 'cbSugExpr')}>
+          `;
+        } else if (b.type === 'return') {
+          slotsHtml = `
+            <span>вернуть ответ</span>
+            <input type="text" class="cb-input md" placeholder="total" value="${escapeHtml(b.expr ?? '')}" ${inpAttr('expr', 'cbSugVars')}>
+          `;
+        } else {
+          slotsHtml = `
+            <span>выполнить</span>
+            <input type="text" class="cb-input lg" placeholder="continue или grades.pop()" value="${escapeHtml(b.code || '')}" ${inpAttr('code', 'cbSugExpr')}>
+          `;
+        }
+
+        return `
+          <div class="cb-block cb-${b.type}" data-block-id="${b.id}" draggable="false"
+               ondragstart="onCbBlockDragStart(event, '${b.id}')"
+               ondragend="onCbBlockDragEnd('${b.id}')"
+               ondragover="onCbBlockDragOver(event, '${b.id}')"
+               ondrop="onCbBlockDrop(event, '${b.id}')">
+            <div class="cb-block-head">
+              <div class="cb-block-slots">
+                <span class="cb-grip" title="Перетащить блок" onmousedown="onCbGripMouseDown('${b.id}')">⋮⋮</span>
+                ${slotsHtml}
+              </div>
+              <div class="cb-controls">
+                ${extraCtrl}
+                ${idx > 0 ? `<button type="button" class="cb-ctrl-btn" onclick="moveLogicBlock('${b.id}', -1)" title="Поднять выше">↑</button>` : ''}
+                ${idx < items.length - 1 ? `<button type="button" class="cb-ctrl-btn" onclick="moveLogicBlock('${b.id}', 1)" title="Опустить ниже">↓</button>` : ''}
+                ${canNest ? `<button type="button" class="cb-ctrl-btn" onclick="nestLogicBlock('${b.id}')" title="Вложить внутрь цикла/условия">↳</button>` : ''}
+                ${canUnnest ? `<button type="button" class="cb-ctrl-btn" onclick="unnestLogicBlock('${b.id}')" title="Вынести на уровень выше">↰</button>` : ''}
+                <button type="button" class="cb-ctrl-btn del" onclick="deleteLogicBlock('${b.id}')" title="Удалить блок">✕</button>
+              </div>
+            </div>
+            ${nestedHtml}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateCbDatalists(meta) {
+      const setOpts = (id, vals) => {
+        const dl = document.getElementById(id);
+        if (!dl) return;
+        dl.innerHTML = vals.map(v => `<option value="${escapeHtml(v)}"></option>`).join('');
+      };
+      const params = meta.params || [];
+      setOpts('cbSugVars', ['reply', 'raw', 'clean', 'matched', 'context', 'masked', 'obj', ...params]);
+      setOpts('cbSugIter', [...params, meta.defaultIterable || 'docs', 'range(max_attempts)', 'range(max_steps)']);
+      setOpts('cbSugCond', ['clean == "billing"', 'clean == "tech"', 'not matched', 'isinstance(obj, dict)', 'reply.startswith("FINAL:")', 'reply.startswith("CALC:")']);
+      setOpts('cbSugExpr', ['""', '[]', 'reply.strip().lower().strip(".!?\\"\\\' ")', '"Нет данных в базе"', '"other"', 'None', 'continue', ...params]);
+    }
+
+    function renderCodeBlocksWorkspace() {
+      const meta = getActiveCodeMeta();
+      const blocks = getCurrentBlocksReadonly();
+      const canvasEl = document.getElementById('cbCanvasArea');
+      const chipsWrap = document.getElementById('cbParamChipsWrap');
+      const targetInd = document.getElementById('cbTargetIndicator');
+      const preEl = document.getElementById('cbLivePythonPre');
+
+      updateCbDatalists(meta);
+
+      if (chipsWrap) {
+        const paramSet = new Set(meta.params || []);
+        const paramBtns = Array.from(paramSet).map(p =>
+          `<button type="button" class="cb-token-chip" data-token="${escapeHtml(p)}" onclick="insertHelperToken(this.dataset.token)" title="Вставить имя входного параметра в активное поле">${escapeHtml(p)}</button>`
+        ).join('');
+        const extraTokens = (meta.quickTokens || []).filter(tok => !paramSet.has(tok)).slice(0, 4);
+        const extraBtns = extraTokens.map(tok =>
+          `<button type="button" class="cb-token-chip" data-token="${escapeHtml(tok)}" onclick="insertHelperToken(this.dataset.token)" title="Вставить подсказку в активное поле">${escapeHtml(tok)}</button>`
+        ).join('');
+        chipsWrap.innerHTML = `<span style="font-weight:700;">Подсказки (клик вставит в поле):</span> ${paramBtns} ${extraBtns}`;
+      }
+
+      const isRootTarget = !blockInsertTarget.parentId;
+      if (targetInd) {
+        if (isRootTarget) {
+          targetInd.textContent = '🎯 Вставка: в основу функции';
+        } else {
+          targetInd.innerHTML = `🎯 Вставка внутрь блока (<a href="#" onclick="event.preventDefault(); setBlockInsertTarget(null, 'root');" style="color:var(--wire-char);">сбросить в корень</a>)`;
+        }
+      }
+
+      if (canvasEl) {
+        canvasEl.innerHTML = `
+          <div class="cb-hat-block">
+            <div style="display:flex; align-items:center; gap:7px; flex-wrap:wrap;">
+              <span>когда 🚩 вызвана</span>
+              <span class="cb-hat-sig">${escapeHtml(meta.signatureLine || '')}</span>
+            </div>
+            <button type="button" class="cb-target-pill ${isRootTarget ? 'active' : ''}" onclick="setBlockInsertTarget(null, 'root')">${isRootTarget ? '🎯 Корень' : '+ В корень'}</button>
+          </div>
+          <div class="cb-list" ondragover="onCbBranchDragOver(event)" ondrop="onCbBranchDrop(event, null, 'root')">
+            ${renderCbListHtml(blocks, null, 'root')}
+          </div>
+        `;
+      }
+
+      const compiled = compileBlocksToPython(blocks, meta);
+      if (preEl) preEl.textContent = compiled;
+      updateSyncWarningBanner(blocks, compiled, meta);
     }
 
     function insertCodeStub() {
@@ -6445,7 +8027,7 @@
     }
 
     function switchCodeHelpTab(tab) {
-      ['general', 'task', 'error'].forEach(t => {
+      ['general', 'blocks', 'task', 'error'].forEach(t => {
         const btn = document.getElementById(`codeHelpTabBtn_${t}`);
         const pane = document.getElementById(`codeHelpPane_${t}`);
         if (btn) btn.classList.toggle('active', t === tab);
@@ -6475,7 +8057,7 @@
       if (!res) {
         return {
           title: 'Тесты ещё не запускались',
-          explanation: 'Нажмите синюю кнопку «▶ Запустить код и unit-тесты» или зелёную кнопку ИИ. Компьютер проверит код на нескольких примерах и покажет, что именно пошло не так.'
+          explanation: 'Нажмите синюю кнопку «▶ Запустить код и unit-тесты». Платформа проверит ваш код и обращения к <code>ask_ai(...)</code> на наборе тестовых сценариев.'
         };
       }
       if (res.passed) {
@@ -6633,19 +8215,14 @@
           hint: 'Соедини базовые блоки на холсте.'
         },
         {
-          ok: arch.hasFormat && arch.formatType === 'code',
-          label: 'Подключён «Формат Данных» в режиме «Чистый код»',
-          hint: 'Добавь 📊 Формат Данных к Мозгу и выбери «Чистый код (Python)»!'
+          ok: arch.hasParams && arch.tempVal <= 0.4,
+          label: 'Подключена «Креативность и Длина» с Temp ≤ 0.4',
+          hint: 'Для стабильной интеграции и JSON ставь Temp ≤ 0.4.'
         },
         {
-          ok: arch.hasParams && arch.tempVal <= 0.3,
-          label: 'Подключена «Креативность и Длина» с Temp ≤ 0.3',
-          hint: 'Добавь 🔥 Креативность к Мозгу и поставь Temp ≤ 0.3 для точного синтаксиса.'
-        },
-        {
-          ok: arch.hasFewshot && arch.fsFilled,
-          label: 'Подключён «Few-Shot (Примеры)» с образцом кода',
-          hint: 'Добавь 🎯 Few-Shot к Мозгу и заполни хотя бы 1 пример с Python-кодом.'
+          ok: (arch.hasFewshot && arch.fsFilled) || arch.hasFormat || Boolean(arch.kbText && arch.kbText.trim()),
+          label: 'Подключён ориентир формата (Формат Данных, Few-Shot или База знаний)',
+          hint: 'Добавь хотя бы один из блоков: Формат Данных, Few-Shot или База знаний.'
         }
       ];
 
@@ -6666,11 +8243,11 @@
       if (!editor || !box) return;
 
       const code = editor.value;
-      const taskId = activeCodeTaskId || 'sum_pos';
+      const taskId = activeCodeTaskId || 'ai_router';
       const meta = CODE_TASKS_META.find(t => t.id === taskId) || CODE_TASKS_META[0];
 
       if (!code.trim()) {
-        showToast('Редактор кода пуст. Напишите код или сгенерируйте его через ИИ.', 'info');
+        showToast('Редактор кода пуст. Напишите код или соберите его в «Мини-блоках».', 'info');
         return;
       }
 
@@ -6678,26 +8255,26 @@
         btn.disabled = true;
         btn.textContent = '⏳ Запуск unit-тестов...';
       }
-      if (runModeBadge) runModeBadge.textContent = 'Проверка кода из редактора...';
+      if (runModeBadge) runModeBadge.textContent = 'Проверка кода и вызовов ask_ai...';
       box.classList.add('active');
-      box.innerHTML = `<div class="verify-summary warn"><span>🧪 Выполнение кода из редактора...</span><span>⏳</span></div>`;
+      box.innerHTML = `<div class="verify-summary warn"><span>🧪 Выполнение кода и проверка обращений к ИИ...</span><span>⏳</span></div>`;
 
       try {
         const res = await fetch('/api/run-code-task', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ task_id: taskId, code })
+          body: JSON.stringify({ task_id: taskId, code, user_id: getOrCreateUserId() })
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
         renderCodeTaskResultBox(box, data);
 
         if (!taskProgressState.codeTasks) taskProgressState.codeTasks = getDefaultCodeTasksMap();
-        taskProgressState.codeTasks[taskId] = {
+        taskProgressState.codeTasks[taskId] = Object.assign({}, taskProgressState.codeTasks[taskId] || {}, {
           passed: Boolean(data.passed),
           aiResult: data,
           editorCode: code
-        };
+        });
         if (!taskProgressState.bonusCode) taskProgressState.bonusCode = {};
         taskProgressState.bonusCode.aiResult = data;
         taskProgressState.bonusCode.passed = CODE_TASK_IDS.every(id => Boolean(taskProgressState.codeTasks[id]?.passed));
@@ -6705,10 +8282,10 @@
         updateTasksProgressSummaryUI();
         saveTaskProgress(true);
 
-        if (runModeBadge) runModeBadge.textContent = data.passed ? 'Решено (редактор) ✅' : 'Тесты не пройдены';
+        if (runModeBadge) runModeBadge.textContent = data.passed ? 'Решено ✅' : 'Тесты не пройдены';
         if (data.passed) {
           const allDone = CODE_TASK_IDS.every(id => Boolean(taskProgressState.codeTasks[id]?.passed));
-          showToast(allDone ? '🏆 Все 6 задач код-практикума решены!' : `✅ Задача ${meta.num}/6 решена!`, 'success');
+          showToast(allDone ? '🏆 Все 6 задач AI-интеграции решены!' : `✅ Задача ${meta.num}/6 решена!`, 'success');
         } else {
           showToast(`Пройдено ${data.passed_count || 0} из ${data.total_count || 4} тестов`, 'error');
         }
@@ -6723,83 +8300,72 @@
       }
     }
 
-    async function runCodeTaskAI() {
-      const schemaOk = verifyCodeSchema(false);
-      if (!schemaOk) {
-        showToast('Сначала исправьте красные пункты в «Схема ИИ-Кодера» слева', 'info');
+    async function runEditorCodeLiveAI() {
+      const editor = document.getElementById('codeEditorTextarea');
+      const btn = document.getElementById('btnRunLiveAiTest');
+      const box = document.getElementById('verifyBox_code_ai');
+      const runModeBadge = document.getElementById('codeRunModeBadge');
+      if (!editor || !box) return;
+
+      const code = editor.value;
+      if (!code.trim()) {
+        showToast('Редактор пуст — сначала напишите код или соберите блоки', 'info');
         return;
       }
+
       const arch = inspectCanvasArchitecture();
-      const taskId = activeCodeTaskId || 'sum_pos';
-      const meta = CODE_TASKS_META.find(t => t.id === taskId) || CODE_TASKS_META[0];
-      const btn = document.getElementById('btnRunCodeTaskAI');
-      const box = document.getElementById('verifyBox_code_ai');
-      const editor = document.getElementById('codeEditorTextarea');
-      const runModeBadge = document.getElementById('codeRunModeBadge');
-      if (!box) return;
+      const taskId = activeCodeTaskId || 'ai_router';
 
       if (btn) {
         btn.disabled = true;
-        btn.textContent = '⏳ ИИ пишет код и запускает тесты...';
+        btn.textContent = '⏳ Запрос к живому ИИ...';
       }
-      if (runModeBadge) runModeBadge.textContent = 'Генерация через ИИ...';
+      if (runModeBadge) runModeBadge.textContent = 'Живой вызов LLM...';
       box.classList.add('active');
-      box.innerHTML = `<div class="verify-summary warn"><span>🧪 Генерация Python-кода и запуск unit-тестов...</span><span>⏳</span></div>`;
+      box.innerHTML = `<div class="verify-summary warn"><span>🔌 Выполняем ваш код с живой нейросетью...</span><span>⏳</span></div>`;
 
       try {
-        const res = await fetch('/api/verify-code-task', {
+        const res = await fetch('/api/run-code-live-ai', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             task_id: taskId,
-            system_prompt: arch.compiledPrompt,
+            code,
+            system_prompt: arch.compiledPrompt || '',
             temperature: arch.tempVal,
             kb_text: arch.kbText || null,
-            current_code: meta.mode === 'debug' && editor ? editor.value : null
+            user_id: getOrCreateUserId()
           })
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
+        const calls = Array.isArray(data.calls) ? data.calls : [];
+        const callsHtml = calls.map((c, i) => `
+          <div style="border:1px solid var(--border-subtle); border-radius:6px; padding:7px 9px; background:var(--bg-deep); font-size:11px;">
+            <div style="font-weight:700; color:var(--wire-char); margin-bottom:3px;">Запрос #${i + 1} → ask_ai(...)</div>
+            <div style="color:var(--text-dim); margin-bottom:2px;"><b>Prompt:</b> <code>${escapeHtml(c.prompt || '')}</code></div>
+            <div style="color:var(--text);"><b>Ответ ИИ:</b> <code>${escapeHtml(c.reply || '')}</code></div>
+          </div>
+        `).join('');
 
-        if (editor && data.extracted_code) {
-          editor.value = data.extracted_code;
-        }
-        renderCodeTaskResultBox(box, data);
-
-        if (!taskProgressState.codeTasks) taskProgressState.codeTasks = getDefaultCodeTasksMap();
-        taskProgressState.codeTasks[taskId] = {
-          passed: Boolean(data.passed),
-          aiResult: data,
-          editorCode: data.extracted_code || (editor ? editor.value : '')
-        };
-        if (!taskProgressState.bonusCode) taskProgressState.bonusCode = {};
-        taskProgressState.bonusCode.aiResult = data;
-        taskProgressState.bonusCode.passed = CODE_TASK_IDS.every(id => Boolean(taskProgressState.codeTasks[id]?.passed));
-        taskProgressState.bonusCode.snapshot = exportWorkflowSnapshot();
-
-        updateTasksProgressSummaryUI();
-        saveTaskProgress(true);
-
-        if (runModeBadge) runModeBadge.textContent = data.passed ? 'Решено (ИИ) ✅' : 'Можно доработать в редакторе';
-        if (data.passed) {
-          const allDone = CODE_TASK_IDS.every(id => Boolean(taskProgressState.codeTasks[id]?.passed));
-          if (allDone) {
-            showToast('🏆 Поздравляем! Все 6 задач код-практикума решены!', 'success');
-          } else {
-            showToast(`✅ Задача ${meta.num}/6 решена! Код загружен в редактор.`, 'success');
-          }
-        } else {
-          showToast(`Пройдено ${data.passed_count || 0} из ${data.total_count || 4} тестов — доработайте код в редакторе или промпт!`, 'error');
-        }
+        box.innerHTML = `
+          <div class="verify-summary ${data.ok ? 'ok' : 'warn'}">
+            <span>${data.ok ? '🔌 Живой запуск выполнен!' : '⚠️ Ошибка живого запуска'}</span>
+            <span>${calls.length} вызов(а) • ${data.latency_ms || 0} мс</span>
+          </div>
+          <div style="font-size:11px; margin-top:6px; color:var(--text-dim);">Вызов: <code>${escapeHtml(data.live_call || '')}</code></div>
+          ${data.result ? `<div style="margin-top:6px; padding:7px 9px; border-radius:6px; background:var(--bg-node); border:1px solid var(--border-subtle); font-size:11.5px;"><b>Итог функции:</b> <code>${escapeHtml(data.result)}</code></div>` : ''}
+          ${data.error ? `<div class="ai-exam-verdict fail" style="margin-top:6px;">${escapeHtml(data.error)}</div>` : ''}
+          ${callsHtml ? `<div style="display:flex; flex-direction:column; gap:5px; margin-top:8px;">${callsHtml}</div>` : ''}
+          ${data.stdout ? `<pre class="code-stdout-pre" style="margin-top:6px;">${escapeHtml(data.stdout)}</pre>` : ''}
+        `;
+        if (runModeBadge) runModeBadge.textContent = data.ok ? 'Живой прогон готов 🔌' : 'Ошибка живого прогона';
       } catch (err) {
-        box.innerHTML = `<div class="verify-check-row fail"><span>❌</span><div>Ошибка связи с сервером: ${escapeHtml(err.message)}</div></div>`;
-        showToast('Ошибка при запуске кода: ' + err.message, 'error');
+        box.innerHTML = `<div class="verify-check-row fail"><span>❌</span><div>Ошибка живого запуска: ${escapeHtml(err.message)}</div></div>`;
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = meta.mode === 'debug'
-            ? `🤖 Попросить ИИ починить (${meta.num}/6)`
-            : `🤖 Сгенерировать через ИИ (${meta.num}/6) и проверить`;
+          btn.textContent = '🔌 Тест моего кода на живом ИИ';
         }
       }
     }
@@ -6832,7 +8398,8 @@
             temperature: arch.tempVal,
             max_tokens: 1024,
             kb_text: arch.kbText || null,
-            history: []
+            history: [],
+            user_id: getOrCreateUserId()
           })
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -8711,7 +10278,8 @@
             temperature: temperature,
             max_tokens: maxTokens,
             kb_text: kbText.trim() || null,
-            history: termChatHistories[termNodeId]
+            history: termChatHistories[termNodeId],
+            user_id: getOrCreateUserId()
           })
         });
 
@@ -9834,7 +11402,8 @@
           body: JSON.stringify({
             bot_id: targetBotId,
             message: text,
-            history: chatHistories[targetBotId].slice(0, -1)
+            history: chatHistories[targetBotId].slice(0, -1),
+            user_id: getOrCreateUserId()
           })
         });
 
@@ -10771,9 +12340,10 @@
         <button type="button" class="btn-modal-close" onclick="closeCodeHelpModal()">✕</button>
       </div>
 
-      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; padding:8px 14px; background:var(--bg-deep); border-bottom:1px solid var(--border-subtle);">
-        <button type="button" class="task-level-btn active" id="codeHelpTabBtn_general" onclick="switchCodeHelpTab('general')" style="font-size:11px; padding:6px;">📘 С нуля: как начать</button>
-        <button type="button" class="task-level-btn" id="codeHelpTabBtn_task" onclick="switchCodeHelpTab('task')" style="font-size:11px; padding:6px;">💡 Разбор этой задачи</button>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:4px; padding:8px 14px; background:var(--bg-deep); border-bottom:1px solid var(--border-subtle);">
+        <button type="button" class="task-level-btn active" id="codeHelpTabBtn_general" onclick="switchCodeHelpTab('general')" style="font-size:11px; padding:6px;">📘 С нуля</button>
+        <button type="button" class="task-level-btn" id="codeHelpTabBtn_blocks" onclick="switchCodeHelpTab('blocks')" style="font-size:11px; padding:6px;">🧩 Как собирать блоки</button>
+        <button type="button" class="task-level-btn" id="codeHelpTabBtn_task" onclick="switchCodeHelpTab('task')" style="font-size:11px; padding:6px;">💡 Разбор задачи</button>
         <button type="button" class="task-level-btn" id="codeHelpTabBtn_error" onclick="switchCodeHelpTab('error')" style="font-size:11px; padding:6px;">❓ Разбор ошибки</button>
       </div>
 
@@ -10781,38 +12351,92 @@
         <!-- TAB 1: С нуля -->
         <div id="codeHelpPane_general" style="display:flex; flex-direction:column; gap:10px;">
           <div class="info-section highlight">
-            <div class="info-label">🤖 Вариант 1 — Решить через своего ИИ-бота (без опыта в коде)</div>
+            <div class="info-label">🤖 Как устроены задания по интеграции ИИ</div>
             <div class="info-text" style="margin-top:4px; line-height:1.55;">
-              Вы можете не писать код с нуля, а настроить своего ИИ-помощника:
+              Здесь не нужно просить нейросеть «сделать домашку за вас» — наоборот, вы сами пишете код или собираете блоки, которые <b>управляют нейросетью</b> через готовую функцию <code>ask_ai(prompt, system="...")</code>!
               <ol style="margin:6px 0 0 18px; padding:0; display:flex; flex-direction:column; gap:4px;">
-                <li>Нажмите вверху <b>«Схема нод»</b> (или кнопку <b>«🧩 Настроить схему нод»</b>).</li>
-                <li>Подключите к <b>🧠 Мозгу Бота</b>: <b>📊 Формат Данных</b> (выберите <code>Чистый код</code>), <b>🔥 Креативность</b> (ползунок влево до <code>0.1–0.3</code>) и <b>🎯 Few-Shot</b> (впишите 1 пример короткой функции).</li>
-                <li>Вернитесь сюда и нажмите зелёную кнопку <b>«🤖 Сгенерировать через ИИ»</b> — бот сам напишет код в чёрное окно!</li>
+                <li><b>🧩 Мини-блоки:</b> для старта можно собирать логику и вызовы <code>🤖 спросить ИИ</code> из цветных блоков — Python-код с отступами соберётся сам.</li>
+                <li><b>🧪 Unit-тесты и живой ИИ:</b> синяя кнопка <b>«▶ Запустить код и unit-тесты»</b> быстро проверяет ваш алгоритм на хитрых сценариях, а <b>«🔌 Тест моего кода на живом ИИ»</b> запускает вашу функцию с вашим ботом со «Схемы нод»!</li>
               </ol>
             </div>
-            <button type="button" class="btn-sm-action" onclick="closeCodeHelpModal(); switchTab('nodes');" style="margin-top:8px; font-weight:700; color:var(--wire-char); border-color:var(--wire-char);">🧩 Перейти на Схему нод →</button>
+            <button type="button" class="btn-sm-action" onclick="closeCodeHelpModal(); switchTab('nodes');" style="margin-top:8px; font-weight:700; color:var(--wire-char); border-color:var(--wire-char);">🧩 Настроить бота на Схеме нод →</button>
           </div>
 
           <div class="info-section">
-            <div class="info-label">📖 Мини-словарик: что значат слова в редакторе?</div>
+            <div class="info-label">📖 Мини-словарик: что значат команды в редакторе?</div>
             <ul class="guide-list" style="margin-top:6px;">
-              <li><b><code>def имя(...):</code></b> — это начало рецепта (функции). Название после <code>def</code> менять нельзя!</li>
+              <li><b><code>ask_ai(prompt)</code></b> — встроенный вызов нейросети (возвращает строку с ответом модели).</li>
+              <li><b><code>def имя(...):</code></b> — начало функции. Название после <code>def</code> менять нельзя!</li>
               <li><b><code>pass</code></b> — пустая заглушка («тут пока пусто»). Её нужно стереть и написать своё решение.</li>
-              <li><b><code>return ответ</code></b> — команда «отдай готовый ответ на проверку». Без <code>return</code> тесты получат пустоту <code>None</code>.</li>
-              <li><b>Отступы (кнопка <code>Tab</code>)</b> — строки внутри <code>def</code>, <code>if</code> и <code>for</code> всегда сдвигаются вправо на 4 пробела.</li>
-              <li><b>Unit-тесты (справа)</b> — это 4–7 проверочных примеров. Зелёный <code>✅</code> — всё верно, красный <code>❌</code> — нужно поправить код.</li>
+              <li><b><code>return ответ</code></b> — отдать готовый результат функции на проверку тестам.</li>
+              <li><b>Unit-тесты (справа)</b> — автоматические сценарии, проверяющие и итоговый ответ, и то, что вы передали в <code>ask_ai(...)</code> без утечек.</li>
             </ul>
           </div>
 
           <div class="info-section">
-            <div class="info-label">🐛 Что делать в задачах 3 и 4 («Отладка ИИ»)?</div>
+            <div class="info-label">🐛 Что делать в задаче 4 («Отладка ИИ»)?</div>
             <div class="info-text" style="margin-top:4px; line-height:1.5;">
-              Там писать всё заново не нужно! В редакторе уже лежит почти рабочий код, но с 2–3 хитрыми ошибками. Нажмите синюю кнопку <b>«▶ Запустить код и unit-тесты»</b>, посмотрите, какие примеры стали красными, и откройте вкладку <b>«💡 Разбор этой задачи»</b> сверху.
+              Там уже лежит хрупкий код интеграции без повторов и обработки <code>```json</code>. Запустите <b>«▶ Запустить код и unit-тесты»</b>, посмотрите падения и добавьте цикл попыток + <code>try/except</code>!
             </div>
           </div>
         </div>
 
-        <!-- TAB 2: Разбор текущей задачи -->
+        <!-- TAB 2: Обучение Мини-блокам -->
+        <div id="codeHelpPane_blocks" style="display:none; flex-direction:column; gap:10px;">
+          <div class="info-section highlight">
+            <div class="info-label">🎓 Как работают «Мини-блоки» (простыми словами)</div>
+            <div class="info-text" style="margin-top:4px; line-height:1.55;">
+              Это визуальный конструктор алгоритма: вы собираете решение из цветных кирпичиков сверху вниз, а платформа сама превращает их в правильный Python-код с отступами.
+            </div>
+            <button type="button" class="btn-sm-action" onclick="startCodeBlocksTour()" style="margin-top:8px; font-weight:700; color:var(--wire-char); border-color:var(--wire-char);">🎓 Запустить пошаговый тур по экрану →</button>
+          </div>
+
+          <div class="info-section">
+            <div class="info-label">🎨 Словарь блоков (цвета и назначение)</div>
+            <ul class="guide-list" style="margin-top:6px;">
+              <li><b style="color:#0284C7;">🤖 задать [reply] = спросить ИИ (запрос)</b> — отправляет запрос в <code>ask_ai(...)</code> и сохраняет ответ модели.</li>
+              <li><b style="color:#FF8C1A;">задать [clean] значение (...)</b> — сохраняет переменную (например, очищенную строку ответа).</li>
+              <li><b style="color:#D98C00;">повторять для каждого (item) из (docs)</b> — жёлтая скоба-конвейер: проходит по элементам списка или шагам.</li>
+              <li><b style="color:#268634;">если &lt;условие&gt;, то</b> — зелёная скоба-развилка: проверка ответа модели или условий фильтрации.</li>
+              <li><b style="color:#7C3AED;">изменить [var] [+=] (...)</b> — прибавляет или обновляет значение переменной/контекста.</li>
+              <li><b style="color:#E11D48;">вернуть ответ (res)</b> — розовый нижний блок: отдаёт ответ функции на проверку тестам.</li>
+              <li><b style="color:#2563EB;">выполнить (команда)</b> — для особых строк (<code>continue</code>, <code>try</code>, методов списка).</li>
+            </ul>
+          </div>
+
+          <div class="info-section">
+            <div class="info-label">🪆 Наглядный пример: «Сколько пятёрок в списке оценок marks?»</div>
+            <div class="info-text" style="margin-top:4px; line-height:1.5;">
+              Посмотрите, как С-скобы обхватывают вложенные блоки без зазоров:
+            </div>
+            <div style="margin-top:8px; display:flex; flex-direction:column; gap:0; font-family:inherit; font-size:11.5px; font-weight:700; color:#fff; text-shadow:0 1px 1px rgba(0,0,0,0.2); padding:10px; background-color:#f8fafc; background-image:radial-gradient(#cbd5e1 1.2px, transparent 1.2px); background-size:14px 14px; border:1px solid var(--border-node); border-radius:8px;">
+              <div style="padding:6px 10px; background:#FF8C1A; border:1px solid #DB6E00; border-radius:4px;">задать <span style="background:#fff;color:#0f172a;border-radius:99px;padding:1px 7px;text-shadow:none;">count</span> значение <span style="background:#fff;color:#0f172a;border-radius:99px;padding:1px 7px;text-shadow:none;">0</span></div>
+              <div style="margin-top:-1px;">
+                <div style="padding:6px 10px; background:#F0A000; border:1px solid #C78200; border-radius:4px 4px 4px 0;">повторять для каждого <span style="background:#fff;color:#0f172a;border-radius:99px;padding:1px 7px;text-shadow:none;">m</span> из <span style="background:#fff;color:#0f172a;border-radius:99px;padding:1px 7px;text-shadow:none;">marks</span></div>
+                <div style="padding:0 0 0 14px; background:linear-gradient(90deg, #C78200 0 1px, #F0A000 1px 14px, transparent 14px);">
+                  <div style="margin-top:-1px; padding:6px 10px; background:#38B249; border:1px solid #268634; border-radius:4px 4px 4px 0;">если <span style="background:#2CA3D9;border-radius:99px;padding:1px 8px;">(m) == равно (5)</span> , то</div>
+                  <div style="padding:0 0 0 14px; background:linear-gradient(90deg, #268634 0 1px, #38B249 1px 14px, transparent 14px);">
+                    <div style="margin-top:-1px; padding:6px 10px; background:#8B5CF6; border:1px solid #6D28D9; border-radius:4px;">изменить <span style="background:#fff;color:#0f172a;border-radius:99px;padding:1px 7px;text-shadow:none;">count</span> прибавить (+=) <span style="background:#fff;color:#0f172a;border-radius:99px;padding:1px 7px;text-shadow:none;">1</span></div>
+                  </div>
+                  <div style="margin-top:-1px; height:14px; width:150px; background:#38B249; border:1px solid #268634; border-radius:0 4px 5px 5px;"></div>
+                </div>
+                <div style="margin-top:-1px; height:15px; width:170px; background:#F0A000; border:1px solid #C78200; border-radius:0 4px 6px 6px; text-align:right; padding-right:8px; line-height:14px; font-size:11px;">↩</div>
+              </div>
+              <div style="margin-top:-1px; padding:6px 10px; background:#EC4869; border:1px solid #C21D45; border-radius:4px 4px 12px 12px;">вернуть ответ <span style="background:#fff;color:#0f172a;border-radius:99px;padding:1px 7px;text-shadow:none;">count</span> <span style="font-weight:500; opacity:0.9;">← в корне (кнопка «+ В корень»)</span></div>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <div class="info-label">⚠️ 3 главных правила, чтобы всё работало с первого раза</div>
+            <ul class="guide-list" style="margin-top:6px;">
+              <li><b>Правило 1 (Корень для ответа):</b> перед тем как нажать розовый блок <b>вернуть (ответ)</b>, нажмите <b>«+ В корень»</b> на жёлтой шапке (или вынесите блок кнопкой <code>↰</code>). Внутри жёлтой скобы цикла программа прервётся на первом элементе!</li>
+              <li><b>Правило 2 (Порядок):</b> сначала <b>задать</b> переменную сверху до цикла, и только потом <b>изменять</b> её внутри скобы.</li>
+              <li><b>Правило 3 (Одинаковые имена):</b> если написали в цикле <code>для каждого <b>x</b></code>, то и в голубом условии проверяйте <b><code>x</code></b>. Кликайте готовые подсказки над полем, чтобы не ошибиться в буквах!</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- TAB 3: Разбор текущей задачи -->
         <div id="codeHelpPane_task" style="display:none; flex-direction:column; gap:10px;">
           <div class="info-section highlight">
             <div class="info-label">💡 Простыми словами о задаче: <span id="codeHelpTaskTitle" style="color:var(--text);"></span></div>

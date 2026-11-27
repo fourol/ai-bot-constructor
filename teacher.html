@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Мониторинг занятия — КС54</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-2: #0b1220;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --ok: #22c55e;
+      --fail: #f59e0b;
+      --err: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 18px 20px 36px;
+    }
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    .title-group h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .title-group .sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+    .live-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--ok);
+      display: inline-block;
+      box-shadow: 0 0 8px var(--ok);
+    }
+    .live-dot.paused {
+      background: var(--muted);
+      box-shadow: none;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+    button, select, input[type="text"] {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 11px;
+      font-size: 13px;
+    }
+    button {
+      cursor: pointer;
+      font-weight: 600;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    button:hover { border-color: var(--accent); }
+    button.primary {
+      background: #0284c7;
+      border-color: #0ea5e9;
+      color: #fff;
+    }
+    button.danger {
+      background: #7f1d1d;
+      border-color: #dc2626;
+      color: #fecaca;
+    }
+    label.toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      padding: 6px 10px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .kpi {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .kpi .label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .kpi .val {
+      font-size: 24px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    .kpi.err .val { color: var(--err); }
+    .kpi.ok .val { color: var(--ok); }
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .section-head h2 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      max-height: 520px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel-2);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #1e293b;
+      vertical-align: top;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      background: #162033;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 1;
+    }
+    tr.ws-row { cursor: pointer; }
+    tr.ws-row:hover { background: #1e293b; }
+    tr.ws-row.selected { background: #0c4a6e; }
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge.ok { background: rgba(34, 197, 94, 0.16); color: #4ade80; }
+    .badge.fail { background: rgba(245, 158, 11, 0.18); color: #fbbf24; }
+    .badge.error { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .badge.pc { background: rgba(56, 189, 248, 0.16); color: #7dd3fc; }
+    .badge.evt { background: rgba(148, 163, 184, 0.14); color: #cbd5e1; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; }
+    .muted { color: var(--muted); }
+    .err-banner {
+      background: #7f1d1d;
+      border: 1px solid #ef4444;
+      color: #fecaca;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .empty {
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title-group">
+        <h1><span id="liveDot" class="live-dot"></span> Мониторинг занятия КС54</h1>
+        <div class="sub">Активность студентов, нагрузка на LLM и прогресс по заданиям • <span id="lastUpdate">—</span></div>
+      </div>
+      <div class="controls">
+        <label class="toggle">
+          <input type="checkbox" id="autoRefresh" checked />
+          Автообновление (3с)
+        </label>
+        <button id="refreshBtn" class="primary">Обновить</button>
+        <button id="downloadBtn">Скачать JSONL</button>
+        <button id="clearBtn" class="danger">Очистить логи</button>
+      </div>
+    </div>
+
+    <div id="errBanner" class="err-banner"></div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="label">Подключено ПК</div><div class="val" id="kpiWs">0</div></div>
+      <div class="kpi"><div class="label">Создано ботов</div><div class="val" id="kpiBots">0</div></div>
+      <div class="kpi"><div class="label">Всего событий</div><div class="val" id="kpiEvents">0</div></div>
+      <div class="kpi ok"><div class="label">Зачтено код-задач (прогоны)</div><div class="val" id="kpiCodePasses">0</div></div>
+      <div class="kpi err"><div class="label">Ошибки / сбои LLM</div><div class="val" id="kpiErrors">0</div></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2>Рабочие места и прогресс</h2>
+        <span class="muted" style="font-size:12px;">Нажмите на строку ПК, чтобы отфильтровать ленту событий ниже</span>
+      </div>
+      <div class="table-wrap" style="max-height: 280px;">
+        <table>
+          <thead>
+            <tr>
+              <th>ПК</th>
+              <th>IP</th>
+              <th>User ID</th>
+              <th>Ботов</th>
+              <th>Уровни (0–3)</th>
+              <th>Экзамены (0–3)</th>
+              <th>Код (0–6)</th>
+              <th>Последнее действие</th>
+              <th>Время</th>
+            </tr>
+          </thead>
+          <tbody id="wsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-head">
+        <h2>Лента событий (<span id="logsCount">0</span>)</h2>
+        <div class="filters">
+          <select id="filterEvent">
+            <option value="">Все события</option>
+          </select>
+          <select id="filterPc">
+            <option value="">Все ПК</option>
+          </select>
+          <select id="filterStatus">
+            <option value="">Любой статус</option>
+            <option value="ok">ok</option>
+            <option value="fail">fail</option>
+            <option value="error">error</option>
+          </select>
+          <input type="text" id="filterSearch" placeholder="Поиск по тексту / ID..." />
+          <select id="filterLimit">
+            <option value="100">100 строк</option>
+            <option value="200" selected>200 строк</option>
+            <option value="500">500 строк</option>
+          </select>
+          <button id="resetFiltersBtn">Сброс</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Время</th>
+              <th>ПК</th>
+              <th>Событие</th>
+              <th>Статус</th>
+              <th>Задержка</th>
+              <th>Детали</th>
+            </tr>
+          </thead>
+          <tbody id="logsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const EVENT_LABELS = {
+      workstation_assigned: 'Подключение ПК',
+      bot_created: 'Бот создан',
+      bot_updated: 'Бот обновлён',
+      bot_deleted: 'Бот удалён',
+      chat_message: 'Чат с ботом',
+      draft_test: 'Тест черновика',
+      code_editor_run: 'Запуск кода',
+      code_ai_verify: 'ИИ + тесты кода',
+      progress_saved: 'Прогресс'
+    };
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const teacherKey = urlParams.get('key') || '';
+    let selectedPc = '';
+    let timerId = null;
+
+    function buildAuthQuery(extra = {}) {
+      const p = new URLSearchParams();
+      if (teacherKey) p.set('key', teacherKey);
+      Object.entries(extra).forEach(([k, v]) => {
+        if (v !== undefined && v !== null && String(v).trim() !== '') {
+          p.set(k, String(v).trim());
+        }
+      });
+      const qs = p.toString();
+      return qs ? `?${qs}` : '';
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errBanner');
+      if (!msg) {
+        el.style.display = 'none';
+        el.textContent = '';
+      } else {
+        el.style.display = 'block';
+        el.textContent = msg;
+      }
+    }
+
+    function cell(text, cls = '') {
+      const td = document.createElement('td');
+      if (cls) td.className = cls;
+      td.textContent = text == null ? '' : String(text);
+      return td;
+    }
+
+    function badgeCell(text, badgeClass) {
+      const td = document.createElement('td');
+      const span = document.createElement('span');
+      span.className = `badge ${badgeClass}`;
+      span.textContent = text;
+      td.appendChild(span);
+      return td;
+    }
+
+    function renderWorkstations(workstations) {
+      const tbody = document.getElementById('wsBody');
+      tbody.textContent = '';
+
+      const pcSelect = document.getElementById('filterPc');
+      const currentPc = pcSelect.value;
+      pcSelect.textContent = '';
+      const allOpt = document.createElement('option');
+      allOpt.value = '';
+      allOpt.textContent = 'Все ПК';
+      pcSelect.appendChild(allOpt);
+
+      if (!workstations.length) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 9;
+        td.className = 'empty';
+        td.textContent = 'Пока нет подключённых рабочих мест.';
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+
+      workstations.forEach(ws => {
+        const opt = document.createElement('option');
+        opt.value = ws.pc_name;
+        opt.textContent = ws.pc_name;
+        pcSelect.appendChild(opt);
+
+        const tr = document.createElement('tr');
+        tr.className = 'ws-row' + (selectedPc === ws.pc_name ? ' selected' : '');
+        tr.addEventListener('click', () => {
+          selectedPc = selectedPc === ws.pc_name ? '' : ws.pc_name;
+          document.getElementById('filterPc').value = selectedPc;
+          loadDashboard();
+        });
+
+        tr.appendChild(badgeCell(ws.pc_name, 'pc'));
+        tr.appendChild(cell(ws.ip, 'mono muted'));
+        tr.appendChild(cell(ws.user_id, 'mono muted'));
+        tr.appendChild(cell(ws.bots_count));
+        tr.appendChild(cell(`${ws.levels_done}/3`));
+        tr.appendChild(cell(`${ws.exams_done}/3`));
+        tr.appendChild(cell(`${ws.code_done}/6`));
+        tr.appendChild(cell(EVENT_LABELS[ws.last_event] || ws.last_event));
+        tr.appendChild(cell(ws.last_ts || '', 'mono muted'));
+        tbody.appendChild(tr);
+      });
+
+      pcSelect.value = selectedPc || currentPc || '';
+    }
+
+    function syncEventOptions(eventTypes) {
+      const sel = document.getElementById('filterEvent');
+      const prev = sel.value;
+      sel.textContent = '';
+      const allOpt = document.createElement('option');
+      allOpt.value = '';
+      allOpt.textContent = 'Все события';
+      sel.appendChild(allOpt);
+
+      const merged = Array.from(new Set([...Object.keys(EVENT_LABELS), ...(eventTypes || [])]));
+      merged.forEach(ev => {
+        const opt = document.createElement('option');
+        opt.value = ev;
+        opt.textContent = EVENT_LABELS[ev] ? `${EVENT_LABELS[ev]} (${ev})` : ev;
+        sel.appendChild(opt);
+      });
+      sel.value = prev;
+    }
+
+    function renderLogs(logs) {
+      const tbody = document.getElementById('logsBody');
+      tbody.textContent = '';
+      document.getElementById('logsCount').textContent = String(logs.length);
+
+      if (!logs.length) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 6;
+        td.className = 'empty';
+        td.textContent = 'Событий по текущим фильтрам не найдено.';
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
+
+      logs.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.appendChild(cell(item.ts, 'mono muted'));
+        tr.appendChild(item.pc_name ? badgeCell(item.pc_name, 'pc') : cell(item.user_id || '—', 'mono muted'));
+        tr.appendChild(badgeCell(EVENT_LABELS[item.event_type] || item.event_type, 'evt'));
+        tr.appendChild(badgeCell(item.status || 'ok', item.status || 'ok'));
+        tr.appendChild(cell(item.latency_ms != null ? `${item.latency_ms} мс` : '—', 'mono'));
+
+        const detailParts = [];
+        if (item.detail) detailParts.push(item.detail);
+        if (item.bot_id) detailParts.push(`bot=${item.bot_id}`);
+        if (item.meta && typeof item.meta === 'object') {
+          const compactMeta = Object.entries(item.meta)
+            .filter(([, v]) => v !== null && v !== undefined && v !== '')
+            .map(([k, v]) => `${k}=${typeof v === 'object' ? JSON.stringify(v) : v}`)
+            .join(', ');
+          if (compactMeta) detailParts.push(`[${compactMeta}]`);
+        }
+        tr.appendChild(cell(detailParts.join(' '), 'mono'));
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function loadDashboard() {
+      const query = buildAuthQuery({
+        limit: document.getElementById('filterLimit').value,
+        event_type: document.getElementById('filterEvent').value,
+        pc_name: document.getElementById('filterPc').value,
+        status: document.getElementById('filterStatus').value,
+        search: document.getElementById('filterSearch').value
+      });
+
+      try {
+        const res = await fetch(`/api/teacher/logs${query}`);
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.detail || `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        showError('');
+
+        document.getElementById('kpiWs').textContent = data.kpis.total_workstations;
+        document.getElementById('kpiBots').textContent = data.kpis.total_bots;
+        document.getElementById('kpiEvents').textContent = data.kpis.total_events;
+        document.getElementById('kpiCodePasses').textContent = data.kpis.code_passes;
+        document.getElementById('kpiErrors').textContent = data.kpis.error_events;
+
+        syncEventOptions(data.event_types);
+        renderWorkstations(data.workstations || []);
+        renderLogs(data.logs || []);
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('ru-RU');
+      } catch (err) {
+        showError(`Ошибка загрузки панели: ${err.message}`);
+      }
+    }
+
+    function setupTimer() {
+      if (timerId) clearInterval(timerId);
+      const enabled = document.getElementById('autoRefresh').checked;
+      document.getElementById('liveDot').className = enabled ? 'live-dot' : 'live-dot paused';
+      if (enabled) {
+        timerId = setInterval(loadDashboard, 3000);
+      }
+    }
+
+    document.getElementById('autoRefresh').addEventListener('change', setupTimer);
+    document.getElementById('refreshBtn').addEventListener('click', loadDashboard);
+    ['filterEvent', 'filterStatus', 'filterLimit'].forEach(id => {
+      document.getElementById(id).addEventListener('change', loadDashboard);
+    });
+    document.getElementById('filterPc').addEventListener('change', (e) => {
+      selectedPc = e.target.value;
+      loadDashboard();
+    });
+    let searchTimer = null;
+    document.getElementById('filterSearch').addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(loadDashboard, 250);
+    });
+    document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+      selectedPc = '';
+      document.getElementById('filterEvent').value = '';
+      document.getElementById('filterPc').value = '';
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterSearch').value = '';
+      loadDashboard();
+    });
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      window.location.href = `/api/teacher/logs/download${buildAuthQuery()}`;
+    });
+    document.getElementById('clearBtn').addEventListener('click', async () => {
+      if (!confirm('Очистить журнал событий и JSONL-файлы логов?')) return;
+      try {
+        const res = await fetch(`/api/teacher/logs/clear${buildAuthQuery()}`, { method: 'POST' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        loadDashboard();
+      } catch (err) {
+        showError(`Не удалось очистить логи: ${err.message}`);
+      }
+    });
+
+    setupTimer();
+    loadDashboard();
+  </script>
+</body>
+</html>

@@ -2,14 +2,16 @@ import os
 import re
 import io
 import json
+import time
 import secrets
 import string
 import sqlite3
+from datetime import datetime
 from typing import Optional, List
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Request
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -31,8 +33,12 @@ DB_PATH = os.getenv("DB_PATH", "bots.db")
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "http://127.0.0.1:8000/v1")
 DEFAULT_MAX_TOKENS = int(os.getenv("DEFAULT_MAX_TOKENS", "1024"))
 STATIC_INDEX_PATH = os.path.join(os.path.dirname(__file__), "index.html")
+STATIC_TEACHER_PATH = os.path.join(os.path.dirname(__file__), "teacher.html")
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+LOGS_DIR = os.getenv("LOGS_DIR", os.path.join(os.path.dirname(__file__), "logs"))
+TEACHER_KEY = os.getenv("TEACHER_KEY", "").strip()
 os.makedirs(STATIC_DIR, exist_ok=True)
+os.makedirs(LOGS_DIR, exist_ok=True)
 
 # Клиент AsyncOpenAI с расширенным пулом соединений для 20+ одновременных пользователей
 http_client = (
@@ -116,6 +122,23 @@ def init_db():
             )
         """)
 
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS activity_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ts TEXT NOT NULL,
+                event_type TEXT NOT NULL,
+                user_id TEXT,
+                pc_name TEXT,
+                bot_id TEXT,
+                status TEXT NOT NULL DEFAULT 'ok',
+                latency_ms INTEGER,
+                detail TEXT,
+                meta_json TEXT
+            )
+        """)
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_activity_logs_user ON activity_logs(user_id)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_activity_logs_type ON activity_logs(event_type)")
+
         # Всегда гарантируем наличие официальных образцовых сценариев КС54
         for b_id, b_name, b_avatar, b_prompt, b_temp, b_tokens, b_kb in STARTER_BOTS:
             cursor.execute(
@@ -130,6 +153,76 @@ def init_db():
                 )
 
         conn.commit()
+
+
+def resolve_pc_name(conn, user_id: Optional[str]) -> Optional[str]:
+    if not user_id:
+        return None
+    row = conn.execute(
+        "SELECT pc_name FROM workstations WHERE user_id = ? LIMIT 1",
+        (user_id.strip(),),
+    ).fetchone()
+    return row["pc_name"] if row else None
+
+
+def log_activity(
+    event_type: str,
+    user_id: Optional[str] = None,
+    pc_name: Optional[str] = None,
+    bot_id: Optional[str] = None,
+    status: str = "ok",
+    latency_ms: Optional[int] = None,
+    detail: str = "",
+    meta: Optional[dict] = None,
+):
+    """Записывает событие занятия в SQLite (activity_logs) и дневной JSONL-файл."""
+    try:
+        now = datetime.now()
+        ts = now.strftime("%Y-%m-%d %H:%M:%S")
+        clean_uid = (user_id or "").strip() or None
+        clean_bot = (bot_id or "").strip() or None
+        clean_detail = (detail or "").strip()[:300]
+        meta_str = json.dumps(meta or {}, ensure_ascii=False)
+
+        with get_db() as conn:
+            resolved_pc = pc_name or resolve_pc_name(conn, clean_uid)
+            conn.execute(
+                """
+                INSERT INTO activity_logs (ts, event_type, user_id, pc_name, bot_id, status, latency_ms, detail, meta_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (ts, event_type, clean_uid, resolved_pc, clean_bot, status, latency_ms, clean_detail, meta_str),
+            )
+            conn.commit()
+
+        record = {
+            "ts": ts,
+            "event_type": event_type,
+            "user_id": clean_uid,
+            "pc_name": resolved_pc,
+            "bot_id": clean_bot,
+            "status": status,
+            "latency_ms": latency_ms,
+            "detail": clean_detail,
+            "meta": meta or {},
+        }
+        log_path = os.path.join(LOGS_DIR, f"session_{now.strftime('%Y-%m-%d')}.jsonl")
+        with open(log_path, "a", encoding="utf-8") as lf:
+            lf.write(json.dumps(record, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
+def require_teacher_access(request: Request, key: Optional[str] = None):
+    client_host = (request.client.host if request.client else "") or ""
+    if client_host in ("127.0.0.1", "::1", "localhost"):
+        return
+    if TEACHER_KEY and key and secrets.compare_digest(key.strip(), TEACHER_KEY):
+        return
+    raise HTTPException(
+        status_code=403,
+        detail="Панель преподавателя доступна только с компьютера сервера (127.0.0.1) или с TEACHER_KEY",
+    )
 
 
 @asynccontextmanager
@@ -246,6 +339,7 @@ class ChatRequest(BaseModel):
     bot_id: str
     message: str
     history: List[ChatMessage] = []
+    user_id: Optional[str] = None
 
 
 # Главная страница
@@ -317,6 +411,14 @@ async def create_bot(
         row = cursor.fetchone()
         created_at = row["created_at"] if row else ""
         conn.commit()
+
+    log_activity(
+        "bot_created",
+        user_id=clean_user_id,
+        bot_id=bot_id,
+        detail=f"Создан бот «{name}»",
+        meta={"name": name, "temp": float(temperature if temperature is not None else 0.7), "max_tokens": int(max_tokens if max_tokens is not None else DEFAULT_MAX_TOKENS), "chunks": len(chunks)},
+    )
 
     return {
         "id": bot_id,
@@ -488,6 +590,14 @@ async def update_bot(
         row = cursor.fetchone()
         conn.commit()
 
+    log_activity(
+        "bot_updated",
+        user_id=row["user_id"] or clean_uid,
+        bot_id=bot_id,
+        detail=f"Обновлён бот «{name}»",
+        meta={"name": name, "temp": float(temperature if temperature is not None else 0.7), "max_tokens": int(max_tokens if max_tokens is not None else DEFAULT_MAX_TOKENS), "chunks": row["chunks_count"]},
+    )
+
     return {
         "id": row["id"],
         "name": row["name"],
@@ -520,6 +630,13 @@ async def delete_bot(bot_id: str, user_id: Optional[str] = None):
         cursor.execute("DELETE FROM bots WHERE id = ?", (bot_id,))
         conn.commit()
 
+    log_activity(
+        "bot_deleted",
+        user_id=clean_uid,
+        bot_id=bot_id,
+        detail=f"Удалён бот «{bot['name']}»",
+    )
+
     return {"status": "ok", "deleted_id": bot_id, "name": bot["name"]}
 
 
@@ -534,7 +651,7 @@ async def chat_with_bot(payload: ChatRequest):
 
     with get_db() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT name, avatar, system_prompt, temperature, max_tokens FROM bots WHERE id = ?", (bot_id,))
+        cursor.execute("SELECT user_id, name, avatar, system_prompt, temperature, max_tokens FROM bots WHERE id = ?", (bot_id,))
         bot = cursor.fetchone()
         if not bot:
             raise HTTPException(status_code=404, detail="Бот не найден")
@@ -591,7 +708,12 @@ async def chat_with_bot(payload: ChatRequest):
 
     messages.append({"role": "user", "content": user_message})
 
+    chat_uid = (payload.user_id or "").strip() or bot["user_id"]
+
     async def stream_generator():
+        t0 = time.perf_counter()
+        total_chars = 0
+        err_str = ""
         try:
             response_stream = await client.chat.completions.create(
                 model="local",
@@ -604,9 +726,27 @@ async def chat_with_bot(payload: ChatRequest):
                 if chunk.choices and len(chunk.choices) > 0:
                     delta = chunk.choices[0].delta
                     if delta and delta.content:
+                        total_chars += len(delta.content)
                         yield delta.content
         except Exception as e:
-            yield f"\n[Ошибка соединения с локальной моделью: {str(e)}]"
+            err_str = str(e)
+            yield f"\n[Ошибка соединения с локальной моделью: {err_str}]"
+        finally:
+            latency_ms = int((time.perf_counter() - t0) * 1000)
+            log_activity(
+                "chat_message",
+                user_id=chat_uid,
+                bot_id=bot_id,
+                status="error" if err_str else "ok",
+                latency_ms=latency_ms,
+                detail=user_message[:140],
+                meta={
+                    "bot_name": bot["name"],
+                    "answer_len": total_chars,
+                    "rag_chunks": len(relevant_chunks),
+                    "error": err_str or None,
+                },
+            )
 
     return StreamingResponse(stream_generator(), media_type="text/plain")
 
@@ -618,6 +758,7 @@ class TestDraftRequest(BaseModel):
     max_tokens: Optional[int] = DEFAULT_MAX_TOKENS
     kb_text: Optional[str] = None
     history: Optional[List[dict]] = None
+    user_id: Optional[str] = None
 
 
 @app.post("/api/test-draft")
@@ -671,7 +812,12 @@ async def test_draft(payload: TestDraftRequest):
                 messages.append({"role": str(h["role"]), "content": str(h["content"])})
     messages.append({"role": "user", "content": user_message})
 
+    draft_uid = (payload.user_id or "").strip() or None
+
     async def stream_generator():
+        t0 = time.perf_counter()
+        total_chars = 0
+        err_str = ""
         try:
             response_stream = await client.chat.completions.create(
                 model="local",
@@ -684,9 +830,25 @@ async def test_draft(payload: TestDraftRequest):
                 if chunk.choices and len(chunk.choices) > 0:
                     delta = chunk.choices[0].delta
                     if delta and delta.content:
+                        total_chars += len(delta.content)
                         yield delta.content
         except Exception as e:
-            yield f"\n[Ошибка соединения: {str(e)}]"
+            err_str = str(e)
+            yield f"\n[Ошибка соединения: {err_str}]"
+        finally:
+            latency_ms = int((time.perf_counter() - t0) * 1000)
+            log_activity(
+                "draft_test",
+                user_id=draft_uid,
+                status="error" if err_str else "ok",
+                latency_ms=latency_ms,
+                detail=user_message[:140],
+                meta={
+                    "answer_len": total_chars,
+                    "rag_chunks": len(relevant_chunks),
+                    "error": err_str or None,
+                },
+            )
 
     return StreamingResponse(stream_generator(), media_type="text/plain")
 
@@ -695,112 +857,294 @@ class TaskProgressPayload(BaseModel):
     progress: dict
 
 
-class CodeTaskRequest(BaseModel):
+class RunCodeLiveAiRequest(BaseModel):
     task_id: str
-    system_prompt: str
+    code: str
+    system_prompt: Optional[str] = ""
     temperature: Optional[float] = 0.2
     kb_text: Optional[str] = None
-    current_code: Optional[str] = None
+    user_id: Optional[str] = None
 
 
 CODE_TASKS = {
-    "sum_pos": {
-        "title": "1. Сумма положительных чисел",
-        "stage": "Разминка",
+    "ai_router": {
+        "title": "1. Маршрутизатор тикетов (классификатор ИИ)",
+        "stage": "Интеграция ИИ • База",
         "difficulty": "Лёгкая",
-        "est_minutes": 2,
-        "description": "Функция solve(numbers) принимает список чисел и возвращает сумму всех чисел > 0 (если положительных нет, верни 0).",
-        "prompt": "Напиши на Python функцию solve(numbers: list) -> int, которая возвращает сумму всех положительных чисел (> 0) из переданного списка. Если чисел > 0 нет, верни 0. Напиши только рабочий код функции в блоке ```python ... ```.",
-        "tests": [
-            {"label": "solve([1, -2, 3, 4, -5]) == 8", "call": "solve([1, -2, 3, 4, -5])", "expected": 8},
-            {"label": "solve([-1, -2, -3]) == 0", "call": "solve([-1, -2, -3])", "expected": 0},
-            {"label": "solve([10, 20]) == 30", "call": "solve([10, 20])", "expected": 30},
-            {"label": "solve([]) == 0", "call": "solve([])", "expected": 0},
-        ],
-    },
-    "vowels": {
-        "title": "2. Счётчик русских гласных",
-        "stage": "Разминка",
-        "difficulty": "Лёгкая",
-        "est_minutes": 2,
-        "description": "Функция count_vowels(text) считает количество гласных русских букв в строке независимо от регистра.",
-        "prompt": "Напиши на Python функцию count_vowels(text: str) -> int, которая считает количество русских гласных букв в переданной строке. Напиши только рабочий код функции в блоке ```python ... ```.",
-        "tests": [
-            {"label": 'count_vowels("Привет") == 2', "call": 'count_vowels("Привет")', "expected": 2},
-            {"label": 'count_vowels("Ёжик в тумане") == 5', "call": 'count_vowels("Ёжик в тумане")', "expected": 5},
-            {"label": 'count_vowels("КОЛЛЕДЖ 54") == 2', "call": 'count_vowels("КОЛЛЕДЖ 54")', "expected": 2},
-            {"label": 'count_vowels("ЭЮЯ ёжик") == 5', "call": 'count_vowels("ЭЮЯ ёжик")', "expected": 5},
-            {"label": 'count_vowels("бвгдж") == 0', "call": 'count_vowels("бвгдж")', "expected": 0},
-        ],
-    },
-    "bug_discount": {
-        "title": "3. Отладка ИИ: скидка и доставка",
-        "stage": "Отладка ИИ",
-        "difficulty": "Средняя",
         "est_minutes": 3,
-        "mode": "debug",
-        "description": "Почини код в редакторе: calc_order(prices, is_vip) суммирует только цены > 0 (пустая корзина -> 0), при is_vip=True даёт скидку 20% (total * 80 // 100), и если итог ПОСЛЕ скидки < 1000 и > 0, добавляет доставку 300 руб (при >= 1000 доставка 0).",
-        "prompt": "Исправь ошибки в Python-функции calc_order(prices: list, is_vip: bool) -> int по ТЗ:\n1) Суммируются только положительные цены (> 0); пустой список -> 0 без доставки.\n2) Если is_vip=True, к сумме применяется скидка 20% (total * 80 // 100).\n3) Если итог после скидки > 0 и строго меньше 1000, добавляется доставка 300 руб; при >= 1000 доставка бесплатна.\nВерни только исправленный рабочий код в блоке ```python ... ```.",
+        "description": 'Функция route_ticket(message) вызывает ask_ai(...), нормализует ответ модели (пробелы, регистр, знаки .!?) и возвращает "billing", "tech" или "other". Если модель ответила нестандартно — вернуть "other".',
+        "live_call": 'route_ticket("Здравствуйте, у меня два раза списалась оплата за подписку")',
         "tests": [
-            {"label": "calc_order([500, 700], False) == 1200", "call": "calc_order([500, 700], False)", "expected": 1200},
-            {"label": "calc_order([400, 200], False) == 900", "call": "calc_order([400, 200], False)", "expected": 900},
-            {"label": "calc_order([1000], False) == 1000", "call": "calc_order([1000], False)", "expected": 1000},
-            {"label": "calc_order([], True) == 0", "call": "calc_order([], True)", "expected": 0},
-            {"label": "calc_order([500, -100, 600], True) == 1180", "call": "calc_order([500, -100, 600], True)", "expected": 1180},
-            {"label": "calc_order([1500], True) == 1200", "call": "calc_order([1500], True)", "expected": 1200},
+            {
+                "label": 'route_ticket("Списали дважды") ["  BILLING.\\n"] -> "billing"',
+                "call": 'route_ticket("Списали деньги дважды за подписку")',
+                "expected": "billing",
+                "mock_ai": "  BILLING.\n",
+                "min_ai_calls": 1,
+            },
+            {
+                "label": 'route_ticket("Сервер упал") ["Tech!"] -> "tech"',
+                "call": 'route_ticket("Не запускается сервер после обновления")',
+                "expected": "tech",
+                "mock_ai": "Tech!",
+                "min_ai_calls": 1,
+            },
+            {
+                "label": 'route_ticket("Общий вопрос") ["other"] -> "other"',
+                "call": 'route_ticket("Здравствуйте, расскажите о компании")',
+                "expected": "other",
+                "mock_ai": "other",
+                "min_ai_calls": 1,
+            },
+            {
+                "label": 'Нестандартный ответ модели -> fallback "other"',
+                "call": 'route_ticket("Сложный непонятный запрос")',
+                "expected": "other",
+                "mock_ai": "Извините, я не уверен в категории.",
+                "min_ai_calls": 1,
+            },
+            {
+                "label": 'Пустой ответ модели ["   "] -> "other"',
+                "call": 'route_ticket("???")',
+                "expected": "other",
+                "mock_ai": "   ",
+            },
         ],
     },
-    "bug_grades": {
-        "title": "4. Отладка ИИ: балл с пересдачами",
+    "ai_rag": {
+        "title": "2. Мини-RAG (поиск контекста до вызова ИИ)",
+        "stage": "Интеграция ИИ • RAG",
+        "difficulty": "Лёгкая",
+        "est_minutes": 4,
+        "description": 'Функция answer_with_rag(question, docs) выбирает из списка docs фрагменты, где есть ключевые слова вопроса (длиной >= 3 символов). Если совпадений нет — возвращает "Нет данных в базе" БЕЗ вызова ИИ. Иначе передаёт найденный контекст + вопрос в ask_ai(...) и возвращает ответ модели.',
+        "live_call": 'answer_with_rag("Во сколько открывается колледж?", ["Столовая работает с 10:00.", "Колледж открывается в 08:30 утра."])',
+        "tests": [
+            {
+                "label": 'Находит нужный документ про колледж и передаёт в ask_ai',
+                "call": 'answer_with_rag("Во сколько открывается колледж?", ["Столовая работает с 10:00.", "Колледж открывается в 08:30 утра."])',
+                "expected": "Колледж открывается в 08:30.",
+                "mock_ai": "Колледж открывается в 08:30.",
+                "min_ai_calls": 1,
+                "prompt_must_contain": ["08:30"],
+                "prompt_must_not_contain": ["Столовая"],
+            },
+            {
+                "label": 'Находит документ с паролем Wi-Fi и вызывает ask_ai',
+                "call": 'answer_with_rag("Какой пароль от Wi-Fi аудитории?", ["Обед в 13:00.", "Пароль от Wi-Fi аудитории: KS54_Guest."])',
+                "expected": "Пароль: KS54_Guest.",
+                "mock_ai": "Пароль: KS54_Guest.",
+                "min_ai_calls": 1,
+                "prompt_must_contain": ["KS54_Guest"],
+                "prompt_must_not_contain": ["Обед"],
+            },
+            {
+                "label": 'Если релевантных документов нет -> "Нет данных в базе" без вызова ask_ai',
+                "call": 'answer_with_rag("Сколько стоит билет на Марс?", ["Колледж открывается в 08:30.", "Столовая работает с 10:00."])',
+                "expected": "Нет данных в базе",
+                "mock_ai": "Стоит миллион рублей!",
+                "max_ai_calls": 0,
+            },
+            {
+                "label": 'Пустая база знаний [] -> "Нет данных в базе" без вызова ask_ai',
+                "call": 'answer_with_rag("Когда каникулы?", [])',
+                "expected": "Нет данных в базе",
+                "mock_ai": "Летом",
+                "max_ai_calls": 0,
+            },
+        ],
+    },
+    "ai_privacy": {
+        "title": "3. Маскировка персональных данных (Privacy Guard)",
+        "stage": "Безопасность ИИ",
+        "difficulty": "Средняя",
+        "est_minutes": 4,
+        "description": 'Функция safe_ai_support(user_text) скрывает перед отправкой в ask_ai(...) телефоны на [PHONE] и email на [EMAIL], чтобы личные данные не утекли в ИИ, получает ответ ИИ и подставляет сохранённые телефон/email обратно пользователю.',
+        "live_call": 'safe_ai_support("Позвоните клиенту на +7-999-111-22-33 или напишите на student@ks54.ru")',
+        "tests": [
+            {
+                "label": 'Телефон скрыт от ask_ai как [PHONE] и возвращён клиенту',
+                "call": 'safe_ai_support("Позвоните на +7-999-111-22-33 по заказу")',
+                "expected": "Заявка принята, оператор свяжется по +7-999-111-22-33.",
+                "mock_ai": "Заявка принята, оператор свяжется по [PHONE].",
+                "min_ai_calls": 1,
+                "prompt_must_contain": ["[PHONE]"],
+                "prompt_must_not_contain": ["+7-999-111-22-33", "999-111-22-33"],
+            },
+            {
+                "label": 'Email скрыт от ask_ai как [EMAIL] и восстановлен в ответе',
+                "call": 'safe_ai_support("Чек отправьте на student@ks54.ru пожалуйста")',
+                "expected": "Чек выслан на student@ks54.ru.",
+                "mock_ai": "Чек выслан на [EMAIL].",
+                "min_ai_calls": 1,
+                "prompt_must_contain": ["[EMAIL]"],
+                "prompt_must_not_contain": ["student@ks54.ru"],
+            },
+            {
+                "label": 'Одновременно скрыты и телефон, и email',
+                "call": 'safe_ai_support("Контакты: ivan@test.org и +79165554433")',
+                "expected": "Проверьте ivan@test.org и +79165554433.",
+                "mock_ai": "Проверьте [EMAIL] и [PHONE].",
+                "min_ai_calls": 1,
+                "prompt_must_contain": ["[EMAIL]", "[PHONE]"],
+                "prompt_must_not_contain": ["ivan@test.org", "9165554433"],
+            },
+            {
+                "label": 'Текст без персональных данных проходит без искажений',
+                "call": 'safe_ai_support("Где находится кабинет 204?")',
+                "expected": "На втором этаже.",
+                "mock_ai": "На втором этаже.",
+                "min_ai_calls": 1,
+            },
+        ],
+    },
+    "ai_retry": {
+        "title": "4. Отладка AI-пайплайна (Retry + Fallback)",
         "stage": "Отладка ИИ",
         "difficulty": "Средняя",
         "est_minutes": 4,
         "mode": "debug",
-        "description": "Почини код в редакторе: calc_gpa(record) разбирает строку оценок через запятую ('5, 2, 4*, н'). 'н' (в любом регистре) и пустые элементы игнорируются; оценка со звёздочкой (4*) — пересдача, она заменяет предыдущую числовую оценку; при отсутствии оценок вернуть 0.0; иначе среднее, округлённое до 2 знаков.",
-        "prompt": "Исправь ошибки в Python-функции calc_gpa(record: str) -> float по ТЗ:\n- На вход подаётся строка оценок через запятую (например '2, н, 4*, 5').\n- 'н'/'Н' и пустые элементы пропускаются.\n- Оценка со звёздочкой (например '4*') заменяет предыдущую оценку (или добавляется, если она первая).\n- Если оценок нет, вернуть 0.0, иначе round(sum/len, 2).\nВерни только исправленный рабочий код в блоке ```python ... ```.",
+        "description": 'Почини код в редакторе: ask_json_with_retry(prompt, max_attempts=3) должен делать до max_attempts попыток вызова ask_ai(...), очищать markdown ```json ... ```, при ошибке парсинга повторять запрос с подсказкой про JSON и вернуть None (без падения), если все попытки провалились.',
+        "live_call": 'ask_json_with_retry("Верни JSON с полями status и ok: {\\\"status\\\": \\\"ready\\\", \\\"ok\\\": true}", 3)',
         "tests": [
-            {"label": 'calc_gpa("5, 4, 3") == 4.0', "call": 'calc_gpa("5, 4, 3")', "expected": 4.0},
-            {"label": 'calc_gpa("4, 5, 4, 5") == 4.5', "call": 'calc_gpa("4, 5, 4, 5")', "expected": 4.5},
-            {"label": 'calc_gpa("2, 5*, 4") == 4.5', "call": 'calc_gpa("2, 5*, 4")', "expected": 4.5},
-            {"label": 'calc_gpa("2, н, 4*, 5") == 4.5', "call": 'calc_gpa("2, н, 4*, 5")', "expected": 4.5},
-            {"label": 'calc_gpa("Н, , 5*") == 5.0', "call": 'calc_gpa("Н, , 5*")', "expected": 5.0},
-            {"label": 'calc_gpa("") == 0.0', "call": 'calc_gpa("")', "expected": 0.0},
-            {"label": 'calc_gpa("н, Н") == 0.0', "call": 'calc_gpa("н, Н")', "expected": 0.0},
+            {
+                "label": 'Валидный JSON с 1-й попытки',
+                "call": 'ask_json_with_retry("Дай статус")',
+                "expected": {"status": "ok", "count": 2},
+                "mock_ai": ['{"status": "ok", "count": 2}'],
+                "min_ai_calls": 1,
+            },
+            {
+                "label": '1-я попытка словами -> повтор и снятие ```json ... ``` со 2-й',
+                "call": 'ask_json_with_retry("Создай профиль")',
+                "expected": {"user": "Alex", "role": "dev"},
+                "mock_ai": ['Извините, вот ответ текстом', '```json\n{"user": "Alex", "role": "dev"}\n```'],
+                "min_ai_calls": 2,
+                "max_ai_calls": 2,
+            },
+            {
+                "label": 'Успех на 3-й попытке после 2 плохих ответов',
+                "call": 'ask_json_with_retry("Парсинг", 3)',
+                "expected": {"step": 3},
+                "mock_ai": ['ошибка 1', 'ошибка 2', '{"step": 3}'],
+                "min_ai_calls": 3,
+                "max_ai_calls": 3,
+            },
+            {
+                "label": 'Лимит max_attempts=2 исчерпан -> безопасный None (без 3-го вызова)',
+                "call": 'ask_json_with_retry("Сломайся безопасно", 2)',
+                "expected": None,
+                "mock_ai": ['не json', 'совсем не json', '{"never": 1}'],
+                "min_ai_calls": 2,
+                "max_ai_calls": 2,
+            },
+            {
+                "label": 'Пустые ответы от ИИ -> безопасный None',
+                "call": 'ask_json_with_retry("Пусто", 3)',
+                "expected": None,
+                "mock_ai": ['', '   ', 'nope'],
+                "max_ai_calls": 3,
+            },
         ],
     },
-    "safe_json": {
-        "title": "5. Парсер грязного JSON от LLM",
-        "stage": "Хардкор",
+    "ai_structured": {
+        "title": "5. Парсер + валидатор Structured Output",
+        "stage": "Хардкор ИИ",
         "difficulty": "Продвинутая",
         "est_minutes": 4,
         "mode": "hard",
-        "description": "Функция safe_parse_llm_json(raw) извлекает первый валидный JSON-объект (dict) из произвольного ответа нейросети: вырезает обёртку ```json ... ``` и окружающий текст, убирает висячие запятые перед } или ], и возвращает None (без исключений), если валидного JSON-объекта нет или пришёл массив/мусор.",
-        "prompt": "Напиши на Python функцию safe_parse_llm_json(raw: str), которая извлекает валидный JSON-объект (dict) из ответа LLM и возвращает его (или None, если извлечь словарь нельзя).\nТребования:\n- Учитывай лишний текст вокруг и markdown-блоки.\n- Учитывай висячие запятые перед закрывающими скобками.\n- Если в тексте до валидного JSON есть случайная фигурная скобка {мусор, функция не должна ломаться.\n- Если результат не dict (например список) или текст битый — верни None без исключений.\nНапиши только рабочий код в блоке ```python ... ```.",
+        "description": 'Функция parse_order_from_ai(user_query) вызывает ask_ai(user_query), извлекает первый валидный JSON-объект (dict) даже с ```json, текстом вокруг, висячими запятыми и лишней { до объекта, и проверяет схему: "item" — непустая str, "qty" — int (не bool!) > 0. Иначе возвращает None.',
+        "live_call": 'parse_order_from_ai("Оформи заказ: 2 ноутбука. Верни только JSON {\\\"item\\\": ..., \\\"qty\\\": число}")',
         "tests": [
-            {"label": 'safe_parse_llm_json(\'{"status": "ok", "count": 3}\')', "call": 'safe_parse_llm_json(\'{"status": "ok", "count": 3}\')', "expected": {"status": "ok", "count": 3}},
-            {"label": 'markdown ```json ... ```', "call": 'safe_parse_llm_json(\'Вот ответ:\\n```json\\n{"name": "Bot", "active": true}\\n```\\nУдачи!\')', "expected": {"name": "Bot", "active": True}},
-            {"label": 'trailing commas {"items": [1, 2,], "ok": true,}', "call": 'safe_parse_llm_json(\'Результат: {"items": [1, 2,], "ok": true,}\')', "expected": {"items": [1, 2], "ok": True}},
-            {"label": 'нет JSON -> None', "call": 'safe_parse_llm_json("Не смог сформировать JSON.")', "expected": None},
-            {"label": 'битый {"broken": 123 -> None', "call": 'safe_parse_llm_json(\'{"broken": 123\')', "expected": None},
-            {"label": 'массив [1, 2, 3] -> None', "call": 'safe_parse_llm_json("[1, 2, 3]")', "expected": None},
-            {"label": 'лишняя { перед {"id": 42, "ok": true}', "call": 'safe_parse_llm_json(\'Текст с {ошибкой внутри, потом {"id": 42, "ok": true}\')', "expected": {"id": 42, "ok": True}},
+            {
+                "label": 'Чистый валидный JSON заказа',
+                "call": 'parse_order_from_ai("Закажи 3 ноутбука")',
+                "expected": {"item": "ноутбук", "qty": 3},
+                "mock_ai": '{"item": "ноутбук", "qty": 3}',
+                "min_ai_calls": 1,
+            },
+            {
+                "label": 'Markdown ```json + trailing comma в конце',
+                "call": 'parse_order_from_ai("Нужно 2 мышки")',
+                "expected": {"item": "мышка", "qty": 2},
+                "mock_ai": 'Вот ваш заказ:\n```json\n{"item": "мышка", "qty": 2,}\n```\nСпасибо!',
+                "min_ai_calls": 1,
+            },
+            {
+                "label": 'Лишняя фигурная скобка {мусор перед реальным JSON',
+                "call": 'parse_order_from_ai("5 кабелей")',
+                "expected": {"item": "кабель", "qty": 5},
+                "mock_ai": 'Лог {ошибка внутри}, итого: {"item": "кабель", "qty": 5}',
+                "min_ai_calls": 1,
+            },
+            {
+                "label": 'Неверный тип qty="2" (строка вместо int) -> None',
+                "call": 'parse_order_from_ai("Ошибка типа")',
+                "expected": None,
+                "mock_ai": '{"item": "монитор", "qty": "2"}',
+            },
+            {
+                "label": 'Ловушка Python: qty=true (bool) -> None',
+                "call": 'parse_order_from_ai("Bool вместо числа")',
+                "expected": None,
+                "mock_ai": '{"item": "монитор", "qty": true}',
+            },
+            {
+                "label": 'Пустой item или qty <= 0 -> None',
+                "call": 'parse_order_from_ai("Ноль штук")',
+                "expected": None,
+                "mock_ai": '{"item": "  ", "qty": 0}',
+            },
+            {
+                "label": 'Список [...] вместо словаря -> None',
+                "call": 'parse_order_from_ai("Массив")',
+                "expected": None,
+                "mock_ai": '["мышка", "ноутбук"]',
+            },
         ],
     },
-    "robot_undo": {
-        "title": "6. Робот с UNDO и границами поля",
-        "stage": "Хардкор",
+    "ai_agent": {
+        "title": "6. Мини-агент с калькулятором (Tool-Calling Loop)",
+        "stage": "Хардкор ИИ",
         "difficulty": "Продвинутая",
         "est_minutes": 5,
         "mode": "hard",
-        "description": "Робот стартует в [0, 0] на сетке 0..10 по X и 0..10 по Y. Функция run_robot(commands) выполняет команды через ';': UP n (+y), DOWN n (-y), RIGHT n (+x), LEFT n (-x), RESET (в [0, 0]), UNDO (отмена последнего шага с возвратом точных координат до него). Координаты всегда зажаты в [0, 10]. Верни список [x, y].",
-        "prompt": "Напиши на Python функцию run_robot(commands: str) -> list.\nПравила:\n- Старт в [0, 0], допустимые координаты 0 <= x <= 10 и 0 <= y <= 10 (при выходе за границу значение зажимается).\n- Команды разделяются ';', регистр не важен, пустые игнорируются: UP n (+y), DOWN n (-y), RIGHT n (+x), LEFT n (-x), RESET (переход в [0, 0]), UNDO (возврат к точным координатам до предыдущей выполненной команды).\n- Верни итоговый список [x, y].\nНапиши только рабочий код в блоке ```python ... ```.",
+        "description": 'Функция run_math_agent(question, max_steps=4) в цикле обращается к ask_ai(...). Если ИИ вернул "CALC: <выражение>", код вычисляет выражение и отправляет результат обратно в ask_ai(...). Когда ИИ отвечает "FINAL: <ответ>", возвращает текст после FINAL:. При исчерпании шагов — "Лимит шагов".',
+        "live_call": 'run_math_agent("Сколько будет 12 * 4 + 2? Если нужно посчитать, напиши CALC: 12 * 4 + 2, иначе FINAL: ответ")',
         "tests": [
-            {"label": 'run_robot("UP 3; RIGHT 2") == [2, 3]', "call": 'run_robot("UP 3; RIGHT 2")', "expected": [2, 3]},
-            {"label": 'run_robot("RIGHT 15; DOWN 4") == [10, 0]', "call": 'run_robot("RIGHT 15; DOWN 4")', "expected": [10, 0]},
-            {"label": 'run_robot("RIGHT 8; RIGHT 5; UNDO") == [8, 0]', "call": 'run_robot("RIGHT 8; RIGHT 5; UNDO")', "expected": [8, 0]},
-            {"label": 'run_robot("UP 4; RIGHT 3; UNDO; UNDO; UNDO") == [0, 0]', "call": 'run_robot("UP 4; RIGHT 3; UNDO; UNDO; UNDO")', "expected": [0, 0]},
-            {"label": 'run_robot("up 5 ; right 2 ; RESET ; UNDO") == [2, 5]', "call": 'run_robot("up 5 ; right 2 ; RESET ; UNDO")', "expected": [2, 5]},
-            {"label": 'run_robot("") == [0, 0]', "call": 'run_robot("")', "expected": [0, 0]},
+            {
+                "label": '1 вызов CALC -> передача 50 обратно в ask_ai -> FINAL',
+                "call": 'run_math_agent("Сколько будет 12 * 4 + 2?")',
+                "expected": "Ответ: 50",
+                "mock_ai": ["CALC: 12 * 4 + 2", "FINAL: Ответ: 50"],
+                "min_ai_calls": 2,
+                "max_ai_calls": 2,
+                "prompt_must_contain": ["50"],
+            },
+            {
+                "label": 'Цепочка из 2 вызовов CALC (75 -> 240) -> FINAL',
+                "call": 'run_math_agent("Посчитай (100 - 25) * 3 + 15")',
+                "expected": "240",
+                "mock_ai": ["CALC: 100 - 25", "CALC: 75 * 3 + 15", "FINAL: 240"],
+                "min_ai_calls": 3,
+                "max_ai_calls": 3,
+                "prompt_must_contain": ["75", "240"],
+            },
+            {
+                "label": 'Прямой ответ FINAL с первого шага',
+                "call": 'run_math_agent("Столица России?")',
+                "expected": "Москва",
+                "mock_ai": ["FINAL: Москва"],
+                "min_ai_calls": 1,
+                "max_ai_calls": 1,
+            },
+            {
+                "label": 'Защита от зацикливания (max_steps=2) -> "Лимит шагов"',
+                "call": 'run_math_agent("Бесконечный агент", 2)',
+                "expected": "Лимит шагов",
+                "mock_ai": ["CALC: 2 + 2", "CALC: 3 + 3", "FINAL: поздно"],
+                "min_ai_calls": 2,
+                "max_ai_calls": 2,
+            },
         ],
     },
 }
@@ -819,6 +1163,7 @@ def extract_python_code(answer: str) -> str:
 class RunCodeTaskRequest(BaseModel):
     task_id: str
     code: str
+    user_id: Optional[str] = None
 
 
 def run_python_tests_sandbox(code: str, tests_spec: list) -> dict:
@@ -830,7 +1175,25 @@ def run_python_tests_sandbox(code: str, tests_spec: list) -> dict:
         f"USER_CODE = json.loads({json.dumps(json.dumps(code, ensure_ascii=False))})\n"
         f"TESTS = json.loads({json.dumps(json.dumps(tests_spec, ensure_ascii=False))})\n"
         "results = []\n"
-        "ns = {}\n"
+        "_ai_state = {'mock_spec': None, 'calls': [], 'idx': 0}\n"
+        "def ask_ai(prompt, system='', temperature=0.2):\n"
+        "    _ai_state['calls'].append({'prompt': str(prompt), 'system': str(system or ''), 'temperature': temperature})\n"
+        "    ms = _ai_state['mock_spec']\n"
+        "    if isinstance(ms, list):\n"
+        "        if not ms: return ''\n"
+        "        i = _ai_state['idx']\n"
+        "        _ai_state['idx'] = i + 1\n"
+        "        return str(ms[i] if i < len(ms) else ms[-1])\n"
+        "    if isinstance(ms, dict):\n"
+        "        full_in = f'{system}\\n{prompt}'.lower()\n"
+        "        for k, v in ms.items():\n"
+        "            if k != '_default' and str(k).lower() in full_in:\n"
+        "                return str(v)\n"
+        "        return str(ms.get('_default', ''))\n"
+        "    if ms is not None:\n"
+        "        return str(ms)\n"
+        "    return ''\n"
+        "ns = {'ask_ai': ask_ai}\n"
         "compile_err = ''\n"
         "out_chunks = []\n"
         "try:\n"
@@ -844,6 +1207,9 @@ def run_python_tests_sandbox(code: str, tests_spec: list) -> dict:
         "    if compile_err:\n"
         "        results.append({'label': t['label'], 'passed': False, 'actual': '', 'expected': repr(t['expected']), 'error': compile_err})\n"
         "        continue\n"
+        "    _ai_state['mock_spec'] = t.get('mock_ai')\n"
+        "    _ai_state['calls'] = []\n"
+        "    _ai_state['idx'] = 0\n"
         "    try:\n"
         "        buf = io.StringIO()\n"
         "        with contextlib.redirect_stdout(buf):\n"
@@ -851,7 +1217,30 @@ def run_python_tests_sandbox(code: str, tests_spec: list) -> dict:
         "        if buf.getvalue(): out_chunks.append(buf.getvalue())\n"
         "        exp = t['expected']\n"
         "        ok = (actual == exp) and (type(actual) is type(exp))\n"
-        "        results.append({'label': t['label'], 'passed': ok, 'actual': repr(actual), 'expected': repr(exp), 'error': '' if ok else f'Получено {repr(actual)}, ожидалось {repr(exp)}'})\n"
+        "        err_txt = '' if ok else f'Получено {repr(actual)}, ожидалось {repr(exp)}'\n"
+        "        calls = _ai_state['calls']\n"
+        "        min_c = t.get('min_ai_calls')\n"
+        "        max_c = t.get('max_ai_calls')\n"
+        "        if ok and min_c is not None and len(calls) < min_c:\n"
+        "            ok = False\n"
+        "            err_txt = f'Функция должна вызвать ask_ai(...) минимум {min_c} раз(а), вызвано: {len(calls)}'\n"
+        "        if ok and max_c is not None and len(calls) > max_c:\n"
+        "            ok = False\n"
+        "            err_txt = f'Лишний вызов ask_ai(...): вызвано {len(calls)} раз(а), максимум допустимо {max_c}'\n"
+        "        all_prompts = '\\n'.join((c.get('prompt','') + '\\n' + c.get('system','')) for c in calls).lower()\n"
+        "        if ok and t.get('prompt_must_contain'):\n"
+        "            for needle in t['prompt_must_contain']:\n"
+        "                if str(needle).lower() not in all_prompts:\n"
+        "                    ok = False\n"
+        "                    err_txt = f'В запрос к ask_ai(...) не передано: {needle}'\n"
+        "                    break\n"
+        "        if ok and t.get('prompt_must_not_contain'):\n"
+        "            for banned in t['prompt_must_not_contain']:\n"
+        "                if str(banned).lower() in all_prompts:\n"
+        "                    ok = False\n"
+        "                    err_txt = f'В запросе к ask_ai(...) обнаружены лишние/незамаскированные данные: {banned}'\n"
+        "                    break\n"
+        "        results.append({'label': t['label'], 'passed': ok, 'actual': repr(actual), 'expected': repr(exp), 'error': err_txt})\n"
         "    except Exception as e:\n"
         "        results.append({'label': t['label'], 'passed': False, 'actual': '', 'expected': repr(t['expected']), 'error': f'{type(e).__name__}: {e}'})\n"
         "print('__CODE_TEST_JSON__:' + json.dumps({'compile_error': compile_err, 'results': results, 'stdout': ''.join(out_chunks)[:2000]}, ensure_ascii=False))\n"
@@ -918,11 +1307,21 @@ def run_python_tests_sandbox(code: str, tests_spec: list) -> dict:
 
 @app.post("/api/run-code-task")
 async def run_code_task(payload: RunCodeTaskRequest):
-    task = CODE_TASKS.get(payload.task_id) or CODE_TASKS["sum_pos"]
+    t0 = time.perf_counter()
+    task = CODE_TASKS.get(payload.task_id) or CODE_TASKS["ai_router"]
     tests_spec = task["tests"]
     tests_labels = [t["label"] for t in tests_spec]
     code = (payload.code or "").strip()
     if not code:
+        latency_ms = int((time.perf_counter() - t0) * 1000)
+        log_activity(
+            "code_editor_run",
+            user_id=payload.user_id,
+            status="fail",
+            latency_ms=latency_ms,
+            detail=f"{payload.task_id}: пустой редактор",
+            meta={"task_id": payload.task_id, "passed": False, "passed_count": 0, "total_count": len(tests_spec)},
+        )
         return {
             "ok": True,
             "task_id": payload.task_id,
@@ -934,7 +1333,7 @@ async def run_code_task(payload: RunCodeTaskRequest):
             "passed": False,
             "passed_count": 0,
             "total_count": len(tests_spec),
-            "error": "Редактор кода пуст. Напишите или сгенерируйте функцию на Python.",
+            "error": "Редактор кода пуст. Напишите код или соберите его в «Мини-блоках».",
             "stdout": "",
             "tests_labels": tests_labels,
             "tests_results": [
@@ -944,6 +1343,21 @@ async def run_code_task(payload: RunCodeTaskRequest):
         }
 
     run_res = run_python_tests_sandbox(code, tests_spec)
+    latency_ms = int((time.perf_counter() - t0) * 1000)
+    log_activity(
+        "code_editor_run",
+        user_id=payload.user_id,
+        status="ok" if run_res["passed"] else "fail",
+        latency_ms=latency_ms,
+        detail=f"{payload.task_id}: {run_res['passed_count']}/{run_res['total_count']}",
+        meta={
+            "task_id": payload.task_id,
+            "passed": run_res["passed"],
+            "passed_count": run_res["passed_count"],
+            "total_count": run_res["total_count"],
+            "error": run_res["error"] or None,
+        },
+    )
     return {
         "ok": True,
         "task_id": payload.task_id,
@@ -962,77 +1376,88 @@ async def run_code_task(payload: RunCodeTaskRequest):
     }
 
 
-@app.post("/api/verify-code-task")
-async def verify_code_task(payload: CodeTaskRequest):
-    task = CODE_TASKS.get(payload.task_id) or CODE_TASKS["sum_pos"]
-    tests_spec = task["tests"]
-    tests_labels = [t["label"] for t in tests_spec]
+@app.post("/api/run-code-live-ai")
+async def run_code_live_ai(payload: RunCodeLiveAiRequest):
+    """Выполняет код студента на одном тестовом примере с реальными вызовами локальной LLM через ask_ai(...)."""
+    import subprocess
+    import sys
 
-    sys_prompt = payload.system_prompt.strip() or "Ты опытный Python-разработчик."
+    t0 = time.perf_counter()
+    task = CODE_TASKS.get(payload.task_id) or CODE_TASKS["ai_router"]
+    code = (payload.code or "").strip()
+    if not code:
+        return {"ok": False, "error": "Редактор кода пуст. Сначала напишите решение.", "calls": [], "result": "", "stdout": ""}
+
+    base_sys = (payload.system_prompt or "").strip()
     if payload.kb_text and payload.kb_text.strip():
-        sys_prompt += f"\n\nФакты из базы знаний:\n{payload.kb_text.strip()}"
+        base_sys = f"{base_sys}\n\nБаза знаний:\n{payload.kb_text.strip()}".strip()
+    default_temp = float(payload.temperature if payload.temperature is not None else 0.2)
+    live_call = task.get("live_call") or ""
 
-    temp = float(payload.temperature if payload.temperature is not None else 0.2)
-
-    user_prompt = task["prompt"]
-    if task.get("mode") == "debug" and payload.current_code and payload.current_code.strip():
-        user_prompt = f"{user_prompt}\n\nТекущий код в редакторе:\n```python\n{payload.current_code.strip()}\n```"
-
-    messages = [
-        {"role": "system", "content": sys_prompt},
-        {"role": "user", "content": user_prompt},
-    ]
+    runner_script = (
+        "import json, io, contextlib, urllib.request\n"
+        f"USER_CODE = json.loads({json.dumps(json.dumps(code, ensure_ascii=False))})\n"
+        f"LLM_URL = json.loads({json.dumps(json.dumps(LLM_BASE_URL.rstrip('/') + '/chat/completions', ensure_ascii=False))})\n"
+        f"BASE_SYS = json.loads({json.dumps(json.dumps(base_sys, ensure_ascii=False))})\n"
+        f"DEF_TEMP = {default_temp!r}\n"
+        f"LIVE_CALL = json.loads({json.dumps(json.dumps(live_call, ensure_ascii=False))})\n"
+        "live_calls = []\n"
+        "def ask_ai(prompt, system='', temperature=None):\n"
+        "    if len(live_calls) >= 5:\n"
+        "        raise RuntimeError('Превышен лимит 5 обращений к живому ИИ за один запуск')\n"
+        "    sys_msg = (str(system).strip() or BASE_SYS or 'Ты точный AI-помощник.')\n"
+        "    t_val = DEF_TEMP if temperature is None else float(temperature)\n"
+        "    body = json.dumps({'model': 'local', 'messages': [{'role': 'system', 'content': sys_msg}, {'role': 'user', 'content': str(prompt)}], 'temperature': t_val, 'max_tokens': 320, 'stream': False}).encode('utf-8')\n"
+        "    req = urllib.request.Request(LLM_URL, data=body, headers={'Content-Type': 'application/json', 'Authorization': 'Bearer none'}, method='POST')\n"
+        "    with urllib.request.urlopen(req, timeout=18) as resp:\n"
+        "        data = json.loads(resp.read().decode('utf-8'))\n"
+        "    reply = ((data.get('choices') or [{}])[0].get('message') or {}).get('content', '')\n"
+        "    live_calls.append({'prompt': str(prompt), 'system': sys_msg, 'reply': str(reply)})\n"
+        "    return str(reply)\n"
+        "ns = {'ask_ai': ask_ai}\n"
+        "out_buf = io.StringIO()\n"
+        "res_repr = ''\n"
+        "err = ''\n"
+        "try:\n"
+        "    with contextlib.redirect_stdout(out_buf):\n"
+        "        exec(compile(USER_CODE, '<code_live>', 'exec'), ns, ns)\n"
+        "        if LIVE_CALL:\n"
+        "            val = eval(LIVE_CALL, ns, ns)\n"
+        "            res_repr = repr(val)\n"
+        "except Exception as e:\n"
+        "    err = f'{type(e).__name__}: {e}'\n"
+        "print('__LIVE_AI_JSON__:' + json.dumps({'result': res_repr, 'error': err, 'calls': live_calls, 'stdout': out_buf.getvalue()[:1500]}, ensure_ascii=False))\n"
+    )
 
     try:
-        response = await client.chat.completions.create(
-            model="qwen2.5-3b-instruct",
-            messages=messages,
-            temperature=temp,
-            max_tokens=DEFAULT_MAX_TOKENS,
-            stream=False,
-        )
-        answer = (response.choices[0].message.content or "").strip()
-    except Exception as e:
-        return {
-            "ok": False,
-            "task_id": payload.task_id,
-            "title": task["title"],
-            "difficulty": task["difficulty"],
-            "est_minutes": task["est_minutes"],
-            "description": task["description"],
-            "raw_answer": f"[Ошибка соединения с моделью: {str(e)}]",
-            "extracted_code": "",
-            "passed": False,
-            "passed_count": 0,
-            "total_count": len(tests_spec),
-            "error": f"Ошибка вызова нейросети: {str(e)}",
-            "stdout": "",
-            "tests_labels": tests_labels,
-            "tests_results": [
-                {"label": t["label"], "passed": False, "actual": "", "expected": repr(t["expected"]), "error": "Нет ответа от модели"}
-                for t in tests_spec
-            ],
-        }
+        proc = subprocess.run([sys.executable, "-c", runner_script], capture_output=True, text=True, timeout=28)
+        marker = next((l[len("__LIVE_AI_JSON__:"):] for l in reversed((proc.stdout or "").splitlines()) if l.startswith("__LIVE_AI_JSON__:")), None)
+        if not marker:
+            raw_err = (proc.stderr or proc.stdout or "").strip()
+            raise RuntimeError(raw_err.splitlines()[-1] if raw_err else "Ошибка запуска")
+        parsed = json.loads(marker)
+    except Exception as ex:
+        parsed = {"result": "", "error": f"Не удалось выполнить живой вызов ИИ: {ex}", "calls": [], "stdout": ""}
 
-    code = extract_python_code(answer)
-    run_res = run_python_tests_sandbox(code, tests_spec)
-
+    latency_ms = int((time.perf_counter() - t0) * 1000)
+    ok = not parsed.get("error")
+    log_activity(
+        "code_ai_verify",
+        user_id=payload.user_id,
+        status="ok" if ok else "fail",
+        latency_ms=latency_ms,
+        detail=f"live:{payload.task_id} calls={len(parsed.get('calls') or [])}",
+        meta={"task_id": payload.task_id, "live": True, "error": parsed.get("error") or None},
+    )
     return {
-        "ok": True,
+        "ok": ok,
         "task_id": payload.task_id,
-        "title": task["title"],
-        "difficulty": task["difficulty"],
-        "est_minutes": task["est_minutes"],
-        "description": task["description"],
-        "raw_answer": answer,
-        "extracted_code": code,
-        "passed": run_res["passed"],
-        "passed_count": run_res["passed_count"],
-        "total_count": run_res["total_count"],
-        "error": run_res["error"],
-        "stdout": run_res["stdout"],
-        "tests_labels": tests_labels,
-        "tests_results": run_res["tests_results"],
+        "live_call": live_call,
+        "result": parsed.get("result", ""),
+        "error": parsed.get("error", ""),
+        "calls": parsed.get("calls", []),
+        "stdout": parsed.get("stdout", ""),
+        "latency_ms": latency_ms,
     }
 
 
@@ -1082,12 +1507,38 @@ async def get_or_assign_workstation(request: Request, user_id: Optional[str] = N
         )
         conn.commit()
 
+    log_activity(
+        "workstation_assigned",
+        user_id=assigned_uid,
+        pc_name=pc_name,
+        detail=f"Подключено рабочее место {pc_name} ({client_ip})",
+        meta={"ip": client_ip, "pc_number": next_num, "client_key": client_key},
+    )
+
     return {
         "pc_number": next_num,
         "pc_name": pc_name,
         "user_id": assigned_uid,
         "client_ip": client_ip,
         "locked": True,
+    }
+
+
+def _extract_progress_counts(progress: Optional[dict]) -> dict:
+    if not isinstance(progress, dict):
+        return {"levels_done": 0, "exams_done": 0, "code_done": 0, "total_done": 0}
+    levels = progress.get("levels") if isinstance(progress.get("levels"), dict) else {}
+    exams = progress.get("exams") if isinstance(progress.get("exams"), dict) else {}
+    code_tasks = progress.get("codeTasks") if isinstance(progress.get("codeTasks"), dict) else {}
+
+    levels_done = sum(1 for v in levels.values() if isinstance(v, dict) and v.get("passed"))
+    exams_done = sum(1 for v in exams.values() if isinstance(v, dict) and v.get("passed"))
+    code_done = sum(1 for v in code_tasks.values() if isinstance(v, dict) and v.get("passed"))
+    return {
+        "levels_done": levels_done,
+        "exams_done": exams_done,
+        "code_done": code_done,
+        "total_done": levels_done + exams_done + code_done,
     }
 
 
@@ -1112,7 +1563,20 @@ async def get_task_progress(user_id: str):
 async def save_task_progress(user_id: str, payload: TaskProgressPayload):
     clean_uid = user_id.strip() or "user_guest"
     serialized = json.dumps(payload.progress, ensure_ascii=False)
+    new_counts = _extract_progress_counts(payload.progress)
+    prev_counts = None
+
     with get_db() as conn:
+        prev_row = conn.execute(
+            "SELECT progress_json FROM user_task_progress WHERE user_id = ?",
+            (clean_uid,),
+        ).fetchone()
+        if prev_row:
+            try:
+                prev_counts = _extract_progress_counts(json.loads(prev_row[0]))
+            except Exception:
+                prev_counts = None
+
         conn.execute(
             """
             INSERT INTO user_task_progress (user_id, progress_json, updated_at)
@@ -1124,4 +1588,210 @@ async def save_task_progress(user_id: str, payload: TaskProgressPayload):
             (clean_uid, serialized),
         )
         conn.commit()
+
+    if prev_counts is None:
+        if new_counts["total_done"] > 0:
+            log_activity(
+                "progress_saved",
+                user_id=clean_uid,
+                detail=f"Уровни {new_counts['levels_done']}/3, Экзамены {new_counts['exams_done']}/3, Код {new_counts['code_done']}/6",
+                meta=new_counts,
+            )
+    elif new_counts != prev_counts:
+        log_activity(
+            "progress_saved",
+            user_id=clean_uid,
+            detail=f"Уровни {new_counts['levels_done']}/3, Экзамены {new_counts['exams_done']}/3, Код {new_counts['code_done']}/6",
+            meta={**new_counts, "prev": prev_counts},
+        )
+
     return {"status": "ok", "user_id": clean_uid}
+
+
+@app.get("/teacher")
+async def serve_teacher_page(request: Request, key: Optional[str] = None):
+    require_teacher_access(request, key or request.headers.get("x-teacher-key"))
+    if os.path.exists(STATIC_TEACHER_PATH):
+        return FileResponse(STATIC_TEACHER_PATH)
+    raise HTTPException(status_code=404, detail="teacher.html не найден")
+
+
+@app.get("/api/teacher/logs")
+async def get_teacher_logs(
+    request: Request,
+    key: Optional[str] = None,
+    limit: int = 200,
+    event_type: Optional[str] = None,
+    pc_name: Optional[str] = None,
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+):
+    require_teacher_access(request, key or request.headers.get("x-teacher-key"))
+    safe_limit = min(max(int(limit), 1), 1000)
+
+    clauses = []
+    params = []
+    if event_type and event_type.strip():
+        clauses.append("event_type = ?")
+        params.append(event_type.strip())
+    if pc_name and pc_name.strip():
+        clauses.append("pc_name = ?")
+        params.append(pc_name.strip())
+    if status and status.strip():
+        clauses.append("status = ?")
+        params.append(status.strip())
+    if search and search.strip():
+        like = f"%{search.strip()}%"
+        clauses.append("(detail LIKE ? OR user_id LIKE ? OR pc_name LIKE ? OR bot_id LIKE ? OR meta_json LIKE ?)")
+        params.extend([like, like, like, like, like])
+
+    where_sql = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+
+    with get_db() as conn:
+        log_rows = conn.execute(
+            f"""
+            SELECT id, ts, event_type, user_id, pc_name, bot_id, status, latency_ms, detail, meta_json
+            FROM activity_logs
+            {where_sql}
+            ORDER BY id DESC
+            LIMIT ?
+            """,
+            (*params, safe_limit),
+        ).fetchall()
+
+        ws_rows = conn.execute(
+            """
+            SELECT w.client_key, w.pc_number, w.pc_name, w.user_id, w.created_at,
+                   p.progress_json, p.updated_at AS progress_updated_at,
+                   (SELECT COUNT(*) FROM bots b WHERE b.user_id = w.user_id) AS bots_count
+            FROM workstations w
+            LEFT JOIN user_task_progress p ON p.user_id = w.user_id
+            ORDER BY w.pc_number ASC
+            """
+        ).fetchall()
+
+        last_act_rows = conn.execute(
+            """
+            SELECT l.user_id, l.ts, l.event_type
+            FROM activity_logs l
+            INNER JOIN (
+                SELECT user_id, MAX(id) AS max_id
+                FROM activity_logs
+                WHERE user_id IS NOT NULL
+                GROUP BY user_id
+            ) latest ON latest.max_id = l.id
+            """
+        ).fetchall()
+        last_by_uid = {r["user_id"]: {"ts": r["ts"], "event_type": r["event_type"]} for r in last_act_rows}
+
+        stats_row = conn.execute(
+            """
+            SELECT
+                COUNT(*) AS total_events,
+                SUM(CASE WHEN status = 'error' THEN 1 ELSE 0 END) AS error_events,
+                SUM(CASE WHEN event_type IN ('code_editor_run', 'code_ai_verify') AND status = 'ok' THEN 1 ELSE 0 END) AS code_passes
+            FROM activity_logs
+            """
+        ).fetchone()
+        bots_total = conn.execute("SELECT COUNT(*) FROM bots WHERE user_id != 'system'").fetchone()[0]
+        event_types_rows = conn.execute(
+            "SELECT DISTINCT event_type FROM activity_logs ORDER BY event_type ASC"
+        ).fetchall()
+
+    logs = []
+    for r in log_rows:
+        try:
+            meta_obj = json.loads(r["meta_json"]) if r["meta_json"] else {}
+        except Exception:
+            meta_obj = {}
+        logs.append(
+            {
+                "id": r["id"],
+                "ts": r["ts"],
+                "event_type": r["event_type"],
+                "user_id": r["user_id"],
+                "pc_name": r["pc_name"],
+                "bot_id": r["bot_id"],
+                "status": r["status"],
+                "latency_ms": r["latency_ms"],
+                "detail": r["detail"],
+                "meta": meta_obj,
+            }
+        )
+
+    workstations = []
+    for w in ws_rows:
+        progress_obj = None
+        if w["progress_json"]:
+            try:
+                progress_obj = json.loads(w["progress_json"])
+            except Exception:
+                progress_obj = None
+        counts = _extract_progress_counts(progress_obj)
+        client_key = w["client_key"] or ""
+        ip_label = client_key.split(":", 1)[1] if client_key.startswith("ip:") else "localhost"
+        last_act = last_by_uid.get(w["user_id"])
+        workstations.append(
+            {
+                "pc_number": w["pc_number"],
+                "pc_name": w["pc_name"],
+                "user_id": w["user_id"],
+                "ip": ip_label,
+                "bots_count": int(w["bots_count"] or 0),
+                "levels_done": counts["levels_done"],
+                "exams_done": counts["exams_done"],
+                "code_done": counts["code_done"],
+                "last_ts": last_act["ts"] if last_act else w["created_at"],
+                "last_event": last_act["event_type"] if last_act else "workstation_assigned",
+            }
+        )
+
+    return {
+        "kpis": {
+            "total_workstations": len(workstations),
+            "total_bots": int(bots_total or 0),
+            "total_events": int(stats_row["total_events"] or 0) if stats_row else 0,
+            "error_events": int(stats_row["error_events"] or 0) if stats_row else 0,
+            "code_passes": int(stats_row["code_passes"] or 0) if stats_row else 0,
+        },
+        "event_types": [r["event_type"] for r in event_types_rows],
+        "workstations": workstations,
+        "logs": logs,
+    }
+
+
+@app.get("/api/teacher/logs/download")
+async def download_teacher_logs(request: Request, key: Optional[str] = None, date: Optional[str] = None):
+    require_teacher_access(request, key or request.headers.get("x-teacher-key"))
+    safe_date = datetime.now().strftime("%Y-%m-%d")
+    if date and re.fullmatch(r"\d{4}-\d{2}-\d{2}", date.strip()):
+        safe_date = date.strip()
+    log_path = os.path.join(LOGS_DIR, f"session_{safe_date}.jsonl")
+    content = ""
+    if os.path.exists(log_path):
+        with open(log_path, "r", encoding="utf-8") as lf:
+            content = lf.read()
+    return Response(
+        content=content,
+        media_type="application/x-ndjson; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="session_{safe_date}.jsonl"'},
+    )
+
+
+@app.post("/api/teacher/logs/clear")
+async def clear_teacher_logs(request: Request, key: Optional[str] = None):
+    require_teacher_access(request, key or request.headers.get("x-teacher-key"))
+    with get_db() as conn:
+        cur = conn.execute("DELETE FROM activity_logs")
+        deleted_rows = cur.rowcount
+        conn.commit()
+    deleted_files = 0
+    if os.path.isdir(LOGS_DIR):
+        for fname in os.listdir(LOGS_DIR):
+            if fname.endswith(".jsonl"):
+                try:
+                    os.remove(os.path.join(LOGS_DIR, fname))
+                    deleted_files += 1
+                except Exception:
+                    pass
+    return {"status": "ok", "deleted_rows": deleted_rows, "deleted_files": deleted_files}
