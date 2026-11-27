@@ -2456,6 +2456,18 @@
       min-height: 24px;
     }
 
+    #cbCanvasArea > .cb-list {
+      flex: 1 1 auto;
+      min-height: 54px;
+      padding-bottom: 32px;
+      border-radius: 0 0 8px 8px;
+    }
+
+    .cb-list.drag-over-inside,
+    .cb-canvas.drag-over-inside {
+      box-shadow: inset 0 -4px 0 0 #0ea5e9;
+    }
+
     /* Solid Visual Blocks & C-Wrapper Architecture */
     .cb-block {
       position: relative;
@@ -2464,8 +2476,8 @@
       transition: transform 0.1s;
     }
 
-    .cb-block.drag-over-top    { box-shadow: inset 0 3px 0 0 #0284c7, 0 -2px 0 0 #0284c7; }
-    .cb-block.drag-over-bottom { box-shadow: inset 0 -3px 0 0 #0284c7, 0 2px 0 0 #0284c7; }
+    .cb-block.drag-over-top    { box-shadow: 0 -4px 0 0 #0ea5e9, inset 0 3px 0 0 #0ea5e9; z-index: 6; }
+    .cb-block.drag-over-bottom { box-shadow: 0 5px 0 0 #0ea5e9, inset 0 -3px 0 0 #0ea5e9; z-index: 6; }
 
     .cb-block-head {
       position: relative;
@@ -2630,6 +2642,39 @@
     .cb-select option {
       background: #1e293b;
       color: #ffffff;
+    }
+
+    .cb-pill-select {
+      font-family: ui-monospace, monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      background: #ffffff;
+      color: #0f172a;
+      border: 1px solid rgba(0, 0, 0, 0.22);
+      border-radius: 99px;
+      padding: 3px 8px;
+      min-width: 58px;
+      max-width: 310px;
+      text-shadow: none;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .cb-pill-select:focus {
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.75);
+    }
+
+    .cb-pill-select option {
+      background: #1e293b;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .cb-slot-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      max-width: 100%;
     }
 
     /* Blue Hexagon Condition Capsule */
@@ -4143,6 +4188,51 @@
       line-height: 1.42;
       color: var(--text-dim);
     }
+    .code-hint-spoiler {
+      margin-top: 4px;
+      border: 1px dashed var(--border-node);
+      border-radius: 7px;
+      background: var(--bg-deep);
+      padding: 6px 10px;
+    }
+    .code-hint-spoiler summary {
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 11.5px;
+      color: var(--wire-char);
+      user-select: none;
+    }
+    .code-hint-spoiler[open] summary {
+      margin-bottom: 6px;
+    }
+    .code-hint-locked {
+      margin-top: 4px;
+      border: 1px dashed var(--border-subtle);
+      border-radius: 7px;
+      background: var(--bg-deep);
+      padding: 7px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .code-hint-locked-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      line-height: 1.4;
+    }
+    .code-hint-locked-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-dim);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
     .step-tip-pill {
       display: inline-block;
       margin-top: 3px;
@@ -4909,8 +4999,8 @@
       <div class="code-workspace-head">
         <div style="min-width:0;">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span id="activeCodeTaskTitle" style="font-size:14.5px; font-weight:700; color:var(--text);">1. Маршрутизатор тикетов (классификатор ИИ)</span>
-            <span class="guide-badge" id="activeCodeTaskBadge">Лёгкая • ~3 мин</span>
+            <span id="activeCodeTaskTitle" style="font-size:14.5px; font-weight:700; color:var(--text);">1. Первый вызов ИИ-помощника</span>
+            <span class="guide-badge" id="activeCodeTaskBadge">Разминка • ~2 мин</span>
           </div>
           <div id="codeWorkspaceSubtitle" style="font-size:11px; color:var(--text-dim); margin-top:2px;">Пишите интеграционный код с ask_ai(...) или собирайте алгоритм в «Мини-блоках»</div>
         </div>
@@ -4934,11 +5024,12 @@
         <div style="display:flex; flex-direction:column; gap:12px; min-width:0;">
           <div class="guide-card" style="padding:12px 14px;">
             <div class="guide-card-head">
-              <span class="guide-card-title" style="font-size:12.5px;">📋 Условие задачи</span>
+              <span class="guide-card-title" style="font-size:13px;">📋 Подробное условие задачи</span>
               <button type="button" class="btn-sm-action" id="btnTaskBeginnerHelp" onclick="openCodeHelpModal('task')" style="font-size:11px; padding:3px 8px; font-weight:700; color:var(--wire-char); border-color:var(--wire-char);">💡 Как решить простыми словами</button>
             </div>
-            <p class="guide-desc" id="activeCodeTaskDesc" style="margin-top:4px;"></p>
-            <div id="activeCodeTaskExamples" style="font-size:11.5px; color:var(--text); background:var(--bg-node); border:1px solid var(--border-subtle); border-radius:6px; padding:8px 10px; margin-top:8px; font-family:ui-monospace, monospace; white-space:pre-wrap; line-height:1.5;"></div>
+            <div class="guide-desc" id="activeCodeTaskDesc" style="margin-top:6px; font-size:12px; color:var(--text); line-height:1.55;"></div>
+            <div style="font-size:11px; font-weight:700; color:var(--text-dim); margin-top:10px; margin-bottom:4px;">📊 Примеры работы (Вход + Ответ ИИ → Ваш return):</div>
+            <div id="activeCodeTaskExamples" style="font-size:11.5px; color:var(--text); background:var(--bg-node); border:1px solid var(--border-subtle); border-radius:6px; padding:8px 10px; font-family:ui-monospace, monospace; white-space:pre-wrap; line-height:1.55;"></div>
             <div class="step-why" id="activeCodeTaskHint" style="margin-top:8px;"></div>
           </div>
 
@@ -4971,13 +5062,13 @@
               </div>
 
               <div class="cb-palette" aria-label="Палитра блоков логики">
-                <button type="button" class="cb-pal-btn cb-pal-ai" draggable="true" ondragstart="onCbPaletteDragStart(event, 'ai')" onclick="addLogicBlock('ai')" title="Вызвать нейросеть ask_ai(...) и сохранить ответ в переменную">🤖 спросить ИИ</button>
-                <button type="button" class="cb-pal-btn cb-pal-var" draggable="true" ondragstart="onCbPaletteDragStart(event, 'var')" onclick="addLogicBlock('var')" title="Создать или задать переменную">задать [имя] = (0)</button>
-                <button type="button" class="cb-pal-btn cb-pal-for" draggable="true" ondragstart="onCbPaletteDragStart(event, 'for')" onclick="addLogicBlock('for')" title="Повторить для каждого элемента списка или диапазона">повторять для каждого</button>
-                <button type="button" class="cb-pal-btn cb-pal-if" draggable="true" ondragstart="onCbPaletteDragStart(event, 'if')" onclick="addLogicBlock('if')" title="Проверить условие с веткой «иначе»">если &lt;условие&gt;, то</button>
-                <button type="button" class="cb-pal-btn cb-pal-update" draggable="true" ondragstart="onCbPaletteDragStart(event, 'update')" onclick="addLogicBlock('update')" title="Прибавить, вычесть или заменить переменную">изменить [переменную]</button>
-                <button type="button" class="cb-pal-btn cb-pal-return" draggable="true" ondragstart="onCbPaletteDragStart(event, 'return')" onclick="addLogicBlock('return')" title="Вернуть готовый результат функции">вернуть (ответ)</button>
-                <button type="button" class="cb-pal-btn cb-pal-stmt" draggable="true" ondragstart="onCbPaletteDragStart(event, 'stmt')" onclick="addLogicBlock('stmt')" title="Особая команда (continue, append, break)">выполнить команду</button>
+                <button type="button" class="cb-pal-btn cb-pal-ai" draggable="true" ondragstart="onCbPaletteDragStart(event, 'ai')" ondragend="onCbPaletteDragEnd()" onclick="addLogicBlock('ai')" title="Отправить вопрос нейросети и сохранить ответ в переменную">🤖 спросить ИИ</button>
+                <button type="button" class="cb-pal-btn cb-pal-var" draggable="true" ondragstart="onCbPaletteDragStart(event, 'var')" ondragend="onCbPaletteDragEnd()" onclick="addLogicBlock('var')" title="Создать свою переменную (коробку памяти)">задать [имя] = [значение]</button>
+                <button type="button" class="cb-pal-btn cb-pal-for" draggable="true" ondragstart="onCbPaletteDragStart(event, 'for')" ondragend="onCbPaletteDragEnd()" onclick="addLogicBlock('for')" title="Повторить несколько раз или пройти по списку">повторять для</button>
+                <button type="button" class="cb-pal-btn cb-pal-if" draggable="true" ondragstart="onCbPaletteDragStart(event, 'if')" ondragend="onCbPaletteDragEnd()" onclick="addLogicBlock('if')" title="Проверить условие (например: слово входит в текст)">если &lt;условие&gt;, то</button>
+                <button type="button" class="cb-pal-btn cb-pal-update" draggable="true" ondragstart="onCbPaletteDragStart(event, 'update')" ondragend="onCbPaletteDragEnd()" onclick="addLogicBlock('update')" title="Почистить текст (.strip / .lower) или изменить переменную">изменить / почистить</button>
+                <button type="button" class="cb-pal-btn cb-pal-return" draggable="true" ondragstart="onCbPaletteDragStart(event, 'return')" ondragend="onCbPaletteDragEnd()" onclick="addLogicBlock('return')" title="Отдать готовый ответ на проверку">вернуть (ответ)</button>
+                <button type="button" class="cb-pal-btn cb-pal-stmt" draggable="true" ondragstart="onCbPaletteDragStart(event, 'stmt')" ondragend="onCbPaletteDragEnd()" onclick="addLogicBlock('stmt')" title="Любая своя строка на Python">выполнить команду</button>
               </div>
 
               <div class="cb-helper-bar">
@@ -4985,7 +5076,7 @@
                 <span id="cbTargetIndicator" style="font-weight:600; color:var(--nav-active-color);">Вставка: корень функции</span>
               </div>
 
-              <div class="cb-canvas" id="cbCanvasArea"></div>
+              <div class="cb-canvas" id="cbCanvasArea" ondragover="onCbBranchDragOver(event)" ondrop="onCbBranchDrop(event, null, 'root')"></div>
 
               <div class="cb-preview-wrap">
                 <div class="cb-preview-head">
@@ -5842,12 +5933,12 @@
 
     
     // --- Task Progress Persistence (LocalStorage + Server SQLite Sync) ---
-    const CODE_TASK_IDS = ['ai_router', 'ai_rag', 'ai_privacy', 'ai_retry', 'ai_structured', 'ai_agent'];
+    const CODE_TASK_IDS = ['ai_support', 'ai_router', 'ai_privacy', 'ai_retry', 'ai_rag', 'ai_agent'];
 
     function getDefaultCodeTasksMap() {
       const m = {};
       CODE_TASK_IDS.forEach(id => {
-        m[id] = { passed: false, aiResult: null, editorCode: '', blocks: null, editorMode: null };
+        m[id] = { passed: false, failCount: 0, aiResult: null, editorCode: '', blocks: null, editorMode: null };
       });
       return m;
     }
@@ -5858,7 +5949,7 @@
         activeGuideTab: 'about',
         activeTaskLevel: 'lvl1',
         activeExamVariant: 'space',
-        activeCodeTaskId: 'ai_router',
+        activeCodeTaskId: 'ai_support',
         levels: {
           lvl1: { passed: false, checks: null, snapshot: null },
           lvl2: { passed: false, checks: null, snapshot: null },
@@ -6113,7 +6204,7 @@
       selectExamVariant(taskProgressState.activeExamVariant || 'space', true);
       if (typeof renderCodeTaskCardsGrid === 'function') {
         renderCodeTaskCardsGrid();
-        selectCodeTask(taskProgressState.activeCodeTaskId || 'ai_router', true);
+        selectCodeTask(taskProgressState.activeCodeTaskId || 'ai_support', true);
       }
 
       // 3. Restore audit checklist checkboxes
@@ -6168,6 +6259,7 @@
 
     function resetCodeProgress() {
       if (!confirm('Сбросить прогресс по 6 задачам код-практикума?')) return;
+      taskProgressState.activeCodeTaskId = 'ai_support';
       taskProgressState.codeTasks = getDefaultCodeTasksMap();
       taskProgressState.bonusCode = getDefaultTaskProgress().bonusCode;
       saveTaskProgress(true);
@@ -6739,95 +6831,119 @@
     // --- Code Practice IDE (6 AI-Integration Tasks: Classifier, RAG, Privacy Guard, Retry, Structured Output, Agent) ---
     const CODE_TASKS_META = [
       {
-        id: 'ai_router',
+        id: 'ai_support',
         num: 1,
         mode: 'code',
-        stageLabel: 'База ИИ',
-        shortTitle: 'Маршрутизатор тикетов',
-        title: '1. Маршрутизатор тикетов (классификатор ИИ)',
+        stageLabel: 'Разминка ИИ',
+        shortTitle: 'Первый вызов ИИ',
+        title: '1. Первый вызов ИИ-помощника',
         diffClass: 'easy',
-        diffLabel: 'ИИ-база • 3 мин',
-        minutes: 3,
-        desc: 'Функция <code>route_ticket(message)</code> вызывает <code>ask_ai(...)</code> с текстом обращения, очищает ответ модели (пробелы, регистр и лишние знаки <code>.!?"\'</code>) и возвращает строго <code>"billing"</code>, <code>"tech"</code> или <code>"other"</code>. Если модель ответила нестандартной фразой — вернуть <code>"other"</code>.',
-        examples: 'ask_ai(...) -> "  BILLING.\\n"  => "billing"\nask_ai(...) -> "Tech!"          => "tech"\nask_ai(...) -> "Не уверен..."   => "other"',
-        hint: 'Нейросети любят добавлять точку в конце или писать заглавными буквами! Обязательно нормализуйте ответ через .strip().lower().strip(".!?\\"\' ").',
-        stub: 'def route_ticket(message: str) -> str:\n    # 1. Вызовите ask_ai(...) для message\n    # 2. Очистите ответ и верните "billing", "tech" или "other"\n    pass\n',
-        signatureLine: 'def route_ticket(message: str) -> str:',
-        params: ['message'],
-        defaultIterable: '["billing", "tech", "other"]',
-        quickTokens: ['message', 'ask_ai(message)', 'raw.strip().lower().strip(".!? ")', '"billing"', '"tech"', '"other"'],
+        diffLabel: 'Разминка ИИ • 2 мин',
+        minutes: 2,
+        brief: 'Пользователь задаёт вопрос <code>question</code>. Нужно спросить нейросеть, убрать случайные пробелы по краям ответа и вернуть ответ. А если нейросеть промолчала (вернула пустоту <code>""</code>) — вернуть фразу <code>"Оператор скоро ответит"</code>.',
+        given: '<code>question</code> — строка с вопросом клиента.',
+        blockGuideHtml: `
+          <ol style="margin:4px 0 0 18px; padding:0;">
+            <li>Нажмите <b>🤖 спросить ИИ</b> → в 1-е поле имя новой переменной <code>reply</code>, во 2-е поле что спрашиваем: <code>question</code>.</li>
+            <li>Нажмите <b>изменить / почистить</b> → в 1-е поле <code>reply</code>, в списке выберите <b>убрать пробелы (.strip())</b> (2-е поле скроется само!).</li>
+            <li>Нажмите <b>если &lt;условие&gt;, то</b> → поставьте <code>reply</code> <b>== равно</b> <code>""</code>, а внутрь вложите <b>вернуть ответ</b> → <code>"Оператор скоро ответит"</code> (обязательно в кавычках!).</li>
+            <li>Нажмите <b>🎯 + В корень</b> сверху и поставьте финальный <b>вернуть ответ</b> → <code>reply</code> (без кавычек, это переменная).</li>
+          </ol>
+        `,
+        examples: 'ask_ai("Привет") вернула "  Привет! Чем помочь?\\n"  -->  вернуть "Привет! Чем помочь?"\nask_ai("?") вернула "   "  (пусто после .strip())  -->  вернуть "Оператор скоро ответит"',
+        hint: 'Главное правило белых полей: <b>имена переменных</b> (<code>question</code>, <code>reply</code>) пишем <b>без кавычек</b>, а готовый <b>текст</b> (<code>""</code>, <code>"Оператор скоро ответит"</code>) — <b>в кавычках</b>!',
+        stub: 'def ask_support(question: str) -> str:\n    # 1. Вызовите reply = ask_ai(question)\n    # 2. Уберите пробелы по краям: reply = reply.strip()\n    # 3. Если reply == "" -> верните "Оператор скоро ответит"\n    # 4. Иначе верните reply\n    pass\n',
+        signatureLine: 'def ask_support(question: str) -> str:',
+        params: ['question'],
+        defaultIterable: 'question',
+        quickTokens: ['question', 'reply', '""', '"Оператор скоро ответит"'],
         beginnerHelp: {
-          analogy: 'Клиенты пишут в поддержку, а ваш бот работает сортировщиком. Проблема в том, что модель может ответить «BILLING.» с точкой или «Извините, не знаю» вместо одного слова — ваша программа должна привести ответ к стандарту.',
+          analogy: 'Самый первый шаг работы с ИИ: отправить ему вопрос, почистить лишние пробелы/переносы строк с краёв и предусмотреть запасную фразу на случай, если модель ответила пустотой.',
           steps: [
-            'Вызовите модель через блок <b>🤖 спросить ИИ</b> (или <code>raw = ask_ai(message, "Ответь одним словом: billing, tech или other")</code>).',
-            'Приведите ответ к чистому виду: <code>clean = raw.strip().lower().strip(".!?\\"\' ")</code>.',
-            'Если <code>clean == "billing"</code> → верните <code>"billing"</code>; если <code>clean == "tech"</code> → верните <code>"tech"</code>.',
-            'Во всех остальных случаях (мусор, пустота, длинная фраза) верните запасной вариант: <code>return "other"</code>.'
+            'Возьмите блок <b>🤖 спросить ИИ</b>: ответ сохраните в <code>reply</code>, спросить: <code>question</code>.',
+            'Возьмите блок <b>изменить / почистить</b>: имя <code>reply</code>, действие <b>убрать пробелы (.strip())</b>.',
+            'Добавьте <b>если</b> <code>reply == ""</code> → внутри верните <code>"Оператор скоро ответит"</code>.',
+            'В самом конце (в корне) верните <code>reply</code>.'
           ],
-          syntaxTip: 'raw = ask_ai(message, "Ответь одним словом: billing, tech или other")\nclean = raw.strip().lower().strip(".!?\\"\' ")\nif clean in ("billing", "tech", "other"):\n    return clean\nreturn "other"',
-          aiPromptTip: 'Ты строгий классификатор обращений. Отвечай ТОЛЬКО одним словом в нижнем регистре: billing, tech или other. Без точек и пояснений.'
+          syntaxTip: 'reply = ask_ai(question)\nreply = reply.strip()\nif reply == "":\n    return "Оператор скоро ответит"\nreturn reply',
+          aiPromptTip: 'Отвечай кратко и вежливо одним предложением.'
         }
       },
       {
-        id: 'ai_rag',
+        id: 'ai_router',
         num: 2,
         mode: 'code',
-        stageLabel: 'Мини-RAG',
-        shortTitle: 'Мини-RAG (поиск фактов)',
-        title: '2. Мини-RAG (поиск контекста до вызова ИИ)',
+        stageLabel: 'База ИИ',
+        shortTitle: 'Сортировщик тикетов',
+        title: '2. Сортировщик обращений (billing / tech / other)',
         diffClass: 'easy',
-        diffLabel: 'Мини-RAG • 4 мин',
-        minutes: 4,
-        desc: 'Функция <code>answer_with_rag(question, docs)</code> ищет в списке строк <code>docs</code> фрагменты, содержащие хотя бы одно слово вопроса (длиной <code>&gt;= 3</code> символов без учёта регистра). Если совпадений нет — возвращает <code>"Нет данных в базе"</code> <b>не вызывая ИИ</b>. Иначе передаёт найденные фрагменты + вопрос в <code>ask_ai(...)</code> и возвращает ответ.',
-        examples: 'answer_with_rag("Во сколько открывается колледж?", docs) -> ask_ai(контекст + вопрос)\nanswer_with_rag("Билет на Марс?", docs) -> "Нет данных в базе" (0 вызовов ask_ai)',
-        hint: 'Не давайте модели «галлюцинировать»! Сначала извлеките слова <code>re.findall(r"[a-zа-яё0-9-]{3,}", question.lower())</code>, отфильтруйте нужные строки <code>docs</code> и прервитесь, если список пуст.',
-        stub: 'import re\n\ndef answer_with_rag(question: str, docs: list) -> str:\n    # 1. Найдите ключевые слова >= 3 символов в question.lower()\n    # 2. Соберите matched = [d for d in docs if ...]\n    # 3. Если matched пуст -> верните "Нет данных в базе" без ask_ai\n    # 4. Иначе отправьте matched + question в ask_ai(...)\n    pass\n',
-        importsPrefix: 'import re\n\n',
-        signatureLine: 'def answer_with_rag(question: str, docs: list) -> str:',
-        params: ['question', 'docs'],
-        defaultIterable: 'docs',
-        quickTokens: ['docs', 're.findall(r"[a-zа-яё0-9-]{3,}", question.lower())', 'matched', '"Нет данных в базе"', 'ask_ai(prompt)'],
+        diffLabel: 'ИИ-база • 3 мин',
+        minutes: 3,
+        brief: 'Клиенты пишут обращения в поддержку (<code>message</code>). Спросите ИИ, какая это тема, приведите ответ к маленьким буквам (<code>.lower()</code>), и если в ответе модели есть слово <code>"billing"</code> → верните <code>"billing"</code>, если есть <code>"tech"</code> → верните <code>"tech"</code>, во всех остальных случаях → <code>"other"</code>.',
+        given: '<code>message</code> — письмо клиента.',
+        blockGuideHtml: `
+          <ol style="margin:4px 0 0 18px; padding:0;">
+            <li><b>🤖 спросить ИИ</b>: сохранить в <code>reply</code>, запрос: <code>message</code>.</li>
+            <li><b>изменить / почистить</b>: переменная <code>reply</code>, действие <b>сделать маленькими (.lower())</b> (чтобы поймать и <code>"BILLING"</code>, и <code>"Tech!"</code>).</li>
+            <li><b>если</b>: слева <code>"billing"</code>, в центре выбрать <b>входит в</b>, справа <code>reply</code> → внутри <b>вернуть ответ</b> <code>"billing"</code>.</li>
+            <li>В корне ещё раз <b>если</b> <code>"tech"</code> <b>входит в</b> <code>reply</code> → вернуть <code>"tech"</code>.</li>
+            <li>В корне в самом низу <b>вернуть ответ</b> → <code>"other"</code>.</li>
+          </ol>
+        `,
+        examples: 'ask_ai(message) вернула "  BILLING.\\n"   -->  "billing"\nask_ai(message) вернула "Категория: Tech!" --> "tech"\nask_ai(message) вернула "Извините, не знаю" --> "other"',
+        hint: 'Не нужно вырезать точки и пробелы вручную — оператор <code>"billing" in reply</code> («входит в») сам найдёт слово даже внутри фразы «Категория: Tech!»!',
+        stub: 'def route_ticket(message: str) -> str:\n    # 1. reply = ask_ai(message)\n    # 2. reply = reply.lower()\n    # 3. Если "billing" in reply -> return "billing"\n    # 4. Если "tech" in reply -> return "tech"\n    # 5. Иначе return "other"\n    pass\n',
+        signatureLine: 'def route_ticket(message: str) -> str:',
+        params: ['message'],
+        defaultIterable: '["billing", "tech"]',
+        quickTokens: ['message', 'reply', '"billing"', '"tech"', '"other"'],
         beginnerHelp: {
-          analogy: 'Это главный приём RAG (Retrieval-Augmented Generation): вместо того чтобы скармливать модели всю огромную энциклопедию и позволять ей выдумывать факты, мы сначала сами находим нужные абзацы. А если их нет — честно отвечаем «Нет данных в базе» и не тратим токены.',
+          analogy: 'Нейросети часто пишут ответ с заглавных букв («BILLING.») или добавляют вводные слова («Категория: Tech!»). Если перевести строку в нижний регистр и проверить вхождение слова (<code>"billing" in reply</code>), сортировщик работает надёжно без сложных правил.',
           steps: [
-            'Достаньте слова вопроса длиной от 3 букв: <code>words = re.findall(r"[a-zа-яё0-9-]{3,}", question.lower())</code>.',
-            'Пройдитесь циклом по <code>docs</code>: если какое-то слово из <code>words</code> есть в <code>doc.lower()</code>, добавьте документ в список <code>matched</code>.',
-            'Если <code>not matched:</code> — сразу верните <code>"Нет данных в базе"</code> (модель НЕ вызывайте!).',
-            'Иначе склейте факты <code>ctx = "\\n".join(matched)</code> и верните <code>ask_ai(f"Контекст:\\n{ctx}\\n\\nВопрос: {question}")</code>.'
+            'Спросите ИИ: <code>reply = ask_ai(message)</code>.',
+            'Переведите ответ в строчные буквы: <code>reply = reply.lower()</code>.',
+            'Проверьте <code>if "billing" in reply: return "billing"</code>.',
+            'Проверьте <code>if "tech" in reply: return "tech"</code>, а в конце верните <code>"other"</code>.'
           ],
-          syntaxTip: 'words = re.findall(r"[a-zа-яё0-9-]{3,}", question.lower())\nmatched = [d for d in docs if any(w in d.lower() for w in words)]\nif not matched:\n    return "Нет данных в базе"\nprompt = "Контекст:\\n" + "\\n".join(matched) + "\\nВопрос: " + question\nreturn ask_ai(prompt)',
-          aiPromptTip: 'Отвечай строго на основе переданного в сообщении Контекста. Не выдумывай факты от себя.'
+          syntaxTip: 'reply = ask_ai(message)\nreply = reply.lower()\nif "billing" in reply:\n    return "billing"\nif "tech" in reply:\n    return "tech"\nreturn "other"',
+          aiPromptTip: 'Определи категорию обращения и ответь одним словом: billing, tech или other.'
         }
       },
       {
         id: 'ai_privacy',
         num: 3,
         mode: 'code',
-        stageLabel: 'Privacy Guard',
-        shortTitle: '🛡️ Маскировка данных (PII)',
-        title: '3. Маскировка персональных данных (Privacy Guard)',
-        diffClass: 'med',
-        diffLabel: 'Защита ПДн • 4 мин',
-        minutes: 4,
-        desc: 'Функция <code>safe_ai_support(user_text)</code> до вызова <code>ask_ai(...)</code> заменяет email на <code>[EMAIL]</code> и телефон (вида <code>+7-999-111-22-33</code> / <code>+79165554433</code>) на <code>[PHONE]</code>, отправляет в <code>ask_ai(...)</code> <b>уже очищенный текст</b>, а затем подставляет оригинальные значения обратно в ответ модели.',
-        examples: 'Вход: "Позвоните на +7-999-111-22-33" -> в ask_ai уходит "Позвоните на [PHONE]"\nОтвет ИИ: "Свяжемся по [PHONE]." -> Пользователю: "Свяжемся по +7-999-111-22-33."',
-        hint: 'Тесты проверяют не только финальную строку, но и сам промпт внутри ask_ai(...): если туда попадёт реальный email или номер телефона, тест сразу зафиксирует утечку!',
-        stub: 'import re\n\ndef safe_ai_support(user_text: str) -> str:\n    # 1. Найдите email и телефон, сохраните их и замените на [EMAIL] и [PHONE]\n    # 2. Вызовите ask_ai(masked_text)\n    # 3. Замените [EMAIL] и [PHONE] обратно в ответе модели\n    pass\n',
-        importsPrefix: 'import re\n\n',
-        signatureLine: 'def safe_ai_support(user_text: str) -> str:',
-        params: ['user_text'],
-        defaultIterable: 'emails',
-        quickTokens: ['r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"', 'r"(?:\\+7|8)[\\d\\-()]{9,14}\\d"', '"[EMAIL]"', '"[PHONE]"', 'ask_ai(masked)'],
+        stageLabel: 'Защита ПДн',
+        shortTitle: '🛡️ Скрыть секрет от ИИ',
+        title: '3. Спрятать секретный код от нейросети',
+        diffClass: 'easy',
+        diffLabel: 'Защита ИИ • 3 мин',
+        minutes: 3,
+        brief: 'В тексте клиента <code>text</code> есть секрет <code>secret</code> (например пароль <code>"9911"</code> или почта). Нельзя отправлять этот секрет в нейросеть! Замените <code>secret</code> на маску <code>"[СЕКРЕТ]"</code>, отправьте скрытый текст в <code>ask_ai(...)</code>, а потом замените <code>"[СЕКРЕТ]"</code> обратно на <code>secret</code> в ответе ИИ.',
+        given: '<code>text</code> (текст письма) и <code>secret</code> (строка, которую надо спрятать).',
+        blockGuideHtml: `
+          <ol style="margin:4px 0 0 18px; padding:0;">
+            <li>Создайте переменную <code>masked</code> = <code>text.replace(secret, "[СЕКРЕТ]")</code>.</li>
+            <li>Спросите ИИ через блок <b>🤖 спросить ИИ</b>: ответ в <code>reply</code>, запрос: <code>masked</code> (тесты проверят, что реальный <code>secret</code> НЕ попал в <code>ask_ai</code>!).</li>
+            <li>Верните восстановленный ответ: <code>reply.replace("[СЕКРЕТ]", secret)</code>.</li>
+          </ol>
+        `,
+        examples: 'text = "Мой код: 9911, проверь заявку",  secret = "9911"\n  1) В ask_ai уходит: "Мой код: [СЕКРЕТ], проверь заявку" (без 9911!)\n  2) ask_ai отвечает: "Заявка с кодом [СЕКРЕТ] принята."\n  3) Функция возвращает: "Заявка с кодом 9911 принята."',
+        hint: 'Команда <code>строка.replace(что_заменить, на_что)</code> в Python работает очень просто — её можно сразу вставить кнопкой-подсказкой сверху!',
+        stub: 'def safe_ask(text: str, secret: str) -> str:\n    # 1. Замените secret на "[СЕКРЕТ]": masked = text.replace(secret, "[СЕКРЕТ]")\n    # 2. Вызовите reply = ask_ai(masked)\n    # 3. Верните секрет обратно: return reply.replace("[СЕКРЕТ]", secret)\n    pass\n',
+        signatureLine: 'def safe_ask(text: str, secret: str) -> str:',
+        params: ['text', 'secret'],
+        defaultIterable: 'text',
+        quickTokens: ['masked', 'text.replace(secret, "[СЕКРЕТ]")', 'reply.replace("[СЕКРЕТ]", secret)'],
         beginnerHelp: {
-          analogy: 'В реальных компаниях запрещено отправлять номера телефонов и почты клиентов на внешние сервера ИИ. Шлюз безопасности (Privacy Guard) перед запросом меняет личные данные на метки <code>[PHONE]</code> и <code>[EMAIL]</code>, а после ответа аккуратно возвращает их клиенту.',
+          analogy: 'Представьте, что вместо настоящего пароля вы пишете на конверте для помощника слово «[СЕКРЕТ]». Помощник отвечает «Ваш [СЕКРЕТ] проверен», а вы перед выдачей пользователю вписываете настоящий пароль на место слова «[СЕКРЕТ]».',
           steps: [
-            'Через <code>re.findall(...)</code> сохраните найденные email и телефон (если есть) и замените их через <code>re.sub(...)</code> на <code>"[EMAIL]"</code> и <code>"[PHONE]"</code>.',
-            'Обязательно передавайте в <code>ask_ai(masked)</code> именно замаскированный текст <code>masked</code>!',
-            'Получив <code>reply = ask_ai(masked)</code>, замените <code>reply.replace("[EMAIL]", saved_email)</code> и <code>reply.replace("[PHONE]", saved_phone)</code>.',
-            'Верните восстановленную строку.'
+            'Создайте <code>masked = text.replace(secret, "[СЕКРЕТ]")</code> (блок <b>задать</b>).',
+            'Вызовите <b>🤖 спросить ИИ</b>: в <code>reply</code>, запрос: <code>masked</code>.',
+            'Поставьте <b>вернуть ответ</b>: <code>reply.replace("[СЕКРЕТ]", secret)</code>.'
           ],
-          syntaxTip: 'email_re = r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"\nphone_re = r"(?:\\+7|8)[\\d\\-()]{9,14}\\d"\nemails = re.findall(email_re, user_text)\nphones = re.findall(phone_re, user_text)\nmasked = re.sub(email_re, "[EMAIL]", user_text)\nmasked = re.sub(phone_re, "[PHONE]", masked)\nreply = ask_ai(masked)\nif emails: reply = reply.replace("[EMAIL]", emails[0])\nif phones: reply = reply.replace("[PHONE]", phones[0])\nreturn reply',
-          aiPromptTip: 'Ты оператор поддержки. Используй в ответе маркеры [PHONE] и [EMAIL] точно так же, как они написаны в обращении клиента, не меняя скобки.'
+          syntaxTip: 'masked = text.replace(secret, "[СЕКРЕТ]")\nreply = ask_ai(masked)\nreturn reply.replace("[СЕКРЕТ]", secret)',
+          aiPromptTip: 'Сохраняй маркер [СЕКРЕТ] в своём ответе без изменений.'
         }
       },
       {
@@ -6835,115 +6951,196 @@
         num: 4,
         mode: 'debug',
         stageLabel: 'Отладка ИИ',
-        shortTitle: '🐛 Retry и Fallback для ИИ',
-        title: '4. Отладка AI-пайплайна (Retry + Fallback)',
+        shortTitle: '🐛 Повтор при ошибке ИИ',
+        title: '4. Отладка ИИ: повтор при ошибке',
         diffClass: 'med',
-        diffLabel: 'Отладка ИИ • 4 мин',
-        minutes: 4,
-        desc: '<b>В редакторе лежит хрупкий код интеграции!</b> Почини <code>ask_json_with_retry(prompt, max_attempts=3)</code>: нейросеть может сначала ответить текстом или обернуть ответ в <code>```json ... ```</code>. Код должен делать до <code>max_attempts</code> попыток, снимать обёртку <code>```json</code>, при ошибке повторять запрос, а если все попытки провалились — безопасно вернуть <code>None</code>.',
-        examples: 'Попытка 1: "Вот ответ..." -> Попытка 2: "```json\\n{\\"ok\\": true}\\n```" => {"ok": True}\nВсе попытки плохие (max_attempts=2) => None (и максимум 2 вызова ask_ai)',
-        hint: 'Запустите 5 unit-тестов на текущем коде — увидите падение JSONDecodeError! Добавьте цикл по range(max_attempts), блок try/except и очистку markdown-обёртки.',
-        stub: 'import json\nimport re\n\ndef ask_json_with_retry(prompt: str, max_attempts: int = 3):\n    # Кривой код интеграции: нет цикла повторов, очистки ```json и fallback!\n    raw = ask_ai(prompt)\n    return json.loads(raw)\n',
-        importsPrefix: 'import json\nimport re\n\n',
-        signatureLine: 'def ask_json_with_retry(prompt: str, max_attempts: int = 3):',
-        params: ['prompt', 'max_attempts'],
-        defaultIterable: 'range(max_attempts)',
-        quickTokens: ['for attempt in range(max_attempts):', 're.sub(r"^```(?:json)?|```$", "", raw.strip(), flags=re.I|re.M)', 'try:', 'except Exception:', 'return None'],
+        diffLabel: 'Отладка • 3 мин',
+        minutes: 3,
+        brief: 'Сейчас в редакторе (и в «Мини-блоках») уже загружен код, который спрашивает ИИ <b>только 1 раз</b> и сразу возвращает результат — даже если ИИ вернул <code>"ERROR: timeout"</code> или пустоту <code>""</code>!',
+        given: '<code>prompt</code> — текст запроса к ИИ. Нужно делать до 3 попыток, отсекать пустой ответ и строки с <code>"ERROR:"</code>, а если все 3 попытки неудачны — вернуть <code>"Сервис временно недоступен"</code>.',
+        blockGuideHtml: `
+          <ol style="margin:4px 0 0 18px; padding:0;">
+            <li>Повторять запрос максимум <b>3 раза</b> (цикл <code>повторять для каждого _ из range(3)</code>).</li>
+            <li>Внутри цикла спрашивать <code>reply = ask_ai(prompt)</code> и убирать пробелы (<code>.strip()</code>).</li>
+            <li>Если ответ хороший (<code>reply != "" and "ERROR:" not in reply</code>) → сразу вернуть <code>reply</code>!</li>
+            <li>Если все 3 попытки неудачны → в конце (в корне) вернуть <code>"Сервис временно недоступен"</code>.</li>
+          </ol>
+        `,
+        examples: 'Попытка 1: "ERROR: timeout"  --> пробует ещё раз!\nПопытка 2: "Готовый ответ"   --> сразу возвращает "Готовый ответ"\nВсе 3 попытки плохие ("ERROR: 500", "ERROR: busy", "") --> "Сервис временно недоступен"',
+        hint: 'В режиме «🧩 Мини-блоки» бажный код уже разложен по кирпичикам: добавьте жёлтый блок <b>повторять</b> (<code>range(3)</code>), положите внутрь запрос к ИИ + очистку + <code>если</code>, и поставьте запасной <code>вернуть</code> в корне!',
+        stub: 'def ask_with_retry(prompt: str) -> str:\n    # Код с багами: делает только 1 попытку и не проверяет пустоту / "ERROR:"\n    reply = ask_ai(prompt)\n    reply = reply.strip()\n    return reply\n',
+        signatureLine: 'def ask_with_retry(prompt: str) -> str:',
+        params: ['prompt'],
+        defaultIterable: 'range(3)',
+        quickTokens: ['range(3)', 'reply != "" and "ERROR:" not in reply', '"Сервис временно недоступен"'],
         starterBlocks: [
-          { id: 'ar_1', type: 'ai', varName: 'raw', promptExpr: 'prompt', systemExpr: '' },
-          { id: 'ar_2', type: 'return', expr: 'json.loads(raw)' }
+          { id: 'ar_1', type: 'ai', varName: 'reply', promptExpr: 'prompt' },
+          { id: 'ar_2', type: 'update', target: 'reply', op: 'strip', value: '' },
+          { id: 'ar_3', type: 'return', expr: 'reply' }
         ],
         beginnerHelp: {
-          analogy: 'Модели не всегда слушаются с первого раза: могут написать лишний markdown-блок или просто текст. Надёжный бэкенд не падает с ошибкой, а «переспрашивает» до N раз и в крайнем случае возвращает безопасное значение <code>None</code>.',
+          analogy: 'Если сервер ИИ занят или ответил сбоем «ERROR: busy», хороший бот не сдаётся с первой секунды, а вежливо пробует ещё 1–2 раза. Если после 3 попыток всё ещё ошибка — выдаёт понятное сообщение пользователю.',
           steps: [
-            'Оберните логику в цикл <code>for attempt in range(max_attempts):</code>.',
-            'При <code>attempt &gt; 0</code> добавляйте к запросу напоминание <code>cur_prompt = prompt + "\\nВерни ТОЛЬКО чистый JSON!"</code>.',
-            'Очищайте ответ от тройных кавычек <code>```json ... ```</code> (например вырезая от первой <code>{</code> до последней <code>}</code> или regex).',
-            'Внутри <code>try ... except Exception:</code> парсите <code>obj = json.loads(clean)</code> и возвращайте только <code>dict</code>. После цикла напишите <code>return None</code>.'
+            'Добавьте жёлтый цикл <b>повторять для</b> <code>_</code> из <code>range(3)</code>.',
+            'Перенесите внутрь цикла <code>reply = ask_ai(prompt)</code> и очистку <code>reply = reply.strip()</code>.',
+            'Внутри цикла добавьте зелёный блок <b>если</b> (переключитесь на <code>✎</code> для сложного условия): <code>reply != "" and "ERROR:" not in reply</code> → вернуть <code>reply</code>.',
+            'В самом низу (в корне!) замените финальный возврат на <code>"Сервис временно недоступен"</code>.'
           ],
-          syntaxTip: 'cur = prompt\nfor _ in range(max_attempts):\n    raw = ask_ai(cur).strip()\n    clean = re.sub(r"```(?:json)?|```", "", raw, flags=re.IGNORECASE).strip()\n    try:\n        obj = json.loads(clean)\n        if isinstance(obj, dict): return obj\n    except Exception:\n        pass\n    cur = prompt + "\\nОшибка: верни строго валидный JSON!"\nreturn None',
-          aiPromptTip: 'Возвращай строго валидный JSON-объект без markdown-блоков ```json и без комментариев.'
+          syntaxTip: 'for _ in range(3):\n    reply = ask_ai(prompt).strip()\n    if reply != "" and "ERROR:" not in reply:\n        return reply\nreturn "Сервис временно недоступен"',
+          aiPromptTip: 'Отвечай кратко и по делу.'
         }
       },
       {
-        id: 'ai_structured',
+        id: 'ai_rag',
         num: 5,
-        mode: 'hard',
-        stageLabel: 'Хардкор ИИ',
-        shortTitle: '🔥 Парсер + схема JSON',
-        title: '5. Парсер + валидатор Structured Output',
-        diffClass: 'hard',
-        diffLabel: 'Хардкор ИИ • 4 мин',
+        mode: 'code',
+        stageLabel: 'Мини-RAG',
+        shortTitle: '📚 Мини-RAG: найти факт',
+        title: '5. Мини-RAG: найти факт и спросить ИИ',
+        diffClass: 'med',
+        diffLabel: 'Мини-RAG • 4 мин',
         minutes: 4,
-        desc: 'Функция <code>parse_order_from_ai(user_query)</code> вызывает <code>ask_ai(user_query)</code>, достаёт первый валидный JSON-объект (<code>dict</code>) даже среди мусора, <code>```json</code>, висячих запятых и лишней скобки <code>{ошибка...</code>, и проверяет схему: <code>"item"</code> — непустая строка, <code>"qty"</code> — строго <code>int</code> (не <code>bool</code>!) и <code>&gt; 0</code>. Иначе возвращает <code>None</code>.',
-        examples: 'ИИ: "Лог {err}, итог: {\\"item\\": \\"мышка\\", \\"qty\\": 2,}" => {"item": "мышка", "qty": 2}\nИИ: "{\\"item\\": \\"монитор\\", \\"qty\\": true}" => None (bool в Python это подкласс int!)',
-        hint: 'Две главные ловушки: 1) используйте <code>json.JSONDecoder().raw_decode</code> с перебором всех <code>"{"</code>; 2) в Python <code>isinstance(True, int) == True</code>, поэтому обязательно проверяйте <code>not isinstance(qty, bool)</code>!',
-        stub: 'import json\nimport re\n\ndef parse_order_from_ai(user_query: str):\n    # 1. Вызовите ask_ai(user_query)\n    # 2. Извлеките первый валидный JSON dict (учтите ```json, висячие запятые и лишние "{")\n    # 3. Проверьте схему: item -> непустая str, qty -> int (не bool) и > 0\n    pass\n',
-        importsPrefix: 'import json\nimport re\n\n',
-        signatureLine: 'def parse_order_from_ai(user_query: str):',
-        params: ['user_query'],
-        defaultIterable: 'enumerate(raw)',
-        quickTokens: ['ask_ai(user_query)', 'json.JSONDecoder().raw_decode', 're.sub(r",\\s*([}\\]])", r"\\1", chunk)', 'not isinstance(qty, bool)'],
+        brief: 'Есть база фактов <code>docs</code> (список строк) и тема вопроса <code>topic</code> (например <code>"колледж"</code>). Найдите в списке только те строки, где встречается <code>topic</code>, и отправьте в <code>ask_ai(...)</code> только их. А если про такую тему в базе ничего нет — верните <code>"Нет данных в базе"</code> <b>не спрашивая ИИ</b>!',
+        given: '<code>topic</code> (ключевое слово) и <code>docs</code> (список строк-документов).',
+        blockGuideHtml: `
+          <ol style="margin:4px 0 0 18px; padding:0;">
+            <li>Заведите пустую строку <code>found = ""</code>.</li>
+            <li>Пройдитесь циклом по <code>docs</code> (<code>for doc in docs:</code>): если <code>topic.lower() in doc.lower()</code> → добавьте <code>doc + "\\n"</code> в <code>found</code> (через <code>+=</code>).</li>
+            <li>Если <code>found == ""</code> → сразу верните <code>"Нет данных в базе"</code> (вызывать <code>ask_ai</code> нельзя!).</li>
+            <li>Иначе вызовите <code>reply = ask_ai(topic + ": " + found)</code> и верните <code>reply</code>.</li>
+          </ol>
+        `,
+        examples: 'topic = "колледж", docs = ["Столовая с 10:00.", "Колледж с 08:30."]\n  --> в ask_ai уходит только "Колледж с 08:30.", а "Столовая..." отфильтрована!\n\ntopic = "марс", docs = ["Столовая с 10:00."]\n  --> совпадений нет --> 0 вызовов ask_ai --> вернуть "Нет данных в базе"',
+        hint: 'Не забудьте привести и <code>topic</code>, и <code>doc</code> к маленьким буквам через <code>.lower()</code>, чтобы поиск работал для <code>"Wi-Fi"</code> и <code>"wi-fi"</code> одинаково!',
+        stub: 'def find_and_ask(topic: str, docs: list) -> str:\n    found = ""\n    # 1. Цикл for doc in docs: проверьте if topic.lower() in doc.lower(): found += doc + "\\n"\n    # 2. Если found == "" -> return "Нет данных в базе"\n    # 3. Иначе return ask_ai(topic + ": " + found)\n    pass\n',
+        signatureLine: 'def find_and_ask(topic: str, docs: list) -> str:',
+        params: ['topic', 'docs'],
+        defaultIterable: 'docs',
+        quickTokens: ['found', 'topic.lower() in doc.lower()', '"Нет данных в базе"', 'topic + ": " + found'],
+        starterBlocks: [
+          { id: 'rg_1', type: 'var', name: 'found', value: '""' },
+          {
+            id: 'rg_2', type: 'for', item: 'doc', iterable: 'docs',
+            children: []
+          }
+        ],
         beginnerHelp: {
-          analogy: 'Даже если нейросеть вернула JSON, она могла подсунуть число строкой (<code>"2"</code>), булево <code>true</code> или забыть товар. Structured Output — это «таможня», которая и мусор вычистит, и типы полей проверит до записи в базу.',
+          analogy: 'Так работает поиск по документам (RAG): сначала мы сами находим в папке только нужные страницы с нужным словом, и только потом даём их прочитать нейросети.',
           steps: [
-            'Получите <code>raw = ask_ai(user_query)</code>. Если пусто — верните <code>None</code>.',
-            'Пройдитесь по позициям <code>{</code>: очистите хвост от висячих запятых <code>re.sub(r",\\s*([}\\]])", r"\\1", raw[i:])</code> и вызовите <code>json.JSONDecoder().raw_decode(...)</code> в <code>try/except</code>.',
-            'Как только нашли <code>dict</code>: проверьте <code>item = obj.get("item")</code> (строка и <code>item.strip()</code>) и <code>qty = obj.get("qty")</code>.',
-            'Обязательно проверьте <code>isinstance(qty, int) and not isinstance(qty, bool) and qty &gt; 0</code>. Если всё ок — верните <code>obj</code>, иначе <code>None</code>.'
+            'Внутри жёлтого цикла <code>for doc in docs:</code> добавьте <b>если</b> (режим <code>✎</code>): <code>topic.lower() in doc.lower()</code>.',
+            'Внутрь <code>если</code> добавьте <b>изменить / почистить</b>: <code>found</code> <code>+=</code> <code>doc + "\\n"</code>.',
+            'В корне проверьте <b>если</b> <code>found == ""</code> → вернуть <code>"Нет данных в базе"</code>.',
+            'В конце в корне вызовите <b>🤖 спросить ИИ</b> (в <code>reply</code>, запрос: <code>topic + ": " + found</code>) и верните <code>reply</code>.'
           ],
-          syntaxTip: 'raw = ask_ai(user_query) or ""\ndec = json.JSONDecoder()\nfor i, ch in enumerate(raw):\n    if ch == "{":\n        clean = re.sub(r",\\s*([}\\]])", r"\\1", raw[i:])\n        try: obj, _ = dec.raw_decode(clean)\n        except Exception: continue\n        if isinstance(obj, dict):\n            item, qty = obj.get("item"), obj.get("qty")\n            if isinstance(item, str) and item.strip() and isinstance(qty, int) and not isinstance(qty, bool) and qty > 0:\n                return obj\n            return None\nreturn None',
-          aiPromptTip: 'Верни только JSON-объект заказа с полями "item" (строка) и "qty" (целое положительное число), например {"item": "ноутбук", "qty": 2}.'
+          syntaxTip: 'found = ""\nfor doc in docs:\n    if topic.lower() in doc.lower():\n        found += doc + "\\n"\nif found == "":\n    return "Нет данных в базе"\nreply = ask_ai(topic + ": " + found)\nreturn reply',
+          aiPromptTip: 'Отвечай кратко только по присланному фрагменту.'
         }
       },
       {
         id: 'ai_agent',
         num: 6,
-        mode: 'hard',
-        stageLabel: 'Хардкор ИИ',
-        shortTitle: '🔥 Агент с калькулятором',
-        title: '6. Мини-агент с инструментом (Tool-Calling Loop)',
-        diffClass: 'hard',
-        diffLabel: 'Хардкор ИИ • 5 мин',
-        minutes: 5,
-        desc: 'Реализуйте настоящий агентский цикл <code>run_math_agent(question, max_steps=4)</code>: в цикле (до <code>max_steps</code>) вызывайте <code>ask_ai(context)</code>. Если модель отвечает <code>"CALC: &lt;выражение&gt;"</code>, код сам считает арифметику и дописывает результат в контекст для следующего шага. Как только модель отвечает <code>"FINAL: &lt;ответ&gt;"</code> — возвращайте текст после <code>FINAL:</code>. Если шаги закончились — <code>"Лимит шагов"</code>.',
-        examples: 'Шаг 1 ask_ai -> "CALC: 12 * 4 + 2" -> код считает 50 и шлёт в ask_ai\nШаг 2 ask_ai -> "FINAL: Ответ: 50"  => "Ответ: 50"',
-        hint: 'Так устроены реальные AI-агенты (ReAct / Tool Calling): LLM сама не умеет точно умножать большие числа, но может попросить внешний инструмент <code>CALC:</code>, получить факт и дать финальный ответ!',
-        stub: 'def run_math_agent(question: str, max_steps: int = 4) -> str:\n    context = question\n    for _ in range(max_steps):\n        reply = ask_ai(context).strip()\n        # Если reply начинается с "FINAL:" -> вернуть reply[6:].strip()\n        # Если начинается с "CALC:" -> вычислить и добавить в context для ask_ai\n    return "Лимит шагов"\n',
-        signatureLine: 'def run_math_agent(question: str, max_steps: int = 4) -> str:',
-        params: ['question', 'max_steps'],
-        defaultIterable: 'range(max_steps)',
-        quickTokens: ['reply.startswith("FINAL:")', 'reply.startswith("CALC:")', 'eval(expr, {"__builtins__": {}}, {})', '"Лимит шагов"'],
+        mode: 'code',
+        stageLabel: 'Агент ИИ',
+        shortTitle: '🤖 Мини-агент «Погода»',
+        title: '6. Бот с инструментом «Погода» (Мини-агент)',
+        diffClass: 'med',
+        diffLabel: 'Мини-агент • 4 мин',
+        minutes: 4,
+        brief: 'Нейросеть сама не знает сегодняшнюю погоду, но может попросить её у вашей программы! Вы пишете цикл из 3 шагов: если ИИ ответил словом <code>"GET_WEATHER"</code>, программа дописывает погоду <code>weather</code> в запрос и спрашивает ИИ снова. Когда ИИ отвечает <code>"FINAL: ..."</code> — программа возвращает ответ без <code>FINAL:</code>.',
+        given: '<code>question</code> (вопрос) и <code>weather</code> (строка с погодой, например <code>"+22 и солнце"</code>). Если за 3 шага модель не вернёт <code>FINAL:</code> — нужно вернуть <code>"Не удалось ответить"</code>.',
+        blockGuideHtml: `
+          <ol style="margin:4px 0 0 18px; padding:0;">
+            <li>Заведите <code>context = question</code> и цикл на 3 шага: <code>for _ in range(3):</code>.</li>
+            <li>На каждом шаге: <code>reply = ask_ai(context)</code> и <code>reply = reply.strip()</code>.</li>
+            <li>Если <code>reply.startswith("FINAL:")</code> (или <code>"FINAL:" in reply</code>) → верните текст без <code>"FINAL:"</code>: <code>reply.replace("FINAL:", "").strip()</code>.</li>
+            <li>Если <code>"GET_WEATHER" in reply</code> → обновите запрос: <code>context = question + " Погода: " + weather</code>.</li>
+            <li>Если за 3 шага <code>FINAL:</code> не пришёл → после цикла верните <code>"Не удалось ответить"</code>.</li>
+          </ol>
+        `,
+        examples: 'Вопрос: "Что надеть?", weather = "+22 и солнце"\n  Шаг 1 ask_ai(question)                  --> "GET_WEATHER"\n  Код добавляет погоду в context и спрашивает снова!\n  Шаг 2 ask_ai("Что надеть? Погода: +22 и солнце") --> "FINAL: Наденьте футболку."\n  Функция возвращает: "Наденьте футболку."',
+        hint: 'Здесь не нужны сложные вычисления — достаточно простой проверки текста через <code>"GET_WEATHER" in reply</code> и <code>reply.replace("FINAL:", "").strip()</code>!',
+        stub: 'def run_assistant(question: str, weather: str) -> str:\n    context = question\n    for _ in range(3):\n        reply = ask_ai(context).strip()\n        # 1. Если "FINAL:" в ответе -> вернуть без "FINAL:"\n        # 2. Если "GET_WEATHER" в ответе -> дописать weather в context\n    return "Не удалось ответить"\n',
+        signatureLine: 'def run_assistant(question: str, weather: str) -> str:',
+        params: ['question', 'weather'],
+        defaultIterable: 'range(3)',
+        quickTokens: ['"FINAL:" in reply', 'reply.replace("FINAL:", "").strip()', '"GET_WEATHER" in reply', 'question + " Погода: " + weather', '"Не удалось ответить"'],
         starterBlocks: [
           { id: 'ag_1', type: 'var', name: 'context', value: 'question' },
           {
-            id: 'ag_2', type: 'for', item: '_', iterable: 'range(max_steps)',
+            id: 'ag_2', type: 'for', item: '_', iterable: 'range(3)',
             children: [
-              { id: 'ag_3', type: 'ai', varName: 'reply', promptExpr: 'context', systemExpr: '' },
-              {
-                id: 'ag_4', type: 'if', condition: 'reply.strip().startswith("FINAL:")', hasElse: false,
-                children: [{ id: 'ag_5', type: 'return', expr: 'reply.strip()[6:].strip()' }],
-                elseChildren: []
-              }
+              { id: 'ag_3', type: 'ai', varName: 'reply', promptExpr: 'context' },
+              { id: 'ag_4', type: 'update', target: 'reply', op: 'strip', value: '' }
             ]
           },
-          { id: 'ag_6', type: 'return', expr: '"Лимит шагов"' }
+          { id: 'ag_5', type: 'return', expr: '"Не удалось ответить"' }
         ],
         beginnerHelp: {
-          analogy: 'Вы управляете роботом-помощником: если нейросеть пишет <code>CALC: 100 - 25</code>, она просит ваш код воспользоваться калькулятором. Вы считаете <code>75</code>, дописываете в диалог <code>Результат: 75</code> и снова спрашиваете нейросеть — пока не увидите <code>FINAL:</code>.',
+          analogy: 'Именно так работают AI-агенты с инструментами: если модели не хватает данных из реального мира (погоды, времени, курса), она печатает кодовое слово <code>GET_WEATHER</code>. Ваш код подкладывает ей эти данные и спрашивает снова!',
           steps: [
-            'Заведите <code>context = question</code> и цикл <code>for _ in range(max_steps):</code>.',
-            'На каждом шаге вызывайте <code>reply = ask_ai(context).strip()</code>.',
-            'Если <code>reply.startswith("FINAL:")</code> → сразу возвращайте <code>reply[6:].strip()</code>.',
-            'Если <code>reply.startswith("CALC:")</code> → возьмите выражение <code>expr = reply[5:].strip()</code>, вычислите <code>val = eval(expr, {"__builtins__": {}}, {})</code> (после проверки разрешённых символов <code>0123456789+-*/(). </code>) и допишите <code>context += f"\\n{reply}\\nRESULT: {val}"</code>. Если цикл закончился — верните <code>"Лимит шагов"</code>.'
+            'Внутрь жёлтого цикла <code>range(3)</code> под блок очистки добавьте <b>если</b> <code>"FINAL:"</code> <b>входит в</b> <code>reply</code> → вернуть <code>reply.replace("FINAL:", "").strip()</code>.',
+            'Ниже внутри цикла добавьте ещё <b>если</b> <code>"GET_WEATHER"</code> <b>входит в</b> <code>reply</code> → <b>задать</b> <code>context</code> = <code>question + " Погода: " + weather</code>.',
+            'Снаружи после цикла уже стоит <code>вернуть "Не удалось ответить"</code>.'
           ],
-          syntaxTip: 'if reply.startswith("FINAL:"):\n    return reply[6:].strip()\nif reply.startswith("CALC:"):\n    expr = reply[5:].strip()\n    val = eval(expr, {"__builtins__": {}}, {})\n    context += f"\\n{reply}\\nRESULT: {val}"',
-          aiPromptTip: 'Ты математический агент с калькулятором. Если нужно посчитать выражение — ответь строго "CALC: выражение". Когда результат известен — ответь строго "FINAL: итог".'
+          syntaxTip: 'context = question\nfor _ in range(3):\n    reply = ask_ai(context).strip()\n    if "FINAL:" in reply:\n        return reply.replace("FINAL:", "").strip()\n    if "GET_WEATHER" in reply:\n        context = question + " Погода: " + weather\nreturn "Не удалось ответить"',
+          aiPromptTip: 'Если нужна погода, ответь только GET_WEATHER. Если всё знаешь, ответь FINAL: твой совет.'
         }
       }
     ];
 
-    let activeCodeTaskId = 'ai_router';
+    function getCodeTaskFailCount(taskId) {
+      const entry = taskProgressState?.codeTasks?.[taskId];
+      return Math.max(0, Number(entry?.failCount || 0));
+    }
+
+    function isCodeTaskSolutionUnlocked(taskId) {
+      const entry = taskProgressState?.codeTasks?.[taskId];
+      if (entry?.passed) return true;
+      return getCodeTaskFailCount(taskId) >= 3;
+    }
+
+    function renderCodeTaskDescription(meta) {
+      const isUnlocked = isCodeTaskSolutionUnlocked(meta.id);
+      const failCount = getCodeTaskFailCount(meta.id);
+      const isPassed = Boolean(taskProgressState?.codeTasks?.[meta.id]?.passed);
+
+      let hintHtml = '';
+      if (isUnlocked) {
+        hintHtml = `
+          <details class="code-hint-spoiler">
+            <summary>🔍 Показать подсказку (пошаговая сборка по блокам) ${isPassed ? '<span style="color:var(--success); font-weight:normal;">• Задача решена ✅</span>' : '<span style="color:var(--wire-char); font-weight:normal;">• Разблокировано (3+ попытки) 🔓</span>'}</summary>
+            ${meta.blockGuideHtml || ''}
+          </details>
+        `;
+      } else {
+        hintHtml = `
+          <div class="code-hint-locked">
+            <div class="code-hint-locked-left">
+              <span style="font-size:16px;">🔒</span>
+              <div>
+                <div style="font-weight:700; font-size:11.5px; color:var(--text);">Пошаговая сборка решения скрыта</div>
+                <div style="font-size:11px; color:var(--text-dim); margin-top:1px;">
+                  Сначала попробуйте решить задачу сами. Подробная инструкция откроется после <b>3 неверных попыток тестирования</b>.
+                </div>
+              </div>
+            </div>
+            <div class="code-hint-locked-badge">
+              Неверных попыток: <b>${failCount} / 3</b>
+            </div>
+          </div>
+        `;
+      }
+
+      return `
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div><b>🎯 Суть задачи${meta.diffClass === 'easy' ? ' (очень просто)' : ''}:</b> ${meta.brief || ''}</div>
+          <div><b>📥 Что дано изначально:</b> ${meta.given || ''}</div>
+          ${hintHtml}
+        </div>
+      `;
+    }
+
+    let activeCodeTaskId = 'ai_support';
     let codeWorkspaceMode = 'tasks';
     let codeTimerSeconds = 20 * 60;
     let codeTimerInterval = null;
@@ -7090,7 +7287,7 @@
 
       if (titleEl) titleEl.textContent = meta.title;
       if (badgeEl) badgeEl.textContent = meta.diffLabel;
-      if (descEl) descEl.innerHTML = meta.desc;
+      if (descEl) descEl.innerHTML = renderCodeTaskDescription(meta);
       if (exEl) exEl.innerText = meta.examples;
       if (hintEl) hintEl.innerHTML = `💡 <b>Подсказка AI-интегратору:</b> ${meta.hint}`;
       if (stubBtn) {
@@ -7136,7 +7333,10 @@
     function ensureCodeTaskEntry(taskId) {
       if (!taskProgressState.codeTasks) taskProgressState.codeTasks = getDefaultCodeTasksMap();
       if (!taskProgressState.codeTasks[taskId]) {
-        taskProgressState.codeTasks[taskId] = { passed: false, aiResult: null, editorCode: '', blocks: null, editorMode: null };
+        taskProgressState.codeTasks[taskId] = { passed: false, failCount: 0, aiResult: null, editorCode: '', blocks: null, editorMode: null };
+      }
+      if (typeof taskProgressState.codeTasks[taskId].failCount !== 'number') {
+        taskProgressState.codeTasks[taskId].failCount = 0;
       }
       return taskProgressState.codeTasks[taskId];
     }
@@ -7226,16 +7426,21 @@
           if (!b || !b.type) return;
           if (b.type === 'ai') {
             const vName = cleanVal(b.varName, 'reply');
-            const pExpr = cleanVal(b.promptExpr, meta?.params?.[0] || 'prompt');
-            const sExpr = String(b.systemExpr ?? '').trim();
-            const callExpr = sExpr && sExpr !== '""' ? `ask_ai(${pExpr}, ${sExpr})` : `ask_ai(${pExpr})`;
-            lines.push(`${pad}${vName} = ${callExpr}`);
+            const pExpr = cleanVal(b.promptExpr, meta?.params?.[0] || 'question');
+            lines.push(`${pad}${vName} = ask_ai(${pExpr})`);
           } else if (b.type === 'var') {
             lines.push(`${pad}${cleanVal(b.name, 'total')} = ${cleanVal(b.value, '0')}`);
           } else if (b.type === 'update') {
-            const allowedOps = ['=', '+=', '-=', '*=', '//='];
-            const op = allowedOps.includes(b.op) ? b.op : '+=';
-            lines.push(`${pad}${cleanVal(b.target, 'total')} ${op} ${cleanVal(b.value, '1')}`);
+            const tgt = cleanVal(b.target, 'reply');
+            if (b.op === 'strip') {
+              lines.push(`${pad}${tgt} = ${tgt}.strip()`);
+            } else if (b.op === 'lower') {
+              lines.push(`${pad}${tgt} = ${tgt}.lower()`);
+            } else {
+              const allowedOps = ['=', '+=', '-=', '*=', '//='];
+              const op = allowedOps.includes(b.op) ? b.op : '+=';
+              lines.push(`${pad}${tgt} ${op} ${cleanVal(b.value, '1')}`);
+            }
           } else if (b.type === 'for') {
             lines.push(`${pad}for ${cleanVal(b.item, 'x')} in ${cleanVal(b.iterable, meta?.defaultIterable || 'items')}:`);
             walk(b.children, depth + 1);
@@ -7344,14 +7549,38 @@
     }
 
     function createDefaultBlock(type, meta) {
-      const firstParam = (meta?.params && meta.params[0]) || 'message';
-      const defIter = meta?.defaultIterable || firstParam || 'items';
-      if (type === 'ai') return { id: nextCbId(), type: 'ai', varName: 'reply', promptExpr: firstParam, systemExpr: '' };
-      if (type === 'var') return { id: nextCbId(), type: 'var', name: 'clean', value: 'reply.strip().lower()' };
-      if (type === 'for') return { id: nextCbId(), type: 'for', item: 'item', iterable: defIter, children: [] };
-      if (type === 'if') return { id: nextCbId(), type: 'if', condition: 'clean == "billing"', hasElse: false, children: [], elseChildren: [] };
-      if (type === 'update') return { id: nextCbId(), type: 'update', target: 'context', op: '+=', value: '""' };
-      if (type === 'return') return { id: nextCbId(), type: 'return', expr: '"other"' };
+      const id = meta?.id || 'ai_support';
+      const firstParam = (meta?.params && meta.params[0]) || 'question';
+      const defIter = meta?.defaultIterable || firstParam || 'docs';
+      if (type === 'ai') {
+        const pDefault = id === 'ai_privacy' ? 'masked' : (id === 'ai_rag' ? 'topic + ": " + found' : (id === 'ai_agent' ? 'context' : firstParam));
+        return { id: nextCbId(), type: 'ai', varName: 'reply', promptExpr: pDefault };
+      }
+      if (type === 'var') {
+        if (id === 'ai_privacy') return { id: nextCbId(), type: 'var', name: 'masked', value: 'text.replace(secret, "[СЕКРЕТ]")' };
+        if (id === 'ai_agent') return { id: nextCbId(), type: 'var', name: 'context', value: 'question + " Погода: " + weather' };
+        return { id: nextCbId(), type: 'var', name: 'found', value: '""' };
+      }
+      if (type === 'for') {
+        const itName = id === 'ai_rag' ? 'doc' : '_';
+        return { id: nextCbId(), type: 'for', item: itName, iterable: defIter, children: [] };
+      }
+      if (type === 'if') {
+        const condDef = id === 'ai_router' ? '"billing" in reply'
+          : (id === 'ai_retry' ? 'reply != "" and "ERROR:" not in reply'
+          : (id === 'ai_rag' ? 'topic.lower() in doc.lower()'
+          : (id === 'ai_agent' ? '"FINAL:" in reply' : 'reply == ""')));
+        return { id: nextCbId(), type: 'if', condition: condDef, hasElse: false, children: [], elseChildren: [] };
+      }
+      if (type === 'update') {
+        if (id === 'ai_router') return { id: nextCbId(), type: 'update', target: 'reply', op: 'lower', value: '' };
+        if (id === 'ai_rag') return { id: nextCbId(), type: 'update', target: 'found', op: '+=', value: 'doc + "\\n"' };
+        return { id: nextCbId(), type: 'update', target: 'reply', op: 'strip', value: '' };
+      }
+      if (type === 'return') {
+        const retDef = id === 'ai_privacy' ? 'reply.replace("[СЕКРЕТ]", secret)' : 'reply';
+        return { id: nextCbId(), type: 'return', expr: retDef };
+      }
       return { id: nextCbId(), type: 'stmt', code: 'continue' };
     }
 
@@ -7416,13 +7645,120 @@
       syncBlocksToCode(true, true);
     }
 
-    function updateBlockField(blockId, field, value) {
+    function updateBlockField(blockId, field, value, shouldRender = false) {
       const tree = getMutableBlocksForActiveTask();
       const loc = findBlockLocation(tree, blockId);
       if (!loc) return;
       loc.block[field] = value;
-      // Only update code & live preview without tearing down active DOM input focus!
-      syncBlocksToCode(true, false);
+      // Only update code & live preview without tearing down active DOM input focus (unless select layout changes)!
+      syncBlocksToCode(true, shouldRender);
+    }
+
+    function onCbSmartSlotChange(blockId, field, value, isIfPart = false) {
+      if (value === '__CUSTOM__') {
+        toggleCbSlotCustom(blockId, field, true);
+        return;
+      }
+      if (isIfPart) {
+        updateIfConditionPart(blockId, field, value, false);
+      } else {
+        updateBlockField(blockId, field, value, false);
+      }
+    }
+
+    function toggleCbSlotCustom(blockId, field, enableCustom) {
+      const tree = getMutableBlocksForActiveTask();
+      const loc = findBlockLocation(tree, blockId);
+      if (!loc) return;
+      if (!loc.block._customFields || typeof loc.block._customFields !== 'object') {
+        loc.block._customFields = {};
+      }
+      loc.block._customFields[field] = Boolean(enableCustom);
+      syncBlocksToCode(false, true);
+    }
+
+    function getTaskSlotPools(meta) {
+      const id = meta?.id || 'ai_support';
+      const params = meta?.params || ['question'];
+      const vars = new Set(['reply', ...params]);
+      const exprs = new Set([...params, 'reply', '""']);
+      const iters = new Set(['range(3)', ...params]);
+      const conds = new Set(['reply == ""']);
+      const stmts = new Set(['continue', 'break', 'pass']);
+
+      if (id === 'ai_support') {
+        exprs.add('"Оператор скоро ответит"');
+        conds.add('reply == ""');
+      } else if (id === 'ai_router') {
+        vars.add('clean');
+        ['"billing"', '"tech"', '"other"'].forEach(v => exprs.add(v));
+        ['"billing" in reply', '"tech" in reply'].forEach(v => conds.add(v));
+      } else if (id === 'ai_privacy') {
+        vars.add('masked');
+        ['masked', 'text.replace(secret, "[СЕКРЕТ]")', 'reply.replace("[СЕКРЕТ]", secret)', '"[СЕКРЕТ]"'].forEach(v => exprs.add(v));
+      } else if (id === 'ai_retry') {
+        vars.add('_');
+        ['"ERROR:"', '"Сервис временно недоступен"'].forEach(v => exprs.add(v));
+        iters.add('range(3)');
+        conds.add('reply != "" and "ERROR:" not in reply');
+      } else if (id === 'ai_rag') {
+        ['found', 'doc'].forEach(v => vars.add(v));
+        ['""', 'doc + "\\n"', 'topic + ": " + found', '"Нет данных в базе"'].forEach(v => exprs.add(v));
+        iters.add('docs');
+        ['topic.lower() in doc.lower()', 'found == ""'].forEach(v => conds.add(v));
+      } else if (id === 'ai_agent') {
+        ['context', '_'].forEach(v => vars.add(v));
+        ['context', '"FINAL:"', '"GET_WEATHER"', 'reply.replace("FINAL:", "").strip()', 'question + " Погода: " + weather', '"Не удалось ответить"'].forEach(v => exprs.add(v));
+        iters.add('range(3)');
+        ['"FINAL:" in reply', '"GET_WEATHER" in reply'].forEach(v => conds.add(v));
+      }
+
+      return {
+        vars: Array.from(vars),
+        exprs: Array.from(exprs),
+        iters: Array.from(iters),
+        conds: Array.from(conds),
+        stmts: Array.from(stmts),
+      };
+    }
+
+    function formatCbOptionLabel(val) {
+      if (val === '""') return '"" (пусто)';
+      return String(val);
+    }
+
+    function renderCbSmartSlot(b, field, currentVal, optionsList, sizeCls, placeholder, isIfPart = false) {
+      const valStr = String(currentVal ?? '');
+      const isCustom = Boolean(b._customFields && b._customFields[field]);
+      if (isCustom) {
+        const attr = isIfPart
+          ? `onmousedown="event.stopPropagation()" onfocus="cbLastFocusedInput={blockId:'${b.id}',field:'${field}',el:this}" oninput="updateIfConditionPart('${b.id}','${field}',this.value)"`
+          : `onmousedown="event.stopPropagation()" onfocus="cbLastFocusedInput={blockId:'${b.id}',field:'${field}',el:this}" oninput="updateBlockField('${b.id}','${field}',this.value)"`;
+        return `
+          <span class="cb-slot-wrap">
+            <input type="text" class="cb-input ${sizeCls}" placeholder="${escapeHtml(placeholder || '')}" value="${escapeHtml(valStr)}" ${attr}>
+            <button type="button" class="cb-cond-toggle" onclick="toggleCbSlotCustom('${b.id}','${field}',false)" title="Выбрать готовое из списка">▾</button>
+          </span>
+        `;
+      }
+
+      const opts = Array.isArray(optionsList) ? [...optionsList] : [];
+      if (valStr && !opts.includes(valStr)) {
+        opts.unshift(valStr);
+      } else if (!valStr && !opts.includes('""')) {
+        opts.unshift('');
+      }
+      const optionsHtml = opts.map(opt => {
+        const selected = opt === valStr ? 'selected' : '';
+        return `<option value="${escapeHtml(opt)}" ${selected}>${escapeHtml(formatCbOptionLabel(opt))}</option>`;
+      }).join('');
+
+      return `
+        <select class="cb-pill-select ${sizeCls}" onmousedown="event.stopPropagation()" onchange="onCbSmartSlotChange('${b.id}','${field}',this.value,${isIfPart})">
+          ${optionsHtml}
+          <option value="__CUSTOM__">✎ Ввести своё...</option>
+        </select>
+      `;
     }
 
     function toggleBlockElse(blockId) {
@@ -7522,12 +7858,33 @@
       if (el) el.setAttribute('draggable', 'true');
     }
 
+    function onCbHeadMouseDown(e, blockId) {
+      const el = document.querySelector(`.cb-block[data-block-id="${blockId}"]`);
+      if (!el) return;
+      const interactive = e.target && e.target.closest('input, select, button, a');
+      el.setAttribute('draggable', interactive ? 'false' : 'true');
+    }
+
     function onCbPaletteDragStart(e, type) {
       cbDragPayload = { source: 'palette', type };
       if (e.dataTransfer) {
         e.dataTransfer.effectAllowed = 'copy';
         e.dataTransfer.setData('text/plain', `palette:${type}`);
       }
+    }
+
+    function onCbPaletteDragEnd() {
+      clearCbDragHighlights();
+      cbDragPayload = null;
+    }
+
+    function parseCbDragDataTransfer(e) {
+      try {
+        const raw = e?.dataTransfer?.getData('text/plain') || '';
+        if (raw.startsWith('palette:')) return { source: 'palette', type: raw.slice(8) };
+        if (raw.startsWith('block:')) return { source: 'existing', blockId: raw.slice(6) };
+      } catch (err) {}
+      return null;
     }
 
     function onCbBlockDragStart(e, blockId) {
@@ -7550,30 +7907,36 @@
       document.querySelectorAll('.cb-block.drag-over-top, .cb-block.drag-over-bottom').forEach(el => {
         el.classList.remove('drag-over-top', 'drag-over-bottom');
       });
-      document.querySelectorAll('.cb-c-wrap.drag-over-inside').forEach(el => {
+      document.querySelectorAll('.cb-c-wrap.drag-over-inside, .cb-list.drag-over-inside, .cb-canvas.drag-over-inside').forEach(el => {
         el.classList.remove('drag-over-inside');
       });
     }
 
+    function isCbDropBeforeBlock(e, el) {
+      if (e.target && e.target.closest('.cb-c-footer')) return false;
+      const rect = el.getBoundingClientRect();
+      return (e.clientY - rect.top) < rect.height * 0.45;
+    }
+
     function onCbBlockDragOver(e, targetId) {
-      if (!cbDragPayload) return;
-      if (cbDragPayload.source === 'existing' && cbDragPayload.blockId === targetId) return;
+      const payload = cbDragPayload || parseCbDragDataTransfer(e);
+      if (!payload) return;
+      if (payload.source === 'existing' && payload.blockId === targetId) return;
       e.preventDefault();
       e.stopPropagation();
       const el = e.currentTarget;
-      const rect = el.getBoundingClientRect();
-      const isTop = (e.clientY - rect.top) < rect.height * 0.48;
+      const isTop = isCbDropBeforeBlock(e, el);
       clearCbDragHighlights();
       el.classList.add(isTop ? 'drag-over-top' : 'drag-over-bottom');
     }
 
     function onCbBlockDrop(e, targetId) {
-      if (!cbDragPayload) return;
+      const payload = cbDragPayload || parseCbDragDataTransfer(e);
+      if (!payload) return;
       e.preventDefault();
       e.stopPropagation();
       const el = e.currentTarget;
-      const rect = el.getBoundingClientRect();
-      const insertBefore = (e.clientY - rect.top) < rect.height * 0.48;
+      const insertBefore = isCbDropBeforeBlock(e, el);
       clearCbDragHighlights();
 
       const meta = getActiveCodeMeta();
@@ -7582,11 +7945,11 @@
       if (!targetLoc) return;
 
       let movingBlock = null;
-      if (cbDragPayload.source === 'palette') {
-        movingBlock = createDefaultBlock(cbDragPayload.type, meta);
-      } else if (cbDragPayload.source === 'existing') {
-        if (cbDragPayload.blockId === targetId) return;
-        const srcLoc = findBlockLocation(tree, cbDragPayload.blockId);
+      if (payload.source === 'palette') {
+        movingBlock = createDefaultBlock(payload.type, meta);
+      } else if (payload.source === 'existing') {
+        if (payload.blockId === targetId) return;
+        const srcLoc = findBlockLocation(tree, payload.blockId);
         if (!srcLoc) return;
         if (targetLoc.parentId && isBlockDescendant(srcLoc.block, targetLoc.parentId)) {
           showToast('Нельзя вложить блок внутрь самого себя', 'info');
@@ -7600,12 +7963,14 @@
       if (!updatedTargetLoc) return;
       const destIdx = insertBefore ? updatedTargetLoc.index : updatedTargetLoc.index + 1;
       updatedTargetLoc.list.splice(destIdx, 0, movingBlock);
+      blockInsertTarget = { parentId: updatedTargetLoc.parentId || null, branch: updatedTargetLoc.parentId ? updatedTargetLoc.branch : 'root' };
       cbDragPayload = null;
       syncBlocksToCode(true, true);
     }
 
     function onCbBranchDragOver(e) {
-      if (!cbDragPayload) return;
+      const payload = cbDragPayload || parseCbDragDataTransfer(e);
+      if (!payload) return;
       e.preventDefault();
       e.stopPropagation();
       clearCbDragHighlights();
@@ -7613,7 +7978,8 @@
     }
 
     function onCbBranchDrop(e, parentId, branch) {
-      if (!cbDragPayload) return;
+      const payload = cbDragPayload || parseCbDragDataTransfer(e);
+      if (!payload) return;
       e.preventDefault();
       e.stopPropagation();
       clearCbDragHighlights();
@@ -7634,10 +8000,10 @@
       }
 
       let movingBlock = null;
-      if (cbDragPayload.source === 'palette') {
-        movingBlock = createDefaultBlock(cbDragPayload.type, meta);
-      } else if (cbDragPayload.source === 'existing') {
-        const srcLoc = findBlockLocation(tree, cbDragPayload.blockId);
+      if (payload.source === 'palette') {
+        movingBlock = createDefaultBlock(payload.type, meta);
+      } else if (payload.source === 'existing') {
+        const srcLoc = findBlockLocation(tree, payload.blockId);
         if (!srcLoc) return;
         if (parentId && isBlockDescendant(srcLoc.block, parentId)) {
           showToast('Нельзя вложить блок внутрь самого себя', 'info');
@@ -7667,10 +8033,10 @@
       }
       const raw = String(b.condition || '').trim();
       if (raw && !/\b(and|or)\b/.test(raw)) {
-        const m = raw.match(/^(.+?)\s*(<=|>=|==|!=|not in|in|<|>)\s*(.+)$/);
+        const m = raw.match(/^(.+?)\s*(<=|>=|==|!=|\s+not\s+in\s+|\s+in\s+|<|>)\s*(.+)$/);
         if (m) {
           const left = m[1].trim();
-          const cmp = m[2].trim();
+          const cmp = m[2].trim().replace(/\s+/g, ' ');
           const right = m[3].trim();
           const bal = s => (s.match(/\(/g) || []).length === (s.match(/\)/g) || []).length;
           if (bal(left) && bal(right)) {
@@ -7774,19 +8140,19 @@
       ];
 
       const opChoices = [
-        { val: '+=', label: 'прибавить (+=)' },
-        { val: '-=', label: 'убавить (-=)' },
-        { val: '=', label: 'заменить (=)' },
-        { val: '*=', label: 'умножить (*=)' },
-        { val: '//=', label: 'делить (//=)' }
+        { val: 'strip', label: 'убрать пробелы (.strip())' },
+        { val: 'lower', label: 'сделать маленькими (.lower())' },
+        { val: '=', label: 'заменить на (=)' },
+        { val: '+=', label: 'добавить в конец (+=)' },
+        { val: '-=', label: 'убавить (-=)' }
       ];
+
+      const pools = getTaskSlotPools(getActiveCodeMeta());
 
       return items.map((b, idx) => {
         const prev = idx > 0 ? items[idx - 1] : null;
         const canNest = Boolean(prev && (prev.type === 'for' || prev.type === 'if'));
         const canUnnest = Boolean(parentId);
-        const inpAttr = (field, listId) =>
-          `list="${listId}" onmousedown="event.stopPropagation()" onfocus="cbLastFocusedInput={blockId:'${b.id}',field:'${field}',el:this}" oninput="updateBlockField('${b.id}','${field}',this.value)"`;
 
         let slotsHtml = '';
         let extraCtrl = '';
@@ -7794,27 +8160,25 @@
 
         if (b.type === 'ai') {
           slotsHtml = `
-            <span>🤖 задать</span>
-            <input type="text" class="cb-input sm" placeholder="reply" value="${escapeHtml(b.varName || '')}" ${inpAttr('varName', 'cbSugVars')}>
-            <span>= спросить ИИ (</span>
-            <input type="text" class="cb-input md" placeholder="запрос" value="${escapeHtml(b.promptExpr ?? '')}" ${inpAttr('promptExpr', 'cbSugExpr')}>
-            <span>)</span>
-            <input type="text" class="cb-input sm" placeholder="system (опц.)" value="${escapeHtml(b.systemExpr ?? '')}" ${inpAttr('systemExpr', 'cbSugExpr')} title="Необязательная инструкция system для ask_ai">
+            <span>🤖 сохранить ответ ИИ в</span>
+            ${renderCbSmartSlot(b, 'varName', b.varName || 'reply', pools.vars, 'sm', 'reply', false)}
+            <span>спросив про:</span>
+            ${renderCbSmartSlot(b, 'promptExpr', b.promptExpr ?? '', pools.exprs, 'md', 'вопрос', false)}
           `;
         } else if (b.type === 'var') {
           slotsHtml = `
-            <span>задать</span>
-            <input type="text" class="cb-input sm" placeholder="имя" value="${escapeHtml(b.name || '')}" ${inpAttr('name', 'cbSugVars')}>
-            <span>значение</span>
-            <input type="text" class="cb-input md" placeholder="0, [], &quot;&quot;" value="${escapeHtml(b.value ?? '')}" ${inpAttr('value', 'cbSugExpr')}>
+            <span>задать переменную</span>
+            ${renderCbSmartSlot(b, 'name', b.name || '', pools.vars, 'sm', 'имя', false)}
+            <span>=</span>
+            ${renderCbSmartSlot(b, 'value', b.value ?? '', pools.exprs, 'md', 'значение', false)}
           `;
         } else if (b.type === 'for') {
           const isThenTarget = blockInsertTarget.parentId === b.id && blockInsertTarget.branch === 'children';
           slotsHtml = `
             <span>повторять для каждого</span>
-            <input type="text" class="cb-input xs" placeholder="x" value="${escapeHtml(b.item || '')}" ${inpAttr('item', 'cbSugVars')}>
+            ${renderCbSmartSlot(b, 'item', b.item || '_', pools.vars, 'xs', '_', false)}
             <span>из</span>
-            <input type="text" class="cb-input md" placeholder="список / строка" value="${escapeHtml(b.iterable || '')}" ${inpAttr('iterable', 'cbSugIter')}>
+            ${renderCbSmartSlot(b, 'iterable', b.iterable || '', pools.iters, 'md', 'список', false)}
             <button type="button" class="cb-target-pill ${isThenTarget ? 'active' : ''}" onclick="setBlockInsertTarget('${b.id}', 'children')" title="Вставлять новые блоки внутрь цикла">${isThenTarget ? '🎯 Внутрь' : '+ Внутрь'}</button>
           `;
           nestedHtml = `
@@ -7832,19 +8196,21 @@
             const cmpOpts = cmpChoices.map(c =>
               `<option value="${escapeHtml(c.val)}" ${parsedCond.cmp === c.val ? 'selected' : ''}>${escapeHtml(c.label)}</option>`
             ).join('');
+            const leftPool = Array.from(new Set([...pools.vars, ...pools.exprs]));
+            const rightPool = Array.from(new Set([...pools.exprs, ...pools.vars]));
             condCapsuleHtml = `
               <span class="cb-hex-cond">
-                <input type="text" class="cb-input xs" placeholder="x" list="cbSugVars" value="${escapeHtml(parsedCond.left)}" onmousedown="event.stopPropagation()" onfocus="cbLastFocusedInput={blockId:'${b.id}',field:'left',el:this}" oninput="updateIfConditionPart('${b.id}','left',this.value)">
+                ${renderCbSmartSlot(b, 'left', parsedCond.left, leftPool, 'sm', 'reply', true)}
                 <select class="cb-select" onmousedown="event.stopPropagation()" onchange="updateIfConditionPart('${b.id}','cmp',this.value)">${cmpOpts}</select>
-                <input type="text" class="cb-input sm" placeholder="0" list="cbSugExpr" value="${escapeHtml(parsedCond.right)}" onmousedown="event.stopPropagation()" onfocus="cbLastFocusedInput={blockId:'${b.id}',field:'right',el:this}" oninput="updateIfConditionPart('${b.id}','right',this.value)">
-                <button type="button" class="cb-cond-toggle" onclick="toggleIfCondMode('${b.id}')" title="Переключить в ручное условие Python">✎</button>
+                ${renderCbSmartSlot(b, 'right', parsedCond.right, rightPool, 'sm', '""', true)}
+                <button type="button" class="cb-cond-toggle" onclick="toggleIfCondMode('${b.id}')" title="Переключить в составное условие">✎</button>
               </span>
             `;
           } else {
             condCapsuleHtml = `
               <span class="cb-hex-cond">
-                <input type="text" class="cb-input lg" placeholder="условие (например: is_vip)" value="${escapeHtml(parsedCond.condition)}" ${inpAttr('condition', 'cbSugCond')}>
-                <button type="button" class="cb-cond-toggle" onclick="toggleIfCondMode('${b.id}')" title="Переключить в конструктор &lt; = &gt;">🧩</button>
+                ${renderCbSmartSlot(b, 'condition', parsedCond.condition, pools.conds, 'lg', 'условие', false)}
+                <button type="button" class="cb-cond-toggle" onclick="toggleIfCondMode('${b.id}')" title="Переключить в простой конструктор &lt; = &gt;">🧩</button>
               </span>
             `;
           }
@@ -7872,22 +8238,24 @@
             <div class="cb-c-footer" title="Конец блока «если»"></div>
           `;
         } else if (b.type === 'update') {
-          const opOpts = opChoices.map(o => `<option value="${o.val}" ${(b.op || '+=') === o.val ? 'selected' : ''}>${o.label}</option>`).join('');
+          const curOp = b.op || 'strip';
+          const opOpts = opChoices.map(o => `<option value="${o.val}" ${curOp === o.val ? 'selected' : ''}>${o.label}</option>`).join('');
+          const hideVal = (curOp === 'strip' || curOp === 'lower');
           slotsHtml = `
             <span>изменить</span>
-            <input type="text" class="cb-input sm" placeholder="имя" value="${escapeHtml(b.target || '')}" ${inpAttr('target', 'cbSugVars')}>
-            <select class="cb-select" onmousedown="event.stopPropagation()" onchange="updateBlockField('${b.id}','op',this.value)">${opOpts}</select>
-            <input type="text" class="cb-input md" placeholder="значение" value="${escapeHtml(b.value ?? '')}" ${inpAttr('value', 'cbSugExpr')}>
+            ${renderCbSmartSlot(b, 'target', b.target || 'reply', pools.vars, 'sm', 'reply', false)}
+            <select class="cb-select" onmousedown="event.stopPropagation()" onchange="updateBlockField('${b.id}','op',this.value,true)">${opOpts}</select>
+            ${hideVal ? '' : renderCbSmartSlot(b, 'value', b.value ?? '', pools.exprs, 'md', 'значение', false)}
           `;
         } else if (b.type === 'return') {
           slotsHtml = `
             <span>вернуть ответ</span>
-            <input type="text" class="cb-input md" placeholder="total" value="${escapeHtml(b.expr ?? '')}" ${inpAttr('expr', 'cbSugVars')}>
+            ${renderCbSmartSlot(b, 'expr', b.expr ?? '', pools.exprs, 'md', 'ответ', false)}
           `;
         } else {
           slotsHtml = `
             <span>выполнить</span>
-            <input type="text" class="cb-input lg" placeholder="continue или grades.pop()" value="${escapeHtml(b.code || '')}" ${inpAttr('code', 'cbSugExpr')}>
+            ${renderCbSmartSlot(b, 'code', b.code || '', pools.stmts, 'lg', 'команда', false)}
           `;
         }
 
@@ -7897,7 +8265,7 @@
                ondragend="onCbBlockDragEnd('${b.id}')"
                ondragover="onCbBlockDragOver(event, '${b.id}')"
                ondrop="onCbBlockDrop(event, '${b.id}')">
-            <div class="cb-block-head">
+            <div class="cb-block-head" onmousedown="onCbHeadMouseDown(event, '${b.id}')">
               <div class="cb-block-slots">
                 <span class="cb-grip" title="Перетащить блок" onmousedown="onCbGripMouseDown('${b.id}')">⋮⋮</span>
                 ${slotsHtml}
@@ -7924,10 +8292,10 @@
         dl.innerHTML = vals.map(v => `<option value="${escapeHtml(v)}"></option>`).join('');
       };
       const params = meta.params || [];
-      setOpts('cbSugVars', ['reply', 'raw', 'clean', 'matched', 'context', 'masked', 'obj', ...params]);
-      setOpts('cbSugIter', [...params, meta.defaultIterable || 'docs', 'range(max_attempts)', 'range(max_steps)']);
-      setOpts('cbSugCond', ['clean == "billing"', 'clean == "tech"', 'not matched', 'isinstance(obj, dict)', 'reply.startswith("FINAL:")', 'reply.startswith("CALC:")']);
-      setOpts('cbSugExpr', ['""', '[]', 'reply.strip().lower().strip(".!?\\"\\\' ")', '"Нет данных в базе"', '"other"', 'None', 'continue', ...params]);
+      setOpts('cbSugVars', ['reply', 'found', 'masked', 'context', ...params]);
+      setOpts('cbSugIter', [...params, meta.defaultIterable || 'docs', 'range(3)']);
+      setOpts('cbSugCond', ['reply == ""', '"billing" in reply', '"tech" in reply', 'found == ""', '"FINAL:" in reply', '"GET_WEATHER" in reply']);
+      setOpts('cbSugExpr', ['""', '"Оператор скоро ответит"', '"billing"', '"tech"', '"other"', '"Нет данных в базе"', '"Не удалось ответить"', ...params]);
     }
 
     function renderCodeBlocksWorkspace() {
@@ -7949,7 +8317,7 @@
         const extraBtns = extraTokens.map(tok =>
           `<button type="button" class="cb-token-chip" data-token="${escapeHtml(tok)}" onclick="insertHelperToken(this.dataset.token)" title="Вставить подсказку в активное поле">${escapeHtml(tok)}</button>`
         ).join('');
-        chipsWrap.innerHTML = `<span style="font-weight:700;">Подсказки (клик вставит в поле):</span> ${paramBtns} ${extraBtns}`;
+        chipsWrap.innerHTML = `<span style="font-weight:700;">Клик вставит в белое поле:</span> ${paramBtns} ${extraBtns}`;
       }
 
       const isRootTarget = !blockInsertTarget.parentId;
@@ -8044,12 +8412,25 @@
       const syntaxEl = document.getElementById('codeHelpTaskSyntax');
       const aiTipEl = document.getElementById('codeHelpTaskAiTip');
 
+      const isUnlocked = isCodeTaskSolutionUnlocked(meta.id);
+      const failCount = getCodeTaskFailCount(meta.id);
+
       if (titleEl) titleEl.textContent = meta.title;
       if (analogyEl) analogyEl.innerHTML = bh.analogy || 'Прочитайте условие задачи и посмотрите примеры входных и выходных данных.';
       if (stepsEl) {
-        stepsEl.innerHTML = (bh.steps || []).map(s => `<li style="margin-bottom:4px;">${s}</li>`).join('');
+        if (isUnlocked) {
+          stepsEl.innerHTML = (bh.steps || []).map(s => `<li style="margin-bottom:4px;">${s}</li>`).join('');
+        } else {
+          stepsEl.innerHTML = `<li style="color:var(--text-dim); list-style:none; padding:4px 0;">🔒 Пошаговый алгоритм скрыт. Он откроется после <b>3 неверных попыток тестирования</b> (сейчас: ${failCount} из 3).</li>`;
+        }
       }
-      if (syntaxEl) syntaxEl.textContent = bh.syntaxTip || meta.stub || '';
+      if (syntaxEl) {
+        if (isUnlocked) {
+          syntaxEl.textContent = bh.syntaxTip || meta.stub || '';
+        } else {
+          syntaxEl.textContent = `🔒 Готовое решение на Python скрыто.\nОно станет доступно после 3 неверных запусков тестов (сделано: ${failCount} из 3).\n\nНапишите свой вариант в редакторе или соберите из блоков и запустите тесты!`;
+        }
+      }
       if (aiTipEl) aiTipEl.textContent = bh.aiPromptTip || '';
     }
 
@@ -8243,7 +8624,7 @@
       if (!editor || !box) return;
 
       const code = editor.value;
-      const taskId = activeCodeTaskId || 'ai_router';
+      const taskId = activeCodeTaskId || 'ai_support';
       const meta = CODE_TASKS_META.find(t => t.id === taskId) || CODE_TASKS_META[0];
 
       if (!code.trim()) {
@@ -8270,14 +8651,28 @@
         renderCodeTaskResultBox(box, data);
 
         if (!taskProgressState.codeTasks) taskProgressState.codeTasks = getDefaultCodeTasksMap();
-        taskProgressState.codeTasks[taskId] = Object.assign({}, taskProgressState.codeTasks[taskId] || {}, {
+        const curTaskEntry = taskProgressState.codeTasks[taskId] || {};
+        const oldFailCount = Number(curTaskEntry.failCount || 0);
+        const newFailCount = data.passed ? oldFailCount : (oldFailCount + 1);
+
+        taskProgressState.codeTasks[taskId] = Object.assign({}, curTaskEntry, {
           passed: Boolean(data.passed),
+          failCount: newFailCount,
           aiResult: data,
           editorCode: code
         });
         if (!taskProgressState.bonusCode) taskProgressState.bonusCode = {};
         taskProgressState.bonusCode.aiResult = data;
         taskProgressState.bonusCode.passed = CODE_TASK_IDS.every(id => Boolean(taskProgressState.codeTasks[id]?.passed));
+
+        // Instantly refresh description and modal hints with updated attempt count / unlock state
+        const descEl = document.getElementById('activeCodeTaskDesc');
+        if (descEl && activeCodeTaskId === taskId) {
+          descEl.innerHTML = renderCodeTaskDescription(meta);
+        }
+        if (typeof populateCodeHelpTaskTab === 'function') {
+          populateCodeHelpTaskTab();
+        }
 
         updateTasksProgressSummaryUI();
         saveTaskProgress(true);
@@ -8287,7 +8682,13 @@
           const allDone = CODE_TASK_IDS.every(id => Boolean(taskProgressState.codeTasks[id]?.passed));
           showToast(allDone ? '🏆 Все 6 задач AI-интеграции решены!' : `✅ Задача ${meta.num}/6 решена!`, 'success');
         } else {
-          showToast(`Пройдено ${data.passed_count || 0} из ${data.total_count || 4} тестов`, 'error');
+          if (newFailCount === 3) {
+            showToast('🔓 Подсказки и готовое решение разблокированы (3 неверных попытки)', 'info');
+          } else if (newFailCount < 3) {
+            showToast(`Пройдено ${data.passed_count || 0} из ${data.total_count || 4} тестов. Попытка ${newFailCount}/3.`, 'error');
+          } else {
+            showToast(`Пройдено ${data.passed_count || 0} из ${data.total_count || 4} тестов`, 'error');
+          }
         }
       } catch (err) {
         box.innerHTML = `<div class="verify-check-row fail"><span>❌</span><div>Ошибка связи с сервером: ${escapeHtml(err.message)}</div></div>`;
@@ -8314,7 +8715,7 @@
       }
 
       const arch = inspectCanvasArchitecture();
-      const taskId = activeCodeTaskId || 'ai_router';
+      const taskId = activeCodeTaskId || 'ai_support';
 
       if (btn) {
         btn.disabled = true;
@@ -12374,9 +12775,9 @@
           </div>
 
           <div class="info-section">
-            <div class="info-label">🐛 Что делать в задаче 4 («Отладка ИИ»)?</div>
+            <div class="info-label">🐛 Что делать в задаче 4 («Повтор при ошибке ИИ»)?</div>
             <div class="info-text" style="margin-top:4px; line-height:1.5;">
-              Там уже лежит хрупкий код интеграции без повторов и обработки <code>```json</code>. Запустите <b>«▶ Запустить код и unit-тесты»</b>, посмотрите падения и добавьте цикл попыток + <code>try/except</code>!
+              Там уже лежит код, который спрашивает ИИ только 1 раз. Нажмите <b>«▶ Запустить код и unit-тесты»</b>, чтобы увидеть падения, и оберните запрос к ИИ в цикл на 3 попытки (<code>range(3)</code>) с проверкой пустоты и <code>"ERROR:"</code>!
             </div>
           </div>
         </div>
@@ -12384,9 +12785,13 @@
         <!-- TAB 2: Обучение Мини-блокам -->
         <div id="codeHelpPane_blocks" style="display:none; flex-direction:column; gap:10px;">
           <div class="info-section highlight">
-            <div class="info-label">🎓 Как работают «Мини-блоки» (простыми словами)</div>
+            <div class="info-label">🎓 Что писать в белых полях? (главное правило!)</div>
             <div class="info-text" style="margin-top:4px; line-height:1.55;">
-              Это визуальный конструктор алгоритма: вы собираете решение из цветных кирпичиков сверху вниз, а платформа сама превращает их в правильный Python-код с отступами.
+              В каждом белом овале действует простое правило:
+              <ul style="margin:4px 0 0 18px; padding:0;">
+                <li><b>Имя переменной</b> (то, что уже дано в задаче или вы создали: <code>question</code>, <code>message</code>, <code>reply</code>) пишется <b>БЕЗ кавычек</b>.</li>
+                <li><b>Готовый текст</b> (сравнение или ответ: <code>""</code>, <code>"billing"</code>, <code>"Оператор скоро ответит"</code>) пишется <b>В КАВЫЧКАХ</b>!</li>
+              </ul>
             </div>
             <button type="button" class="btn-sm-action" onclick="startCodeBlocksTour()" style="margin-top:8px; font-weight:700; color:var(--wire-char); border-color:var(--wire-char);">🎓 Запустить пошаговый тур по экрану →</button>
           </div>
@@ -12394,13 +12799,12 @@
           <div class="info-section">
             <div class="info-label">🎨 Словарь блоков (цвета и назначение)</div>
             <ul class="guide-list" style="margin-top:6px;">
-              <li><b style="color:#0284C7;">🤖 задать [reply] = спросить ИИ (запрос)</b> — отправляет запрос в <code>ask_ai(...)</code> и сохраняет ответ модели.</li>
-              <li><b style="color:#FF8C1A;">задать [clean] значение (...)</b> — сохраняет переменную (например, очищенную строку ответа).</li>
-              <li><b style="color:#D98C00;">повторять для каждого (item) из (docs)</b> — жёлтая скоба-конвейер: проходит по элементам списка или шагам.</li>
-              <li><b style="color:#268634;">если &lt;условие&gt;, то</b> — зелёная скоба-развилка: проверка ответа модели или условий фильтрации.</li>
-              <li><b style="color:#7C3AED;">изменить [var] [+=] (...)</b> — прибавляет или обновляет значение переменной/контекста.</li>
-              <li><b style="color:#E11D48;">вернуть ответ (res)</b> — розовый нижний блок: отдаёт ответ функции на проверку тестам.</li>
-              <li><b style="color:#2563EB;">выполнить (команда)</b> — для особых строк (<code>continue</code>, <code>try</code>, методов списка).</li>
+              <li><b style="color:#0284C7;">🤖 сохранить ответ ИИ в [reply] спросив про: [question]</b> — отправляет вопрос в <code>ask_ai(...)</code> и кладёт ответ в переменную <code>reply</code>.</li>
+              <li><b style="color:#FF8C1A;">задать переменную [имя] = [значение]</b> — заводит новую переменную или меняет существующую.</li>
+              <li><b style="color:#D98C00;">повторять для каждого (_) из (range(3))</b> — жёлтая скоба-цикл: повторяет вложенные блоки несколько раз или для каждого документа.</li>
+              <li><b style="color:#268634;">если &lt;условие&gt;, то</b> — зелёная скоба-развилка: проверка текста (<code>== равно</code>, <code>входит в</code>).</li>
+              <li><b style="color:#7C3AED;">изменить [reply] [убрать пробелы (.strip()) / сделать маленькими (.lower())]</b> — автоматически чистит текст без лишних белых полей!</li>
+              <li><b style="color:#E11D48;">вернуть ответ (reply)</b> — розовый нижний блок: отдаёт ответ функции на проверку тестам.</li>
             </ul>
           </div>
 
@@ -12449,7 +12853,7 @@
           </div>
 
           <div class="info-section">
-            <div class="info-label">🧩 Какие команды Python здесь пригодятся:</div>
+            <div class="info-label">🧩 Решение на Python:</div>
             <pre class="code-stdout-pre" id="codeHelpTaskSyntax" style="margin-top:6px; max-height:150px;"></pre>
           </div>
 
